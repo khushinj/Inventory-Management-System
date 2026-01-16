@@ -1,10 +1,17 @@
 import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema({
+  domain: {
+    type: String,
+    enum: ["warehouse", "shop"],
+    required: true
+  },
   warehouseType: {
     type: String,
     enum: ["domestic", "export", "online"],
-    required: true
+    required: function () {
+      return this.domain === "warehouse";
+    }
   },
   formType: {
     type: String,

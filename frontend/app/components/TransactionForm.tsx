@@ -1,27 +1,215 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { api } from "../../lib/api";
 import Link from "next/link";
 
-export default function TransactionForm({ selection }) {
-  const [domain, setDomain] = useState<"shop" | "warehouse">("warehouse");
+type Domain = "Shop" | "Warehouse";
 
-  const [form, setForm] = useState({
-    dno: "",
-    type: "",
-    color: "",
-    size: "",
-    qty: "",
-    date: "",
-    channel: "",
-    receiver: "",
-    supplier: "",
-    transferType: "",
-    platform: "",
-  });
+type FormState = {
+  dno: string;
+  type: string;
+  color: string;
+  size: string;
+  qty: string;
+  date: string;
+  channel: string;
+  receiver: string;
+  supplier: string;
+  transferType: string;
+  platform: string;
+};
 
-  const handleChange = (e) =>
+type Selection = {
+  domain: Domain;
+  warehouseType: "domestic" | "export" | "online" | "";
+  formType: string;
+};
+
+type FieldRules = {
+  showChannel: boolean;
+  channelOptions?: { value: string; label: string }[];
+  showReceiver: boolean;
+  receiverLabel?: string;
+  receiverOptions?: { value: string; label: string }[];
+  showSupplier: boolean;
+  showTransferType: boolean;
+  transferTypeOptions?: { value: string; label: string }[];
+  showPlatform: boolean;
+};
+
+const initialForm: FormState = {
+  dno: "",
+  type: "",
+  color: "",
+  size: "",
+  qty: "",
+  date: "",
+  channel: "",
+  receiver: "",
+  supplier: "",
+  transferType: "",
+  platform: "",
+};
+
+export default function TransactionForm({ selection }: { selection: Selection }) {
+  const { domain, warehouseType, formType } = selection;
+
+  const [form, setForm] = useState<FormState>(initialForm);
+
+  useEffect(() => {
+    setForm(initialForm);
+  }, [domain, warehouseType, formType]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const rules: FieldRules = useMemo(() => {
+    if (domain === "shop") {
+      return {
+        showChannel: true,
+        channelOptions: [
+          { value: "retail", label: "Retail" },
+          { value: "online", label: "Online" },
+        ],
+        showReceiver: false,
+        showSupplier: false,
+        showTransferType: false,
+        showPlatform: false,
+      };
+    }
+
+    // Warehouse rules
+    if (warehouseType === "domestic" || warehouseType === "export") {
+      if (formType === "dispatch") {
+        return {
+          showChannel: false,
+          showReceiver: true,
+          receiverLabel: "Receiver",
+          showSupplier: false,
+          showTransferType: false,
+          showPlatform: false,
+        };
+      }
+
+      if (formType === "production") {
+        return {
+          showChannel: false,
+          showReceiver: false,
+          showSupplier: false,
+          showTransferType: false,
+          showPlatform: false,
+        };
+      }
+
+      if (formType === "purchase") {
+        return {
+          showChannel: true,
+          channelOptions: [
+            { value: "export", label: "Export" },
+            { value: "domestic", label: "Domestic" },
+            { value: "online", label: "Online" },
+          ],
+          showReceiver: false,
+          showSupplier: true,
+          showTransferType: false,
+          showPlatform: false,
+        };
+      }
+
+      if (formType === "transfer") {
+        return {
+          showChannel: false,
+          showReceiver: true,
+          receiverLabel: "Receiver",
+          receiverOptions: [
+            { value: "export", label: "Export" },
+            { value: "online", label: "Online" },
+          ],
+          showSupplier: false,
+          showTransferType: true,
+          transferTypeOptions: [
+            { value: "inwards", label: "Inwards" },
+            { value: "outwards", label: "Outwards" },
+            { value: "received", label: "Received" },
+            { value: "given", label: "Given" },
+          ],
+          showPlatform: false,
+        };
+      }
+
+      if (formType === "return") {
+        return {
+          showChannel: true,
+          channelOptions: [
+            { value: "export return", label: "Export Return" },
+            { value: "domestic return", label: "Domestic Return" },
+            { value: "online return", label: "Online Return" },
+          ],
+          showReceiver: false,
+          showSupplier: false,
+          showTransferType: false,
+          showPlatform: false,
+        };
+      }
+
+      if (formType === "sample") {
+        return {
+          showChannel: false,
+          showReceiver: true,
+          receiverLabel: "Receiver",
+          showSupplier: false,
+          showTransferType: false,
+          showPlatform: false,
+        };
+      }
+    }
+
+    if (warehouseType === "online") {
+      if (formType === "return" || formType === "sales") {
+        return {
+          showChannel: false,
+          showReceiver: false,
+          showSupplier: false,
+          showTransferType: false,
+          showPlatform: true,
+        };
+      }
+
+      if (formType === "transfer") {
+        return {
+          showChannel: false,
+          showReceiver: true,
+          receiverLabel: "Receiver",
+          showSupplier: false,
+          showTransferType: true,
+          transferTypeOptions: [
+            { value: "inwards", label: "Inwards" },
+            { value: "outwards", label: "Outwards" },
+          ],
+          showPlatform: false,
+        };
+      }
+
+      if (formType === "purchase") {
+        return {
+          showChannel: false,
+          showReceiver: false,
+          showSupplier: true,
+          showTransferType: false,
+          showPlatform: false,
+        };
+      }
+    }
+
+    return {
+      showChannel: false,
+      showReceiver: false,
+      showSupplier: false,
+      showTransferType: false,
+      showPlatform: false,
+    };
+  }, [domain, warehouseType, formType]);
 
   const submit = async () => {
     if (!form.qty || !form.date) {
@@ -29,35 +217,49 @@ export default function TransactionForm({ selection }) {
       return;
     }
 
-    let endpoint = "";
-
-    if (domain === "shop") {
-      endpoint = "/shop";
-    } else {
-      endpoint = `/warehouse/${warehouseType}`;
+    if (rules.showChannel && !form.channel) {
+      alert("Channel is required for this form");
+      return;
     }
+
+    if (rules.showReceiver && !form.receiver) {
+      alert("Receiver is required for this form");
+      return;
+    }
+
+    if (rules.showSupplier && !form.supplier) {
+      alert("Supplier is required for this form");
+      return;
+    }
+
+    if (rules.showTransferType && !form.transferType) {
+      alert("Transfer type is required for this form");
+      return;
+    }
+
+    if (rules.showPlatform && !form.platform) {
+      alert("Platform is required for this form");
+      return;
+    }
+
+    const endpoint = domain === "shop" ? "/shop" : `/warehouse/${warehouseType}`;
+
+    const cleanedForm = Object.fromEntries(
+      Object.entries(form).map(([key, value]) => [key, value === "" ? undefined : value])
+    ) as Partial<FormState>;
 
     try {
       const res = await api.post(endpoint, {
-        ...form,
+        ...cleanedForm,
+        qty: Number(form.qty),
+        domain,
+        warehouseType: domain === "warehouse" ? warehouseType : undefined,
         formType,
       });
 
       console.log("Saved:", res.data);
       alert("Saved successfully");
-      setForm({
-        dno: "",
-        type: "",
-        color: "",
-        size: "",
-        qty: "",
-        date: "",
-        channel: "",
-        receiver: "",
-        supplier: "",
-        transferType: "",
-        platform: "",
-      });
+      setForm(initialForm);
     } catch (err: any) {
       console.error("AXIOS ERROR:", err);
 
@@ -69,10 +271,8 @@ export default function TransactionForm({ selection }) {
     }
   };
 
-  const { warehouseType, formType } = selection;
-
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-3xl mx-auto px-4 sm:px-0">
       <div className="mb-6">
         <Link href="/">
           <button className="text-blue-600 hover:underline mb-4">← Back to Dashboard</button>
@@ -81,39 +281,38 @@ export default function TransactionForm({ selection }) {
         <p className="text-gray-600">Add a new inventory transaction</p>
       </div>
 
-      <div className="bg-white border rounded-lg p-8 space-y-4">
-        {/* Domain Toggle */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">Domain</label>
-          <select
-            value={domain}
-            onChange={(e) => setDomain(e.target.value as "shop" | "warehouse")}
-            className="border px-4 py-2 w-full rounded"
-          >
-            <option value="warehouse">Warehouse</option>
-            <option value="shop">Shop</option>
-          </select>
+      <div className=" border rounded-lg p-6 sm:p-8 space-y-4">
+        {/* Domain & form context */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">Domain</label>
+            <input
+              className="border px-4 py-2 w-full rounded "
+              value={domain}
+              disabled
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">Form Type</label>
+            <input
+              className="border px-4 py-2 w-full rounded capitalize"
+              value={formType}
+              disabled
+            />
+          </div>
         </div>
 
-        {/* Warehouse Type (only if domain = warehouse) */}
         {domain === "warehouse" && (
           <div>
-            <label className="block text-sm font-semibold mb-2">
-              Warehouse Type
-            </label>
-            <select className="border px-4 py-2 w-full rounded" disabled>
-              <option value={warehouseType}>{warehouseType}</option>
-            </select>
+            <label className="block text-sm font-semibold mb-2">Warehouse Type</label>
+            <input
+              className="border px-4 py-2 w-full rounded capitalize"
+              value={warehouseType}
+              disabled
+            />
           </div>
         )}
-
-        {/* Form Type */}
-        <div>
-          <label className="block text-sm font-semibold mb-2">Form Type</label>
-          <select className="border px-4 py-2 w-full rounded" disabled>
-            <option value={formType}>{formType}</option>
-          </select>
-        </div>
 
         {/* Design Number */}
         <div>
@@ -139,8 +338,8 @@ export default function TransactionForm({ selection }) {
           />
         </div>
 
-        {/* Color & Size */}
-        <div className="grid grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold mb-2">Color</label>
             <input
@@ -164,7 +363,7 @@ export default function TransactionForm({ selection }) {
         </div>
 
         {/* Quantity & Date */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold mb-2">Quantity *</label>
             <input
@@ -188,10 +387,10 @@ export default function TransactionForm({ selection }) {
           </div>
         </div>
 
-        {/* CHANNEL */}
-        {(formType === "sales" || formType === "return") && (
+        {/* Channel */}
+        {rules.showChannel && (
           <div>
-            <label className="block text-sm font-semibold mb-2">Channel</label>
+            <label className="block text-sm font-semibold mb-2">Channel *</label>
             <select
               className="border px-4 py-2 w-full rounded"
               name="channel"
@@ -199,33 +398,49 @@ export default function TransactionForm({ selection }) {
               onChange={handleChange}
             >
               <option value="">Select Channel</option>
-              <option value="retail">Retail</option>
-              <option value="online">Online</option>
-              <option value="export">Export</option>
+              {rules.channelOptions?.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
         )}
 
-        {/* RECEIVER */}
-        {(formType === "dispatch" ||
-          formType === "transfer" ||
-          formType === "sample") && (
+        {/* Receiver */}
+        {rules.showReceiver && (
           <div>
-            <label className="block text-sm font-semibold mb-2">Receiver</label>
-            <input
-              className="border px-4 py-2 w-full rounded"
-              name="receiver"
-              placeholder="Receiver name"
-              value={form.receiver}
-              onChange={handleChange}
-            />
+            <label className="block text-sm font-semibold mb-2">{rules.receiverLabel || "Receiver"}</label>
+            {rules.receiverOptions ? (
+              <select
+                className="border px-4 py-2 w-full rounded"
+                name="receiver"
+                value={form.receiver}
+                onChange={handleChange}
+              >
+                <option value="">Select Receiver</option>
+                {rules.receiverOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className="border px-4 py-2 w-full rounded"
+                name="receiver"
+                placeholder="Receiver name"
+                value={form.receiver}
+                onChange={handleChange}
+              />
+            )}
           </div>
         )}
 
-        {/* SUPPLIER */}
-        {formType === "purchase" && (
+        {/* Supplier */}
+        {rules.showSupplier && (
           <div>
-            <label className="block text-sm font-semibold mb-2">Supplier</label>
+            <label className="block text-sm font-semibold mb-2">Supplier *</label>
             <input
               className="border px-4 py-2 w-full rounded"
               name="supplier"
@@ -236,10 +451,10 @@ export default function TransactionForm({ selection }) {
           </div>
         )}
 
-        {/* TRANSFER TYPE */}
-        {formType === "transfer" && (
+        {/* Transfer Type */}
+        {rules.showTransferType && (
           <div>
-            <label className="block text-sm font-semibold mb-2">Transfer Type</label>
+            <label className="block text-sm font-semibold mb-2">Transfer Type *</label>
             <select
               className="border px-4 py-2 w-full rounded"
               name="transferType"
@@ -247,16 +462,19 @@ export default function TransactionForm({ selection }) {
               onChange={handleChange}
             >
               <option value="">Select Type</option>
-              <option value="inwards">Inwards</option>
-              <option value="outwards">Outwards</option>
+              {rules.transferTypeOptions?.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
         )}
 
-        {/* PLATFORM (ONLINE) */}
-        {warehouseType === "online" && (
+        {/* Platform */}
+        {rules.showPlatform && (
           <div>
-            <label className="block text-sm font-semibold mb-2">Platform</label>
+            <label className="block text-sm font-semibold mb-2">Platform *</label>
             <select
               className="border px-4 py-2 w-full rounded"
               name="platform"
@@ -273,10 +491,10 @@ export default function TransactionForm({ selection }) {
         )}
 
         {/* Buttons */}
-        <div className="flex gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <button
             onClick={submit}
-            className="flex-1 bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700"
+            className="flex-1 bg-black text-white font-semibold py-2 rounded hover:bg-blue-700"
           >
             Save Entry
           </button>

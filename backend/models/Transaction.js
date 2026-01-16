@@ -4,14 +4,15 @@ const transactionSchema = new mongoose.Schema({
   domain: {
     type: String,
     enum: ["warehouse", "shop"],
-    required: true
+    required: true,
   },
   warehouseType: {
     type: String,
-    enum: ["domestic", "export", "online"],
+    enum: ["domestic", "export", "online", ""],
     required: function () {
       return this.domain === "warehouse";
-    }
+    },
+    default: "",
   },
   formType: {
     type: String,
@@ -23,9 +24,9 @@ const transactionSchema = new mongoose.Schema({
       "return",
       "sample",
       "sales",
-      "import"
+      "import",
     ],
-    required: true
+    required: true,
   },
   dno: String,
   type: String,
@@ -33,15 +34,52 @@ const transactionSchema = new mongoose.Schema({
   size: String,
   qty: { type: Number, required: true },
   date: { type: Date, required: true },
-  channel: String,
-  receiver: String,
-  supplier: String,
-  transferType: String,
-  platform: String,
+  channel: {
+    type: String,
+    enum: [
+      "retail",
+      "online",
+      "export",
+      "domestic",
+      "export return",
+      "domestic return",
+      "online return",
+    ],
+    trim: true,
+  },
+  receiver: { type: String, trim: true },
+  supplier: { type: String, trim: true },
+  transferType: {
+    type: String,
+    enum: ["inwards", "outwards", "received", "given"],
+  },
+  platform: {
+    type: String,
+    enum: ["amazon", "flipkart", "myntra", "ajio"],
+  },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
+transactionSchema.index({ domain: 1, warehouseType: 1, formType: 1, date: -1 });
+
+// Dynamic model factory so each domain/warehouse/formType gets its own collection.
+const modelCache = new Map();
+
+export const getTransactionModel = (domain, warehouseType, formType) => {
+  const safeWarehouse = warehouseType || "shop";
+  const name = `Txn_${domain}_${safeWarehouse}_${formType}`;
+  const collection = `txn_${domain}_${safeWarehouse}_${formType}`.toLowerCase();
+
+  if (modelCache.has(name)) return modelCache.get(name);
+  if (mongoose.models[name]) return mongoose.models[name];
+
+  const model = mongoose.model(name, transactionSchema, collection);
+  modelCache.set(name, model);
+  return model;
+};
+
+// Legacy default (not used by new controllers but kept for compatibility/testing)
 export default mongoose.model("Transaction", transactionSchema);

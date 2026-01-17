@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 
 // db connect
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.NEXT_PUBLIC_API_URL)
   .then(() => {
     console.log("MongoDB Connected (FREE Atlas)");
     app.listen(process.env.PORT || 5000, () => {

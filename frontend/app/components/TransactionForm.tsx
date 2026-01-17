@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { api } from "../../lib/api";
 import Link from "next/link";
+import axios from "axios";
 
 type Domain = "Shop" | "Warehouse";
 
@@ -260,11 +261,11 @@ export default function TransactionForm({ selection }: { selection: Selection })
       console.log("Saved:", res.data);
       alert("Saved successfully");
       setForm(initialForm);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("AXIOS ERROR:", err);
 
-      if (err.response) {
-        alert(err.response.data.error || "Backend error");
+      if (axios.isAxiosError(err)) {
+        alert(err.response?.data?.error || "Backend error");
       } else {
         alert("Backend not reachable");
       }

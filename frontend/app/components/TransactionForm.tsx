@@ -378,7 +378,7 @@ export default function TransactionForm({ selection }: { selection: Selection })
           <div>
             <label className="block text-sm font-semibold mb-2">Date *</label>
             <input
-              className="border px-4 py-2 w-full rounded"
+              className="border px-4 py-2 w-full text-black bg-white rounded"
               type="date"
               name="date"
               value={form.date}
@@ -413,14 +413,14 @@ export default function TransactionForm({ selection }: { selection: Selection })
             <label className="block text-sm font-semibold mb-2">{rules.receiverLabel || "Receiver"}</label>
             {rules.receiverOptions ? (
               <select
-                className="border px-4 py-2 w-full rounded"
+                className="border px-4 py-2 w-full rounded bg-black"
                 name="receiver"
                 value={form.receiver}
                 onChange={handleChange}
               >
-                <option value="">Select Receiver</option>
+                <option value="" >Select Receiver</option>
                 {rules.receiverOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
+                  <option key={opt.value} value={opt.value} className="hover:text-black">
                     {opt.label}
                   </option>
                 ))}
@@ -461,9 +461,9 @@ export default function TransactionForm({ selection }: { selection: Selection })
               value={form.transferType}
               onChange={handleChange}
             >
-              <option value="">Select Type</option>
+              <option value="" className="text-white">Select Type</option>
               {rules.transferTypeOptions?.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-black hover:text-black">
                   {opt.label}
                 </option>
               ))}

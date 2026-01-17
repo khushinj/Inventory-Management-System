@@ -6,7 +6,7 @@ type HeaderProps = {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   return (
-    <header className="bg-black text-white shadow p-4">
+    <header className="bg-black text-white shadow">
       <div className="flex items-center gap-3">
         <button
           className="md:hidden rounded border border-white/20 px-3 py-2 hover:bg-white/10"
@@ -15,7 +15,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         >
           ☰
         </button>
-        <h1 className="text-lg font-semibold">Inventory Management System</h1>
+        {/* <h1 className="text-lg font-semibold">Inventory Management System</h1> */}
       </div>
     </header>
   );

@@ -153,7 +153,7 @@ export default function OnlineDashboard() {
               placeholder="Search by DNO, Type, Color, or Form Type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="flex-1 px-4 py-2 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -182,14 +182,14 @@ export default function OnlineDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isCreating && (
                     <tr className="bg-orange-50">
-                      <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} placeholder="DNO" className="w-full px-2 py-1 border rounded" /></td>
-                      <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} placeholder="Type" className="w-full px-2 py-1 border rounded" /></td>
-                      <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} placeholder="Color" className="w-full px-2 py-1 border rounded" /></td>
-                      <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} placeholder="Size" className="w-full px-2 py-1 border rounded" /></td>
-                      <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} placeholder="Qty" className="w-full px-2 py-1 border rounded" /></td>
-                      <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                      <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4">
-                        <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded">
+                        <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded  text-black bg-white">
                           <option value="return">Return</option>
                           <option value="sales">Sales</option>
                           <option value="transfer">Transfer</option>
@@ -206,14 +206,14 @@ export default function OnlineDashboard() {
                     <tr key={entry._id}>
                       {editingEntry === entry._id ? (
                         <>
-                          <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
-                          <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
-                          <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
-                          <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
-                          <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
-                          <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4">
-                            <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded">
+                            <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded  text-black">
                               <option value="return">Return</option>
                               <option value="sales">Sales</option>
                               <option value="transfer">Transfer</option>

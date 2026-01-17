@@ -37,18 +37,51 @@ export const getOnlineEntries = async (req, res) => {
 
 export const updateOnlineEntry = async (req, res) => {
   const { id } = req.params;
-  const { formType } = req.body;
-
-  if (!allowedOnlineForms.includes(formType)) {
-    return res.status(400).json({ error: "Invalid online form type" });
-  }
 
   try {
-    const Model = getTransactionModel("warehouse", "online", formType);
-    const updated = await Model.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    }).lean();
+    let updated = null;
+
+    for (const form of allowedOnlineForms) {
+      const CurrentModel = getTransactionModel("warehouse", "online", form);
+      const existing = await CurrentModel.findById(id);
+      if (!existing) continue;
+
+      const newFormType = req.body.formType || existing.formType;
+      if (!allowedOnlineForms.includes(newFormType)) {
+        return res.status(400).json({ error: "Invalid online form type" });
+      }
+
+      if (newFormType === existing.formType) {
+        updated = await CurrentModel.findByIdAndUpdate(
+          id,
+          {
+            ...req.body,
+            formType: existing.formType,
+            domain: existing.domain,
+            warehouseType: existing.warehouseType,
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        ).lean();
+      } else {
+        const TargetModel = getTransactionModel("warehouse", "online", newFormType);
+        const payload = {
+          ...existing.toObject(),
+          ...req.body,
+          formType: newFormType,
+          domain: existing.domain,
+          warehouseType: existing.warehouseType,
+          _id: existing._id,
+        };
+
+        const created = await TargetModel.create(payload);
+        await CurrentModel.findByIdAndDelete(id);
+        updated = created?.toObject ? created.toObject() : created;
+      }
+      break;
+    }
 
     if (!updated) return res.status(404).json({ error: "Entry not found" });
     res.json(updated);

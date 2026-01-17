@@ -37,18 +37,51 @@ export const getExportEntries = async (req, res) => {
 
 export const updateExportEntry = async (req, res) => {
   const { id } = req.params;
-  const { formType } = req.body;
-
-  if (!allowedExportForms.includes(formType)) {
-    return res.status(400).json({ error: "Invalid export form type" });
-  }
 
   try {
-    const Model = getTransactionModel("warehouse", "export", formType);
-    const updated = await Model.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    }).lean();
+    let updated = null;
+
+    for (const form of allowedExportForms) {
+      const CurrentModel = getTransactionModel("warehouse", "export", form);
+      const existing = await CurrentModel.findById(id);
+      if (!existing) continue;
+
+      const newFormType = req.body.formType || existing.formType;
+      if (!allowedExportForms.includes(newFormType)) {
+        return res.status(400).json({ error: "Invalid export form type" });
+      }
+
+      if (newFormType === existing.formType) {
+        updated = await CurrentModel.findByIdAndUpdate(
+          id,
+          {
+            ...req.body,
+            formType: existing.formType,
+            domain: existing.domain,
+            warehouseType: existing.warehouseType,
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        ).lean();
+      } else {
+        const TargetModel = getTransactionModel("warehouse", "export", newFormType);
+        const payload = {
+          ...existing.toObject(),
+          ...req.body,
+          formType: newFormType,
+          domain: existing.domain,
+          warehouseType: existing.warehouseType,
+          _id: existing._id,
+        };
+
+        const created = await TargetModel.create(payload);
+        await CurrentModel.findByIdAndDelete(id);
+        updated = created?.toObject ? created.toObject() : created;
+      }
+      break;
+    }
 
     if (!updated) return res.status(404).json({ error: "Entry not found" });
     res.json(updated);

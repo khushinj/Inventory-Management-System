@@ -56,3 +56,22 @@ export const updateExportEntry = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+export const deleteExportEntry = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Try to delete from all possible export form types
+    let deleted = null;
+    for (const formType of allowedExportForms) {
+      const Model = getTransactionModel("warehouse", "export", formType);
+      deleted = await Model.findByIdAndDelete(id).lean();
+      if (deleted) break;
+    }
+
+    if (!deleted) return res.status(404).json({ error: "Entry not found" });
+    res.json({ message: "Entry deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};

@@ -1,0 +1,253 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { api } from "../../lib/api";
+
+export default function ShopDashboard() {
+  const [entries, setEntries] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterChannel, setFilterChannel] = useState("All Channels");
+  const [loading, setLoading] = useState(true);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    dno: "",
+    type: "",
+    color: "",
+    size: "",
+    qty: "",
+    date: "",
+    channel: "",
+  });
+
+  useEffect(() => {
+    fetchEntries();
+  }, []);
+
+  const fetchEntries = async () => {
+    try {
+      setLoading(true);
+      const shopRes = await api.get("/shop");
+      setEntries(shopRes.data);
+    } catch (err) {
+      console.error("Error fetching entries:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredEntries = entries.filter((entry) => {
+    const matchesSearch =
+      entry.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.color?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesChannel =
+      filterChannel === "All Channels" || entry.channel === filterChannel;
+
+    return matchesSearch && matchesChannel;
+  });
+
+  const handleEdit = (entry) => {
+    setEditingEntry(entry._id);
+    setEditForm({
+      dno: entry.dno,
+      type: entry.type,
+      color: entry.color,
+      size: entry.size,
+      qty: entry.qty,
+      date: entry.date?.split("T")[0] || "",
+      channel: entry.channel || "",
+    });
+  };
+
+  const handleUpdate = async (id) => {
+    try {
+      await api.patch(`/shop/${id}`, {
+        ...editForm,
+        formType: 'import',
+      });
+      setEditingEntry(null);
+      fetchEntries();
+    } catch (err) {
+      console.error("Error updating entry:", err);
+      alert("Failed to update entry");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this entry?")) {
+      try {
+        await api.delete(`/shop/${id}`);
+        fetchEntries();
+      } catch (err) {
+        console.error("Error deleting entry:", err);
+        alert("Failed to delete entry");
+      }
+    }
+  };
+
+  const handleCreate = () => {
+    setEditForm({
+      dno: "",
+      type: "",
+      color: "",
+      size: "",
+      qty: "",
+      date: new Date().toISOString().split("T")[0],
+      channel: "retail",
+    });
+    setIsCreating(true);
+  };
+
+  const handleSaveNew = async () => {
+    try {
+      await api.post("/shop", {
+        ...editForm,
+        formType: 'import',
+      });
+      setIsCreating(false);
+      fetchEntries();
+    } catch (err) {
+      console.error("Error creating entry:", err);
+      alert("Failed to create entry: " + (err.response?.data?.error || err.message));
+    }
+  };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+    setEditingEntry(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop Dashboard</h1>
+              <p className="text-gray-600">View and manage shop transactions</p>
+            </div>
+            <button
+              onClick={handleCreate}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              + New Transaction
+            </button>
+          </div>
+
+          <div className="flex gap-4 mt-6">
+            <input
+              type="text"
+              placeholder="Search by DNO, Type, or Color..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <select
+              value={filterChannel}
+              onChange={(e) => setFilterChannel(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option>All Channels</option>
+              <option>retail</option>
+              <option>online</option>
+            </select>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-gray-600">Loading transactions...</p>
+          </div>
+        ) : (
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">DNO</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Channel</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {isCreating && (
+                    <tr className="bg-blue-50">
+                      <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4">
+                        <select value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white">
+                          <option value="retail">Retail</option>
+                          <option value="online">Online</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button onClick={handleSaveNew} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                        <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                      </td>
+                    </tr>
+                  )}
+                  {filteredEntries.map((entry) => (
+                    <tr key={entry._id}>
+                      {editingEntry === entry._id ? (
+                        <>
+                          <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4">
+                            <select value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} className="w-full px-2 py-1 border rounded">
+                              <option value="retail">Retail</option>
+                              <option value="online">Online</option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button onClick={() => handleUpdate(entry._id)} className="text-green-600 hover:text-green-900 mr-3">Save</button>
+                            <button onClick={() => setEditingEntry(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.dno}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.type}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.color}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.channel}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <button onClick={() => handleEdit(entry)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                            <button onClick={() => handleDelete(entry._id)} className="text-red-600 hover:text-red-900">Delete</button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredEntries.length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                  No transactions found. <Link href="/shop/form" className="text-blue-600 hover:underline">Create your first transaction</Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

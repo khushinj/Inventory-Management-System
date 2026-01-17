@@ -64,3 +64,22 @@ export const updateDomesticEntry = async (req, res) => {
   }
 };
 
+export const deleteDomesticEntry = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Try to delete from all possible domestic form types
+    let deleted = null;
+    for (const formType of allowedDomesticForms) {
+      const Model = getTransactionModel("warehouse", "domestic", formType);
+      deleted = await Model.findByIdAndDelete(id).lean();
+      if (deleted) break;
+    }
+
+    if (!deleted) return res.status(404).json({ error: "Entry not found" });
+    res.json({ message: "Entry deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+

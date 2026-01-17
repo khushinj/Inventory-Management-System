@@ -40,8 +40,10 @@ export default function FormSelector({
 
   const warehouseForms = warehouseFormOptions[warehouseType] || [];
 
-  const handleWarehouseTypeChange = (nextWarehouse: string) => {
-    const allowedForms = warehouseFormOptions[nextWarehouse];
+  const handleWarehouseTypeChange = (
+    nextWarehouse: Selection["warehouseType"]
+  ) => {
+    const allowedForms = warehouseFormOptions[nextWarehouse] ?? [];
     const nextForm =
       allowedForms.find((opt) => opt.value === formType)?.value ||
       allowedForms[0]?.value ||

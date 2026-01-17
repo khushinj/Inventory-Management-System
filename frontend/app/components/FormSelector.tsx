@@ -102,7 +102,7 @@ export default function FormSelector({
             <select
               className="border px-4 py-2 bg-black w-full rounded"
               value={warehouseType}
-              onChange={(e) => handleWarehouseTypeChange(e.target.value)}
+              onChange={(e) => handleWarehouseTypeChange(e.target.value as Selection["warehouseType"])}
             >
               <option value="domestic">Domestic</option>
               <option value="export">Export</option>

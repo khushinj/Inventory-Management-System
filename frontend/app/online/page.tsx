@@ -46,7 +46,7 @@ export default function OnlineDashboard() {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const onlineRes = await api.get("/warehouse/online");
+      const onlineRes = await api.get("/api/warehouse/online");
       setEntries(onlineRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -94,7 +94,7 @@ export default function OnlineDashboard() {
         ...(editForm.platform && { platform: editForm.platform }),
       };
       
-      await api.patch(`/warehouse/online/${id}`, payload);
+      await api.patch(`/api/warehouse/online/${id}`, payload);
       setEditingEntry(null);
       fetchEntries();
     } catch (err: unknown) {
@@ -108,7 +108,7 @@ export default function OnlineDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
-        await api.delete(`/warehouse/online/${id}`);
+        await api.delete(`/api/warehouse/online/${id}`);
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting entry:", err);
@@ -146,7 +146,7 @@ export default function OnlineDashboard() {
         ...(editForm.platform && { platform: editForm.platform }),
       };
       
-      await api.post("/warehouse/online", payload);
+      await api.post("/api/warehouse/online", payload);
       setIsCreating(false);
       fetchEntries();
     } catch (err: unknown) {

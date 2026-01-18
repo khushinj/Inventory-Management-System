@@ -46,7 +46,7 @@ export default function ExportDashboard() {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const exportRes = await api.get("/warehouse/export");
+      const exportRes = await api.get("/api/warehouse/export");
       setEntries(exportRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -96,7 +96,7 @@ export default function ExportDashboard() {
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.patch(`/warehouse/export/${id}`, payload);
+      await api.patch(`/api/warehouse/export/${id}`, payload);
       setEditingEntry(null);
       fetchEntries();
     } catch (err: unknown) {
@@ -110,7 +110,7 @@ export default function ExportDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
-        await api.delete(`/warehouse/export/${id}`);
+        await api.delete(`/api/warehouse/export/${id}`);
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting entry:", err);
@@ -150,7 +150,7 @@ export default function ExportDashboard() {
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.post("/warehouse/export", payload);
+      await api.post("/api/warehouse/export", payload);
       setIsCreating(false);
       fetchEntries();
     } catch (err: unknown) {

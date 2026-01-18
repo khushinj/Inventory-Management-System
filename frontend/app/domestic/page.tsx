@@ -46,7 +46,7 @@ export default function DomesticDashboard() {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const domesticRes = await api.get("/warehouse/domestic");
+      const domesticRes = await api.get("/api/warehouse/domestic");
       setEntries(domesticRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -96,7 +96,7 @@ export default function DomesticDashboard() {
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.patch(`/warehouse/domestic/${id}`, payload);
+      await api.patch(`/api/warehouse/domestic/${id}`, payload);
       setEditingEntry(null);
       fetchEntries();
     } catch (err: unknown) {
@@ -110,7 +110,7 @@ export default function DomesticDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
-        await api.delete(`/warehouse/domestic/${id}`);
+        await api.delete(`/api/warehouse/domestic/${id}`);
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting entry:", err);
@@ -150,7 +150,7 @@ export default function DomesticDashboard() {
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.post("/warehouse/domestic", payload);
+      await api.post("/api/warehouse/domestic", payload);
       setIsCreating(false);
       fetchEntries();
     } catch (err: unknown) {

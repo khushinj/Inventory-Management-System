@@ -40,7 +40,7 @@ export default function ShopDashboard() {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const shopRes = await api.get("/shop");
+      const shopRes = await api.get("/api/shop");
       setEntries(shopRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -76,7 +76,7 @@ export default function ShopDashboard() {
 
   const handleUpdate = async (id: string) => {
     try {
-      await api.patch(`/shop/${id}`, {
+      await api.patch(`/api/shop/${id}`, {
         ...editForm,
         formType: 'import',
       });
@@ -91,7 +91,7 @@ export default function ShopDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
-        await api.delete(`/shop/${id}`);
+        await api.delete(`/api/shop/${id}`);
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting entry:", err);
@@ -115,7 +115,7 @@ export default function ShopDashboard() {
 
   const handleSaveNew = async () => {
     try {
-      await api.post("/shop", {
+      await api.post("/api/shop", {
         ...editForm,
         formType: 'import',
       });

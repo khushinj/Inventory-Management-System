@@ -66,7 +66,7 @@ export default function TransactionForm({ selection }: { selection: Selection })
   };
 
   const rules: FieldRules = useMemo(() => {
-    if (domain === "shop") {
+    if (domain === "Shop") {
       return {
         showChannel: true,
         channelOptions: [
@@ -243,7 +243,7 @@ export default function TransactionForm({ selection }: { selection: Selection })
       return;
     }
 
-    const endpoint = domain === "shop" ? "/shop" : `/warehouse/${warehouseType}`;
+    const endpoint = domain === "Shop" ? "/shop" : `/warehouse/${warehouseType}`;
 
     const cleanedForm = Object.fromEntries(
       Object.entries(form).map(([key, value]) => [key, value === "" ? undefined : value])
@@ -254,7 +254,7 @@ export default function TransactionForm({ selection }: { selection: Selection })
         ...cleanedForm,
         qty: Number(form.qty),
         domain,
-        warehouseType: domain === "warehouse" ? warehouseType : undefined,
+        warehouseType: domain === "Warehouse" ? warehouseType : undefined,
         formType,
       });
 
@@ -304,7 +304,7 @@ export default function TransactionForm({ selection }: { selection: Selection })
           </div>
         </div>
 
-        {domain === "warehouse" && (
+        {domain === "Warehouse" && (
           <div>
             <label className="block text-sm font-semibold mb-2">Warehouse Type</label>
             <input

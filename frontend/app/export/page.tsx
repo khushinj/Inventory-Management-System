@@ -68,11 +68,11 @@ export default function ExportDashboard() {
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
     setEditForm({
-      dno: entry.dno,
-      type: entry.type,
-      color: entry.color,
-      size: entry.size,
-      qty: entry.qty,
+      dno: entry.dno || "",
+      type: entry.type || "",
+      color: entry.color || "",
+      size: entry.size || "",
+      qty: entry.qty?.toString() || "",
       date: entry.date?.split("T")[0] || "",
       formType: entry.formType || "",
       receiver: entry.receiver || "",

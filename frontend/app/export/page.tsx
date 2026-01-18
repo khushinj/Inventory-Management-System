@@ -4,8 +4,24 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { api } from "../../lib/api";
 
+type Entry = {
+  _id: string;
+  dno?: string;
+  type?: string;
+  color?: string;
+  size?: string;
+  qty: number;
+  date?: string;
+  formType?: string;
+  receiver?: string;
+  supplier?: string;
+  transferType?: string;
+  domain: string;
+  warehouseType?: string;
+};
+
 export default function ExportDashboard() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState<Entry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState(null);

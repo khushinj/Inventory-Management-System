@@ -4,8 +4,20 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { api } from "../../lib/api";
 
+type Entry = {
+  _id: string;
+  dno?: string;
+  type?: string;
+  color?: string;
+  size?: string;
+  qty: number;
+  date?: string;
+  channel?: string;
+  domain: string;
+};
+
 export default function ShopDashboard() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState<Entry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterChannel, setFilterChannel] = useState("All Channels");
   const [loading, setLoading] = useState(true);

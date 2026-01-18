@@ -42,7 +42,7 @@ export default function ShopDashboard() {
       setLoading(true);
       const shopRes = await api.get("/shop");
       setEntries(shopRes.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error fetching entries:", err);
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export default function ShopDashboard() {
       });
       setEditingEntry(null);
       fetchEntries();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error updating entry:", err);
       alert("Failed to update entry");
     }
@@ -93,7 +93,7 @@ export default function ShopDashboard() {
       try {
         await api.delete(`/shop/${id}`);
         fetchEntries();
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Error deleting entry:", err);
         alert("Failed to delete entry");
       }
@@ -121,9 +121,11 @@ export default function ShopDashboard() {
       });
       setIsCreating(false);
       fetchEntries();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error creating entry:", err);
-      alert("Failed to create entry: " + (err.response?.data?.error || err.message));
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create entry: " + (axiosError || errorMsg));
     }
   };
 

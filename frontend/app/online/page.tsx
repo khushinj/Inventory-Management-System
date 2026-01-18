@@ -16,6 +16,7 @@ type Entry = {
   receiver?: string;
   supplier?: string;
   transferType?: string;
+  platform?: string;
   domain: string;
   warehouseType?: string;
 };
@@ -47,7 +48,7 @@ export default function OnlineDashboard() {
       setLoading(true);
       const onlineRes = await api.get("/warehouse/online");
       setEntries(onlineRes.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error fetching entries:", err);
     } finally {
       setLoading(false);
@@ -82,19 +83,25 @@ export default function OnlineDashboard() {
   const handleUpdate = async (id: string) => {
     try {
       const payload = {
-        ...editForm,
+        dno: editForm.dno,
+        type: editForm.type,
+        color: editForm.color,
+        size: editForm.size,
+        qty: Number(editForm.qty),
+        date: editForm.date,
         formType: editForm.formType || "return",
+        ...(editForm.transferType && { transferType: editForm.transferType }),
+        ...(editForm.platform && { platform: editForm.platform }),
       };
-      // Remove empty optional fields to avoid validation errors
-      if (!payload.transferType) delete payload.transferType;
-      if (!payload.platform) delete payload.platform;
       
       await api.patch(`/warehouse/online/${id}`, payload);
       setEditingEntry(null);
       fetchEntries();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error updating entry:", err);
-      alert("Failed to update entry: " + (err.response?.data?.error || err.message));
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to update entry: " + (axiosError || errorMsg));
     }
   };
 
@@ -103,7 +110,7 @@ export default function OnlineDashboard() {
       try {
         await api.delete(`/warehouse/online/${id}`);
         fetchEntries();
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Error deleting entry:", err);
         alert("Failed to delete entry");
       }
@@ -127,17 +134,26 @@ export default function OnlineDashboard() {
 
   const handleSaveNew = async () => {
     try {
-      const payload = { ...editForm };
-      // Remove empty optional fields to avoid validation errors
-      if (!payload.transferType) delete payload.transferType;
-      if (!payload.platform) delete payload.platform;
+      const payload = {
+        dno: editForm.dno,
+        type: editForm.type,
+        color: editForm.color,
+        size: editForm.size,
+        qty: Number(editForm.qty),
+        date: editForm.date,
+        formType: editForm.formType || "sales",
+        ...(editForm.transferType && { transferType: editForm.transferType }),
+        ...(editForm.platform && { platform: editForm.platform }),
+      };
       
       await api.post("/warehouse/online", payload);
       setIsCreating(false);
       fetchEntries();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error creating entry:", err);
-      alert("Failed to create entry: " + (err.response?.data?.error || err.message));
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create entry: " + (axiosError || errorMsg));
     }
   };
 

@@ -48,7 +48,7 @@ export default function DomesticDashboard() {
       setLoading(true);
       const domesticRes = await api.get("/warehouse/domestic");
       setEntries(domesticRes.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error fetching entries:", err);
     } finally {
       setLoading(false);
@@ -84,20 +84,26 @@ export default function DomesticDashboard() {
   const handleUpdate = async (id: string) => {
     try {
       const payload = {
-        ...editForm,
+        dno: editForm.dno,
+        type: editForm.type,
+        color: editForm.color,
+        size: editForm.size,
+        qty: Number(editForm.qty),
+        date: editForm.date,
         formType: editForm.formType || "dispatch",
+        ...(editForm.transferType && { transferType: editForm.transferType }),
+        ...(editForm.receiver && { receiver: editForm.receiver }),
+        ...(editForm.supplier && { supplier: editForm.supplier }),
       };
-      // Remove empty optional fields to avoid validation errors
-      if (!payload.transferType) delete payload.transferType;
-      if (!payload.receiver) delete payload.receiver;
-      if (!payload.supplier) delete payload.supplier;
       
       await api.patch(`/warehouse/domestic/${id}`, payload);
       setEditingEntry(null);
       fetchEntries();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error updating entry:", err);
-      alert("Failed to update entry: " + (err.response?.data?.error || err.message));
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to update entry: " + (axiosError || errorMsg));
     }
   };
 
@@ -106,7 +112,7 @@ export default function DomesticDashboard() {
       try {
         await api.delete(`/warehouse/domestic/${id}`);
         fetchEntries();
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Error deleting entry:", err);
         alert("Failed to delete entry");
       }
@@ -131,18 +137,27 @@ export default function DomesticDashboard() {
 
   const handleSaveNew = async () => {
     try {
-      const payload = { ...editForm };
-      // Remove empty optional fields to avoid validation errors
-      if (!payload.transferType) delete payload.transferType;
-      if (!payload.receiver) delete payload.receiver;
-      if (!payload.supplier) delete payload.supplier;
+      const payload = {
+        dno: editForm.dno,
+        type: editForm.type,
+        color: editForm.color,
+        size: editForm.size,
+        qty: Number(editForm.qty),
+        date: editForm.date,
+        formType: editForm.formType || "dispatch",
+        ...(editForm.transferType && { transferType: editForm.transferType }),
+        ...(editForm.receiver && { receiver: editForm.receiver }),
+        ...(editForm.supplier && { supplier: editForm.supplier }),
+      };
       
       await api.post("/warehouse/domestic", payload);
       setIsCreating(false);
       fetchEntries();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error creating entry:", err);
-      alert("Failed to create entry: " + (err.response?.data?.error || err.message));
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create entry: " + (axiosError || errorMsg));
     }
   };
 

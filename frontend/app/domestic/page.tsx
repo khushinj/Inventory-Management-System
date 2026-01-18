@@ -65,7 +65,7 @@ export default function DomesticDashboard() {
     return matchesSearch;
   });
 
-  const handleEdit = (entry) => {
+  const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
     setEditForm({
       dno: entry.dno,
@@ -81,7 +81,7 @@ export default function DomesticDashboard() {
     });
   };
 
-  const handleUpdate = async (id) => {
+  const handleUpdate = async (id: string) => {
     try {
       const payload = {
         ...editForm,
@@ -101,7 +101,7 @@ export default function DomesticDashboard() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
         await api.delete(`/warehouse/domestic/${id}`);

@@ -61,7 +61,7 @@ export default function ShopDashboard() {
     return matchesSearch && matchesChannel;
   });
 
-  const handleEdit = (entry) => {
+  const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
     setEditForm({
       dno: entry.dno,
@@ -74,7 +74,7 @@ export default function ShopDashboard() {
     });
   };
 
-  const handleUpdate = async (id) => {
+  const handleUpdate = async (id: string) => {
     try {
       await api.patch(`/shop/${id}`, {
         ...editForm,
@@ -88,7 +88,7 @@ export default function ShopDashboard() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
         await api.delete(`/shop/${id}`);

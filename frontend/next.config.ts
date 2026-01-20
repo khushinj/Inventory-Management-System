@@ -2,12 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "http://localhost:5000/api/:path*",
-      },
-    ];
+    // Only apply the local proxy in development when no explicit API URL is set.
+    if (!process.env.NEXT_PUBLIC_API_URL && process.env.NODE_ENV === "development") {
+      return [
+        {
+          source: "/api/:path*",
+          destination: "http://localhost:5000/api/:path*",
+        },
+      ];
+    }
+    return [];
   },
 };
 

@@ -2,11 +2,11 @@ import axios from "axios";
 
 /**
  * Axios instance for backend communication.
- * Uses Next.js API rewrites proxy to route to backend.
- * In production or when NEXT_PUBLIC_API_URL is set, uses that URL.
- * Otherwise uses relative /api path which Next.js will proxy to localhost:5000/api
+ * Uses NEXT_PUBLIC_API_URL when provided; falls back to relative /api for dev proxy.
+ * Ensures the base URL always targets the backend /api path to avoid 404s in prod.
  */
-const baseURL = process.env.NEXT_PUBLIC_API_URL || "/api";
+const rawBase = process.env.NEXT_PUBLIC_API_URL || "/api";
+const baseURL = rawBase.endsWith("/api") ? rawBase : `${rawBase.replace(/\/$/, "")}/api`;
 
 console.log("API Base URL:", baseURL);
 

@@ -148,7 +148,10 @@ export default function ShopDashboard() {
     setEditingEntry(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement>) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>,
+    nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement | null>
+  ) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       nextRef?.current?.focus();

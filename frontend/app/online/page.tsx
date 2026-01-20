@@ -200,7 +200,12 @@ export default function OnlineDashboard() {
     setEditingEntry(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement>, isLastField?: boolean, entryId?: string) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>,
+    nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement | null>,
+    isLastField?: boolean,
+    entryId?: string
+  ) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       if (isLastField) {

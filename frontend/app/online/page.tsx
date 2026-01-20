@@ -39,6 +39,8 @@ export default function OnlineDashboard() {
     formType: "",
     platform: "",
     transferType: "",
+    receiver: "",
+    supplier: "",
   });
 
   const dnoRef = useRef<HTMLInputElement>(null);
@@ -47,6 +49,22 @@ export default function OnlineDashboard() {
   const sizeRef = useRef<HTMLInputElement>(null);
   const qtyRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
+  const additionalFieldRef = useRef<HTMLInputElement>(null);
+
+  const [platformOptions] = useState<string[]>([
+    "amazon",
+    "flipkart",
+    "myntra",
+    "ajio",
+  ]);
+  const [transferOptions] = useState<string[]>([
+    "inwards",
+    "outwards",
+  ]);
+  const [filteredPlatformOptions, setFilteredPlatformOptions] = useState<string[]>(platformOptions);
+  const [filteredTransferOptions, setFilteredTransferOptions] = useState<string[]>(transferOptions);
+  const [showPlatformDropdown, setShowPlatformDropdown] = useState(false);
+  const [showTransferDropdown, setShowTransferDropdown] = useState(false);
 
   useEffect(() => {
     fetchEntries();
@@ -89,6 +107,8 @@ export default function OnlineDashboard() {
       formType: entry.formType || "",
       platform: entry.platform || "",
       transferType: entry.transferType || "",
+      receiver: entry.receiver || "",
+      supplier: entry.supplier || "",
     });
   };
 
@@ -104,6 +124,8 @@ export default function OnlineDashboard() {
         formType: editForm.formType || "return",
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.platform && { platform: editForm.platform }),
+        ...(editForm.receiver && { receiver: editForm.receiver }),
+        ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
       await api.patch(`/warehouse/online/${id}`, payload);
@@ -140,6 +162,8 @@ export default function OnlineDashboard() {
       formType: selectedFormType,
       platform: "",
       transferType: "",
+      receiver: "",
+      supplier: "",
     });
     setIsCreating(true);
   };
@@ -156,6 +180,8 @@ export default function OnlineDashboard() {
         formType: selectedFormType,
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.platform && { platform: editForm.platform }),
+        ...(editForm.receiver && { receiver: editForm.receiver }),
+        ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
       await api.post("/warehouse/online", payload);
@@ -174,11 +200,43 @@ export default function OnlineDashboard() {
     setEditingEntry(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement>, isLastField?: boolean, entryId?: string) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      nextRef?.current?.focus();
+      if (isLastField) {
+        handleSaveAndContinue(entryId);
+      } else {
+        nextRef?.current?.focus();
+      }
     }
+  };
+
+  const handlePlatformInputChange = (value: string) => {
+    setEditForm({...editForm, platform: value});
+    const filtered = platformOptions.filter(option => 
+      option.toLowerCase().includes(value.toLowerCase())
+    ).sort((a, b) => {
+      const aStarts = a.toLowerCase().startsWith(value.toLowerCase());
+      const bStarts = b.toLowerCase().startsWith(value.toLowerCase());
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      return 0;
+    });
+    setFilteredPlatformOptions(filtered);
+  };
+
+  const handleTransferInputChange = (value: string) => {
+    setEditForm({...editForm, transferType: value});
+    const filtered = transferOptions.filter(option => 
+      option.toLowerCase().includes(value.toLowerCase())
+    ).sort((a, b) => {
+      const aStarts = a.toLowerCase().startsWith(value.toLowerCase());
+      const bStarts = b.toLowerCase().startsWith(value.toLowerCase());
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      return 0;
+    });
+    setFilteredTransferOptions(filtered);
   };
 
   const handleSaveAndContinue = async (entryId?: string) => {
@@ -193,6 +251,8 @@ export default function OnlineDashboard() {
         formType: entryId ? editForm.formType || "return" : selectedFormType,
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.platform && { platform: editForm.platform }),
+        ...(editForm.receiver && { receiver: editForm.receiver }),
+        ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
       if (entryId) {
@@ -213,6 +273,8 @@ export default function OnlineDashboard() {
         formType: selectedFormType,
         platform: "",
         transferType: "",
+        receiver: "",
+        supplier: "",
       });
       setIsCreating(true);
       fetchEntries();
@@ -375,6 +437,18 @@ export default function OnlineDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    {selectedFormType === "purchase" && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                    )}
+                    {selectedFormType === "transfer" && (
+                      <>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receiver</th>
+                      </>
+                    )}
+                    {(selectedFormType === "return" || selectedFormType === "sales") && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>
+                    )}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
@@ -386,7 +460,84 @@ export default function OnlineDashboard() {
                       <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(); } }} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
+                        if (selectedFormType === "purchase" || selectedFormType === "transfer" || selectedFormType === "return" || selectedFormType === "sales") {
+                          handleKeyDown(e, additionalFieldRef);
+                        } else {
+                          handleKeyDown(e, undefined, true);
+                        }
+                      }} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      {selectedFormType === "purchase" && (
+                        <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true)} placeholder="Supplier" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      )}
+                      {selectedFormType === "transfer" && (
+                        <>
+                          <td className="px-6 py-4">
+                            <div className="relative">
+                              <input
+                                ref={additionalFieldRef}
+                                type="text"
+                                value={editForm.transferType}
+                                onChange={(e) => handleTransferInputChange(e.target.value)}
+                                onFocus={() => setShowTransferDropdown(true)}
+                                onBlur={() => setTimeout(() => setShowTransferDropdown(false), 200)}
+                                placeholder="Transfer Type"
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
+                              />
+                              {showTransferDropdown && filteredTransferOptions.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                  {filteredTransferOptions.map((option, idx) => (
+                                    <div
+                                      key={idx}
+                                      onClick={() => {
+                                        setEditForm({...editForm, transferType: option});
+                                        setShowTransferDropdown(false);
+                                      }}
+                                      className="px-3 py-2 hover:bg-orange-50 cursor-pointer text-black"
+                                    >
+                                      {option}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true)} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                        </>
+                      )}
+                      {(selectedFormType === "return" || selectedFormType === "sales") && (
+                        <td className="px-6 py-4">
+                          <div className="relative">
+                            <input
+                              ref={additionalFieldRef}
+                              type="text"
+                              value={editForm.platform}
+                              onChange={(e) => handlePlatformInputChange(e.target.value)}
+                              onFocus={() => setShowPlatformDropdown(true)}
+                              onBlur={() => setTimeout(() => setShowPlatformDropdown(false), 200)}
+                              onKeyDown={(e) => handleKeyDown(e, undefined, true)}
+                              placeholder="Platform"
+                              className="w-full px-2 py-1 border rounded text-black bg-white"
+                            />
+                            {showPlatformDropdown && filteredPlatformOptions.length > 0 && (
+                              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                {filteredPlatformOptions.map((option, idx) => (
+                                  <div
+                                    key={idx}
+                                    onClick={() => {
+                                      setEditForm({...editForm, platform: option});
+                                      setShowPlatformDropdown(false);
+                                    }}
+                                    className="px-3 py-2 hover:bg-orange-50 cursor-pointer text-black"
+                                  >
+                                    {option}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      )}
                       <td className="px-6 py-4">
                         <button onClick={handleSaveNew} className="text-orange-600 hover:text-orange-900 mr-3 font-medium">Save</button>
                         <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
@@ -402,7 +553,85 @@ export default function OnlineDashboard() {
                           <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(entry._id); } }} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
+                            const formType = editForm.formType || "return";
+                            if (formType === "purchase" || formType === "transfer" || formType === "return" || formType === "sales") {
+                              handleKeyDown(e, additionalFieldRef);
+                            } else {
+                              handleKeyDown(e, undefined, true, entry._id);
+                            }
+                          }} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          {editForm.formType === "purchase" && (
+                            <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)} placeholder="Supplier" className="w-full px-2 py-1 border rounded text-black" /></td>
+                          )}
+                          {editForm.formType === "transfer" && (
+                            <>
+                              <td className="px-6 py-4">
+                                <div className="relative">
+                                  <input
+                                    ref={additionalFieldRef}
+                                    type="text"
+                                    value={editForm.transferType}
+                                    onChange={(e) => handleTransferInputChange(e.target.value)}
+                                    onFocus={() => setShowTransferDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowTransferDropdown(false), 200)}
+                                    placeholder="Transfer Type"
+                                    className="w-full px-2 py-1 border rounded text-black"
+                                  />
+                                  {showTransferDropdown && filteredTransferOptions.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                      {filteredTransferOptions.map((option, idx) => (
+                                        <div
+                                          key={idx}
+                                          onClick={() => {
+                                            setEditForm({...editForm, transferType: option});
+                                            setShowTransferDropdown(false);
+                                          }}
+                                          className="px-3 py-2 hover:bg-orange-50 cursor-pointer text-black"
+                                        >
+                                          {option}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4"><input type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black" /></td>
+                            </>
+                          )}
+                          {(editForm.formType === "return" || editForm.formType === "sales") && (
+                            <td className="px-6 py-4">
+                              <div className="relative">
+                                <input
+                                  ref={additionalFieldRef}
+                                  type="text"
+                                  value={editForm.platform}
+                                  onChange={(e) => handlePlatformInputChange(e.target.value)}
+                                  onFocus={() => setShowPlatformDropdown(true)}
+                                  onBlur={() => setTimeout(() => setShowPlatformDropdown(false), 200)}
+                                  onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)}
+                                  placeholder="Platform"
+                                  className="w-full px-2 py-1 border rounded text-black"
+                                />
+                                {showPlatformDropdown && filteredPlatformOptions.length > 0 && (
+                                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                    {filteredPlatformOptions.map((option, idx) => (
+                                      <div
+                                        key={idx}
+                                        onClick={() => {
+                                          setEditForm({...editForm, platform: option});
+                                          setShowPlatformDropdown(false);
+                                        }}
+                                        className="px-3 py-2 hover:bg-orange-50 cursor-pointer text-black"
+                                      >
+                                        {option}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          )}
                           <td className="px-6 py-4">
                             <button onClick={() => handleUpdate(entry._id)} className="text-green-600 hover:text-green-900 mr-3">Save</button>
                             <button onClick={() => setEditingEntry(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
@@ -416,6 +645,18 @@ export default function OnlineDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
+                          {entry.formType === "purchase" && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.supplier}</td>
+                          )}
+                          {entry.formType === "transfer" && (
+                            <>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.transferType}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.receiver}</td>
+                            </>
+                          )}
+                          {(entry.formType === "return" || entry.formType === "sales") && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.platform}</td>
+                          )}
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <button onClick={() => handleEdit(entry)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
                             <button onClick={() => handleDelete(entry._id)} className="text-red-600 hover:text-red-900">Delete</button>

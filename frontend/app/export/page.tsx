@@ -17,6 +17,7 @@ type Entry = {
   receiver?: string;
   supplier?: string;
   transferType?: string;
+  channel?: string;
   domain: string;
   warehouseType?: string;
 };
@@ -39,6 +40,7 @@ export default function ExportDashboard() {
     receiver: "",
     supplier: "",
     transferType: "",
+    channel: "",
   });
 
   const dnoRef = useRef<HTMLInputElement>(null);
@@ -47,6 +49,20 @@ export default function ExportDashboard() {
   const sizeRef = useRef<HTMLInputElement>(null);
   const qtyRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
+  const additionalFieldRef = useRef<HTMLInputElement>(null);
+
+  const [channelOptions] = useState<string[]>([
+    "export",
+    "online",
+  ]);
+  const [transferOptions] = useState<string[]>([
+    "inwards",
+    "outwards",
+  ]);
+  const [filteredChannelOptions, setFilteredChannelOptions] = useState<string[]>(channelOptions);
+  const [filteredTransferOptions, setFilteredTransferOptions] = useState<string[]>(transferOptions);
+  const [showChannelDropdown, setShowChannelDropdown] = useState(false);
+  const [showTransferDropdown, setShowTransferDropdown] = useState(false);
 
   useEffect(() => {
     fetchEntries();
@@ -90,6 +106,7 @@ export default function ExportDashboard() {
       receiver: entry.receiver || "",
       supplier: entry.supplier || "",
       transferType: entry.transferType || "",
+      channel: entry.channel || "",
     });
   };
 
@@ -106,6 +123,7 @@ export default function ExportDashboard() {
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.receiver && { receiver: editForm.receiver }),
         ...(editForm.supplier && { supplier: editForm.supplier }),
+        ...(editForm.channel && { channel: editForm.channel }),
       };
       
       await api.patch(`/warehouse/export/${id}`, payload);
@@ -143,6 +161,7 @@ export default function ExportDashboard() {
       receiver: "",
       supplier: "",
       transferType: "",
+      channel: "",
     });
     setIsCreating(true);
   };
@@ -160,6 +179,7 @@ export default function ExportDashboard() {
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.receiver && { receiver: editForm.receiver }),
         ...(editForm.supplier && { supplier: editForm.supplier }),
+        ...(editForm.channel && { channel: editForm.channel }),
       };
       
       await api.post("/warehouse/export", payload);
@@ -178,11 +198,43 @@ export default function ExportDashboard() {
     setEditingEntry(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement>, isLastField?: boolean, entryId?: string) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      nextRef?.current?.focus();
+      if (isLastField) {
+        handleSaveAndContinue(entryId);
+      } else {
+        nextRef?.current?.focus();
+      }
     }
+  };
+
+  const handleChannelInputChange = (value: string) => {
+    setEditForm({...editForm, channel: value});
+    const filtered = channelOptions.filter(option => 
+      option.toLowerCase().includes(value.toLowerCase())
+    ).sort((a, b) => {
+      const aStarts = a.toLowerCase().startsWith(value.toLowerCase());
+      const bStarts = b.toLowerCase().startsWith(value.toLowerCase());
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      return 0;
+    });
+    setFilteredChannelOptions(filtered);
+  };
+
+  const handleTransferInputChange = (value: string) => {
+    setEditForm({...editForm, transferType: value});
+    const filtered = transferOptions.filter(option => 
+      option.toLowerCase().includes(value.toLowerCase())
+    ).sort((a, b) => {
+      const aStarts = a.toLowerCase().startsWith(value.toLowerCase());
+      const bStarts = b.toLowerCase().startsWith(value.toLowerCase());
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      return 0;
+    });
+    setFilteredTransferOptions(filtered);
   };
 
   const handleSaveAndContinue = async (entryId?: string) => {
@@ -198,6 +250,7 @@ export default function ExportDashboard() {
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.receiver && { receiver: editForm.receiver }),
         ...(editForm.supplier && { supplier: editForm.supplier }),
+        ...(editForm.channel && { channel: editForm.channel }),
       };
       
       if (entryId) {
@@ -219,6 +272,7 @@ export default function ExportDashboard() {
         receiver: "",
         supplier: "",
         transferType: "",
+        channel: "",
       });
       setIsCreating(true);
       fetchEntries();
@@ -383,6 +437,19 @@ export default function ExportDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    {selectedFormType === "dispatch" && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receiver</th>
+                    )}
+                    {selectedFormType === "purchase" && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                    )}
+                    {selectedFormType === "transfer" && (
+                      <>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receiver</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Channel</th>
+                      </>
+                    )}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
@@ -394,7 +461,84 @@ export default function ExportDashboard() {
                       <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(); } }} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
+                        if (selectedFormType === "dispatch" || selectedFormType === "purchase" || selectedFormType === "transfer") {
+                          handleKeyDown(e, additionalFieldRef);
+                        } else {
+                          handleKeyDown(e, undefined, true);
+                        }
+                      }} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      {selectedFormType === "dispatch" && (
+                        <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true)} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      )}
+                      {selectedFormType === "purchase" && (
+                        <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true)} placeholder="Supplier" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      )}
+                      {selectedFormType === "transfer" && (
+                        <>
+                          <td className="px-6 py-4">
+                            <div className="relative">
+                              <input
+                                ref={additionalFieldRef}
+                                type="text"
+                                value={editForm.transferType}
+                                onChange={(e) => handleTransferInputChange(e.target.value)}
+                                onFocus={() => setShowTransferDropdown(true)}
+                                onBlur={() => setTimeout(() => setShowTransferDropdown(false), 200)}
+                                placeholder="Transfer Type"
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
+                              />
+                              {showTransferDropdown && filteredTransferOptions.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                  {filteredTransferOptions.map((option, idx) => (
+                                    <div
+                                      key={idx}
+                                      onClick={() => {
+                                        setEditForm({...editForm, transferType: option});
+                                        setShowTransferDropdown(false);
+                                      }}
+                                      className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-black"
+                                    >
+                                      {option}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4"><input type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4">
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={editForm.channel}
+                                onChange={(e) => handleChannelInputChange(e.target.value)}
+                                onFocus={() => setShowChannelDropdown(true)}
+                                onBlur={() => setTimeout(() => setShowChannelDropdown(false), 200)}
+                                onKeyDown={(e) => handleKeyDown(e, undefined, true)}
+                                placeholder="Channel"
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
+                              />
+                              {showChannelDropdown && filteredChannelOptions.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                  {filteredChannelOptions.map((option, idx) => (
+                                    <div
+                                      key={idx}
+                                      onClick={() => {
+                                        setEditForm({...editForm, channel: option});
+                                        setShowChannelDropdown(false);
+                                      }}
+                                      className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-black"
+                                    >
+                                      {option}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </>
+                      )}
                       <td className="px-6 py-4">
                         <button onClick={handleSaveNew} className="text-purple-600 hover:text-purple-900 mr-3 font-medium">Save</button>
                         <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
@@ -410,7 +554,85 @@ export default function ExportDashboard() {
                           <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                           <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                           <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                          <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(entry._id); } }} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
+                            const formType = editForm.formType || "dispatch";
+                            if (formType === "dispatch" || formType === "purchase" || formType === "transfer") {
+                              handleKeyDown(e, additionalFieldRef);
+                            } else {
+                              handleKeyDown(e, undefined, true, entry._id);
+                            }
+                          }} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          {editForm.formType === "dispatch" && (
+                            <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          )}
+                          {editForm.formType === "purchase" && (
+                            <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)} placeholder="Supplier" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          )}
+                          {editForm.formType === "transfer" && (
+                            <>
+                              <td className="px-6 py-4">
+                                <div className="relative">
+                                  <input
+                                    ref={additionalFieldRef}
+                                    type="text"
+                                    value={editForm.transferType}
+                                    onChange={(e) => handleTransferInputChange(e.target.value)}
+                                    onFocus={() => setShowTransferDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowTransferDropdown(false), 200)}
+                                    placeholder="Transfer Type"
+                                    className="w-full px-2 py-1 border rounded text-black bg-white"
+                                  />
+                                  {showTransferDropdown && filteredTransferOptions.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                      {filteredTransferOptions.map((option, idx) => (
+                                        <div
+                                          key={idx}
+                                          onClick={() => {
+                                            setEditForm({...editForm, transferType: option});
+                                            setShowTransferDropdown(false);
+                                          }}
+                                          className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-black"
+                                        >
+                                          {option}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4"><input type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                              <td className="px-6 py-4">
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    value={editForm.channel}
+                                    onChange={(e) => handleChannelInputChange(e.target.value)}
+                                    onFocus={() => setShowChannelDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowChannelDropdown(false), 200)}
+                                    onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)}
+                                    placeholder="Channel"
+                                    className="w-full px-2 py-1 border rounded text-black bg-white"
+                                  />
+                                  {showChannelDropdown && filteredChannelOptions.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
+                                      {filteredChannelOptions.map((option, idx) => (
+                                        <div
+                                          key={idx}
+                                          onClick={() => {
+                                            setEditForm({...editForm, channel: option});
+                                            setShowChannelDropdown(false);
+                                          }}
+                                          className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-black"
+                                        >
+                                          {option}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </>
+                          )}
                           <td className="px-6 py-4">
                             <button onClick={() => handleUpdate(entry._id)} className="text-green-600 hover:text-green-900 mr-3">Save</button>
                             <button onClick={() => setEditingEntry(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
@@ -424,6 +646,19 @@ export default function ExportDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
+                          {entry.formType === "dispatch" && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.receiver}</td>
+                          )}
+                          {entry.formType === "purchase" && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.supplier}</td>
+                          )}
+                          {entry.formType === "transfer" && (
+                            <>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.transferType}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.receiver}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.channel}</td>
+                            </>
+                          )}
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <button onClick={() => handleEdit(entry)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
                             <button onClick={() => handleDelete(entry._id)} className="text-red-600 hover:text-red-900">Delete</button>

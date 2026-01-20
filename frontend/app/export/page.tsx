@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { api } from "../../lib/api";
 
@@ -39,6 +39,13 @@ export default function ExportDashboard() {
     supplier: "",
     transferType: "",
   });
+
+  const dnoRef = useRef<HTMLInputElement>(null);
+  const typeRef = useRef<HTMLInputElement>(null);
+  const colorRef = useRef<HTMLInputElement>(null);
+  const sizeRef = useRef<HTMLInputElement>(null);
+  const qtyRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchEntries();
@@ -170,6 +177,13 @@ export default function ExportDashboard() {
     setEditingEntry(null);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      nextRef?.current?.focus();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -249,12 +263,12 @@ export default function ExportDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isCreating && (
                     <tr className="bg-purple-50">
-                      <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef)} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4">
                         <button onClick={handleSaveNew} className="text-purple-600 hover:text-purple-900 mr-3 font-medium">Save</button>
                         <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
@@ -265,12 +279,12 @@ export default function ExportDashboard() {
                     <tr key={entry._id}>
                       {editingEntry === entry._id ? (
                         <>
-                          <td className="px-6 py-4"><input type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                          <td className="px-6 py-4"><input type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                          <td className="px-6 py-4"><input type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                          <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                          <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                          <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                          <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                           <td className="px-6 py-4">
                             <button onClick={() => handleUpdate(entry._id)} className="text-green-600 hover:text-green-900 mr-3">Save</button>
                             <button onClick={() => setEditingEntry(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>

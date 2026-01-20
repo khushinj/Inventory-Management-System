@@ -26,6 +26,7 @@ export default function DomesticDashboard() {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedFormType, setSelectedFormType] = useState<string>("dispatch");
   const [editForm, setEditForm] = useState({
     dno: "",
     type: "",
@@ -46,7 +47,7 @@ export default function DomesticDashboard() {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const domesticRes = await api.get("/api/warehouse/domestic");
+      const domesticRes = await api.get("/warehouse/domestic");
       setEntries(domesticRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -62,7 +63,10 @@ export default function DomesticDashboard() {
       entry.color?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       entry.formType?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch;
+    const matchesFormType =
+      entry.formType === selectedFormType;
+
+    return matchesSearch && matchesFormType;
   });
 
   const handleEdit = (entry: Entry) => {
@@ -96,7 +100,7 @@ export default function DomesticDashboard() {
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.patch(`/api/warehouse/domestic/${id}`, payload);
+      await api.patch(`/warehouse/domestic/${id}`, payload);
       setEditingEntry(null);
       fetchEntries();
     } catch (err: unknown) {
@@ -110,7 +114,7 @@ export default function DomesticDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
-        await api.delete(`/api/warehouse/domestic/${id}`);
+        await api.delete(`/warehouse/domestic/${id}`);
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting entry:", err);
@@ -127,7 +131,7 @@ export default function DomesticDashboard() {
       size: "",
       qty: "",
       date: new Date().toISOString().split("T")[0],
-      formType: "dispatch",
+      formType: selectedFormType,
       receiver: "",
       supplier: "",
       transferType: "",
@@ -144,13 +148,13 @@ export default function DomesticDashboard() {
         size: editForm.size,
         qty: Number(editForm.qty),
         date: editForm.date,
-        formType: editForm.formType || "dispatch",
+        formType: selectedFormType,
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.receiver && { receiver: editForm.receiver }),
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.post("/api/warehouse/domestic", payload);
+      await api.post("/warehouse/domestic", payload);
       setIsCreating(false);
       fetchEntries();
     } catch (err: unknown) {
@@ -170,7 +174,7 @@ export default function DomesticDashboard() {
     <div className="min-h-screen bg-gray-50 text-black py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Domestic Warehouse Dashboard</h1>
               <p className="text-gray-600">View and manage domestic warehouse transactions</p>
@@ -182,6 +186,34 @@ export default function DomesticDashboard() {
               + New Transaction
             </button>
           </div>
+
+          {/* Form Type Buttons - Always Visible */}
+          <div className="mb-6 border-b pb-4">
+            <h3 className="text-lg font-semibold mb-3">Transaction Type</h3>
+            <div className="flex flex-wrap gap-3">
+              {["dispatch", "production", "purchase", "transfer", "return", "sample"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedFormType(type)}
+                  className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
+                    selectedFormType === type
+                      ? "bg-green-600 text-white shadow-lg"
+                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Form Type Buttons for Creating New Entry */}
+          {isCreating && (
+            <div className="mb-4 border-t pt-4 border-gray-300">
+              <h3 className="text-lg font-semibold mb-3">Confirm Form Type</h3>
+              <p className="text-sm text-gray-600 mb-3">Creating new entry for: <span className="font-semibold capitalize">{selectedFormType}</span></p>
+            </div>
+          )}
 
           <div className="flex gap-4 mt-6">
             <input
@@ -211,7 +243,6 @@ export default function DomesticDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Form Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
@@ -224,16 +255,6 @@ export default function DomesticDashboard() {
                       <td className="px-6 py-4"><input type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4">
-                        <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white">
-                          <option value="dispatch">Dispatch</option>
-                          <option value="production">Production</option>
-                          <option value="purchase">Purchase</option>
-                          <option value="transfer">Transfer</option>
-                          <option value="return">Return</option>
-                          <option value="sample">Sample</option>
-                        </select>
-                      </td>
                       <td className="px-6 py-4">
                         <button onClick={handleSaveNew} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
                         <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
@@ -251,16 +272,6 @@ export default function DomesticDashboard() {
                           <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4">
-                            <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded">
-                              <option value="dispatch">Dispatch</option>
-                              <option value="production">Production</option>
-                              <option value="purchase">Purchase</option>
-                              <option value="transfer">Transfer</option>
-                              <option value="return">Return</option>
-                              <option value="sample">Sample</option>
-                            </select>
-                          </td>
-                          <td className="px-6 py-4">
                             <button onClick={() => handleUpdate(entry._id)} className="text-green-600 hover:text-green-900 mr-3">Save</button>
                             <button onClick={() => setEditingEntry(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
                           </td>
@@ -273,7 +284,6 @@ export default function DomesticDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.formType}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <button onClick={() => handleEdit(entry)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
                             <button onClick={() => handleDelete(entry._id)} className="text-red-600 hover:text-red-900">Delete</button>

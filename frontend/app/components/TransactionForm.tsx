@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { api } from "../../lib/api";
 import Link from "next/link";
 import axios from "axios";
@@ -52,10 +52,44 @@ const initialForm: FormState = {
   platform: "",
 };
 
-export default function TransactionForm({ selection }: { selection: Selection }) {
+export default function TransactionForm({ 
+  selection,
+  onFormTypeChange 
+}: { 
+  selection: Selection;
+  onFormTypeChange: (formType: string) => void;
+}) {
   const { domain, warehouseType, formType } = selection;
 
   const [form, setForm] = useState<FormState>(initialForm);
+
+  const inputRefs = useRef<Record<keyof FormState, HTMLInputElement | HTMLSelectElement | null>>({
+    dno: null,
+    type: null,
+    color: null,
+    size: null,
+    qty: null,
+    date: null,
+    channel: null,
+    receiver: null,
+    supplier: null,
+    transferType: null,
+    platform: null,
+  });
+
+  const fieldOrder: (keyof FormState)[] = [
+    "dno",
+    "type",
+    "color",
+    "size",
+    "qty",
+    "date",
+    "channel",
+    "receiver",
+    "supplier",
+    "transferType",
+    "platform",
+  ];
 
   useEffect(() => {
     setForm(initialForm);
@@ -253,7 +287,7 @@ export default function TransactionForm({ selection }: { selection: Selection })
       const res = await api.post(endpoint, {
         ...cleanedForm,
         qty: Number(form.qty),
-        domain,
+        domain: domain === "Shop" ? "shop" : "warehouse",
         warehouseType: domain === "Warehouse" ? warehouseType : undefined,
         formType,
       });
@@ -272,6 +306,68 @@ export default function TransactionForm({ selection }: { selection: Selection })
     }
   };
 
+  const isFieldVisible = (field: keyof FormState) => {
+    if (field === "channel") return rules.showChannel;
+    if (field === "receiver") return rules.showReceiver;
+    if (field === "supplier") return rules.showSupplier;
+    if (field === "transferType") return rules.showTransferType;
+    if (field === "platform") return rules.showPlatform;
+    return true;
+  };
+
+  const handleEnterFocus = (field: keyof FormState) => (
+    e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const visibleFields = fieldOrder.filter(isFieldVisible);
+    const index = visibleFields.indexOf(field);
+    if (index === -1) return;
+    const nextField = visibleFields.slice(index + 1).find((f) => inputRefs.current[f]);
+    if (nextField) {
+      inputRefs.current[nextField]?.focus();
+    }
+  };
+
+  // Get available form types based on domain and warehouse type
+  const getFormTypeButtons = () => {
+    if (domain === "Shop") {
+      return [
+        { value: "import", label: "Import" },
+        { value: "sales", label: "Sales / Return" },
+      ];
+    }
+
+    if (warehouseType === "domestic" || warehouseType === "export") {
+      const buttons = [
+        { value: "dispatch", label: "Dispatch" },
+        { value: "production", label: "Production" },
+        { value: "purchase", label: "Purchase" },
+        { value: "transfer", label: "Transfer" },
+      ];
+      if (warehouseType === "domestic") {
+        buttons.push(
+          { value: "return", label: "Return" },
+          { value: "sample", label: "Sample" }
+        );
+      }
+      return buttons;
+    }
+
+    if (warehouseType === "online") {
+      return [
+        { value: "return", label: "Return" },
+        { value: "sales", label: "Sales" },
+        { value: "transfer", label: "Transfer" },
+        { value: "purchase", label: "Purchase" },
+      ];
+    }
+
+    return [];
+  };
+
+  const formTypeButtons = getFormTypeButtons();
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-0">
       <div className="mb-6">
@@ -282,38 +378,27 @@ export default function TransactionForm({ selection }: { selection: Selection })
         <p className="text-gray-600">Add a new inventory transaction</p>
       </div>
 
-      <div className=" border rounded-lg p-6 sm:p-8 space-y-4">
-        {/* Domain & form context */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold mb-2">Domain</label>
-            <input
-              className="border px-4 py-2 w-full rounded "
-              value={domain}
-              disabled
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Form Type</label>
-            <input
-              className="border px-4 py-2 w-full rounded capitalize"
-              value={formType}
-              disabled
-            />
-          </div>
+      {/* Form Type Buttons */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3">Select Form Type</h3>
+        <div className="flex flex-wrap gap-3">
+          {formTypeButtons.map((btn) => (
+            <button
+              key={btn.value}
+              onClick={() => onFormTypeChange(btn.value)}
+              className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+                formType === btn.value
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {domain === "Warehouse" && (
-          <div>
-            <label className="block text-sm font-semibold mb-2">Warehouse Type</label>
-            <input
-              className="border px-4 py-2 w-full rounded capitalize"
-              value={warehouseType}
-              disabled
-            />
-          </div>
-        )}
+      <div className=" border rounded-lg p-6 sm:p-8 space-y-4">
 
         {/* Design Number */}
         <div>
@@ -324,6 +409,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
             placeholder="e.g., D001"
             value={form.dno}
             onChange={handleChange}
+            onKeyDown={handleEnterFocus("dno")}
+            ref={(el) => {inputRefs.current.dno = el;}}
           />
         </div>
 
@@ -336,6 +423,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
             placeholder="e.g., T-Shirt"
             value={form.type}
             onChange={handleChange}
+            onKeyDown={handleEnterFocus("type")}
+            ref={(el) => {inputRefs.current.type = el;}}
           />
         </div>
 
@@ -349,6 +438,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               placeholder="e.g., Red"
               value={form.color}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("color")}
+              ref={(el) => {inputRefs.current.color = el;}}
             />
           </div>
           <div>
@@ -359,6 +450,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               placeholder="e.g., M"
               value={form.size}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("size")}
+              ref={(el) => {inputRefs.current.size = el;}}
             />
           </div>
         </div>
@@ -374,6 +467,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               placeholder="0"
               value={form.qty}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("qty")}
+              ref={(el) => {inputRefs.current.qty = el;}}
             />
           </div>
           <div>
@@ -384,6 +479,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               name="date"
               value={form.date}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("date")}
+              ref={(el) => {inputRefs.current.date = el;}}
             />
           </div>
         </div>
@@ -397,6 +494,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               name="channel"
               value={form.channel}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("channel")}
+              ref={(el) => {inputRefs.current.channel = el;}}
             >
               <option value="">Select Channel</option>
               {rules.channelOptions?.map((opt) => (
@@ -418,6 +517,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
                 name="receiver"
                 value={form.receiver}
                 onChange={handleChange}
+                onKeyDown={handleEnterFocus("receiver")}
+                ref={(el) => {inputRefs.current.receiver = el;}}
               >
                 <option value="" >Select Receiver</option>
                 {rules.receiverOptions.map((opt) => (
@@ -433,6 +534,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
                 placeholder="Receiver name"
                 value={form.receiver}
                 onChange={handleChange}
+                onKeyDown={handleEnterFocus("receiver")}
+                ref={(el) => {inputRefs.current.receiver = el;}}
               />
             )}
           </div>
@@ -448,6 +551,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               placeholder="Supplier name"
               value={form.supplier}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("supplier")}
+              ref={(el) => {inputRefs.current.supplier = el;}}
             />
           </div>
         )}
@@ -461,6 +566,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               name="transferType"
               value={form.transferType}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("transferType")}
+              ref={(el) => {inputRefs.current.transferType = el;}}
             >
               <option value="" className="text-white">Select Type</option>
               {rules.transferTypeOptions?.map((opt) => (
@@ -481,6 +588,8 @@ export default function TransactionForm({ selection }: { selection: Selection })
               name="platform"
               value={form.platform}
               onChange={handleChange}
+              onKeyDown={handleEnterFocus("platform")}
+              ref={(el) => {inputRefs.current.platform = el;}}
             >
               <option value="">Select Platform</option>
               <option value="amazon">Amazon</option>

@@ -1,23 +1,16 @@
 "use client";
 import "./../globals.css";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
-export default function ExportLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  
+export default function ExportLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-gray-100">
-        <div className="flex flex-col min-h-screen">
-          <header className="bg-purple-700 text-white shadow p-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold">Export Warehouse - Inventory Management</h1>
-            </div>
-          </header>
-          <main className="flex-1">{children}</main>
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <header className="bg-purple-700 text-white shadow p-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-semibold">Export Warehouse - Inventory Management</h1>
         </div>
-      </body>
-    </html>
+      </header>
+      <section className="flex-1" role="main">{children}</section>
+    </div>
   );
 }

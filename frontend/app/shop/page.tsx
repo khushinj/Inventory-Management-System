@@ -13,6 +13,7 @@ type Entry = {
   qty: number;
   date?: string;
   channel?: string;
+  formType?: string;
   domain: string;
 };
 
@@ -23,6 +24,7 @@ export default function ShopDashboard() {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedFormType, setSelectedFormType] = useState<"import" | "sales" | "return">("import");
   const [editForm, setEditForm] = useState({
     dno: "",
     type: "",
@@ -40,7 +42,7 @@ export default function ShopDashboard() {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const shopRes = await api.get("/api/shop");
+      const shopRes = await api.get("/shop");
       setEntries(shopRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -57,8 +59,11 @@ export default function ShopDashboard() {
 
     const matchesChannel =
       filterChannel === "All Channels" || entry.channel === filterChannel;
+    
+    const matchesFormType =
+      entry.formType === selectedFormType;
 
-    return matchesSearch && matchesChannel;
+    return matchesSearch && matchesChannel && matchesFormType;
   });
 
   const handleEdit = (entry: Entry) => {
@@ -76,9 +81,9 @@ export default function ShopDashboard() {
 
   const handleUpdate = async (id: string) => {
     try {
-      await api.patch(`/api/shop/${id}`, {
+      await api.patch(`/shop/${id}`, {
         ...editForm,
-        formType: 'import',
+        formType: selectedFormType,
       });
       setEditingEntry(null);
       fetchEntries();
@@ -91,7 +96,7 @@ export default function ShopDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
-        await api.delete(`/api/shop/${id}`);
+        await api.delete(`/shop/${id}`);
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting entry:", err);
@@ -115,9 +120,9 @@ export default function ShopDashboard() {
 
   const handleSaveNew = async () => {
     try {
-      await api.post("/api/shop", {
+      await api.post("/shop", {
         ...editForm,
-        formType: 'import',
+        formType: selectedFormType,
       });
       setIsCreating(false);
       fetchEntries();
@@ -138,7 +143,7 @@ export default function ShopDashboard() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Shop Dashboard</h1>
               <p className="text-gray-600">View and manage shop transactions</p>
@@ -151,10 +156,37 @@ export default function ShopDashboard() {
             </button>
           </div>
 
-          <div className="flex gap-4 mt-6">
-            <input
-              type="text"
-              placeholder="Search by DNO, Type, or Color..."
+          {/* Form Type Buttons - Always Visible */}
+          <div className="mb-6 border-b pb-4">
+            <h3 className="text-lg font-semibold mb-3">Transaction Type</h3>
+            <div className="flex flex-wrap gap-3">
+              {["import", "sales", "return"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedFormType(type as "import" | "sales" | "return")}
+                  className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
+                    selectedFormType === type
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Form Type Buttons for Creating New Entry */}
+          {isCreating && (
+            <div className="mb-4 border-t pt-4 border-gray-300">
+              <h3 className="text-lg font-semibold mb-3">Confirm Form Type</h3>
+              <p className="text-sm text-gray-600 mb-3">Creating new entry for: <span className="font-semibold capitalize">{selectedFormType}</span></p>
+            </div>
+          )}
+
+          <div className="flex gap-4 mt-6">\n            
+            <input type="text"
+ placeholder="Search by DNO, Type, or Color..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 px-4 py-2 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

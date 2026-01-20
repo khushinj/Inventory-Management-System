@@ -26,6 +26,7 @@ export default function ExportDashboard() {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedFormType, setSelectedFormType] = useState<string>("dispatch");
   const [editForm, setEditForm] = useState({
     dno: "",
     type: "",
@@ -46,7 +47,7 @@ export default function ExportDashboard() {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const exportRes = await api.get("/api/warehouse/export");
+      const exportRes = await api.get("/warehouse/export");
       setEntries(exportRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -62,7 +63,10 @@ export default function ExportDashboard() {
       entry.color?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       entry.formType?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch;
+    const matchesFormType =
+      entry.formType === selectedFormType;
+
+    return matchesSearch && matchesFormType;
   });
 
   const handleEdit = (entry: Entry) => {
@@ -96,7 +100,7 @@ export default function ExportDashboard() {
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.patch(`/api/warehouse/export/${id}`, payload);
+      await api.patch(`/warehouse/export/${id}`, payload);
       setEditingEntry(null);
       fetchEntries();
     } catch (err: unknown) {
@@ -110,7 +114,7 @@ export default function ExportDashboard() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
-        await api.delete(`/api/warehouse/export/${id}`);
+        await api.delete(`/warehouse/export/${id}`);
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting entry:", err);
@@ -127,7 +131,7 @@ export default function ExportDashboard() {
       size: "",
       qty: "",
       date: new Date().toISOString().split("T")[0],
-      formType: "dispatch",
+      formType: selectedFormType,
       receiver: "",
       supplier: "",
       transferType: "",
@@ -144,13 +148,13 @@ export default function ExportDashboard() {
         size: editForm.size,
         qty: Number(editForm.qty),
         date: editForm.date,
-        formType: editForm.formType || "dispatch",
+        formType: selectedFormType,
         ...(editForm.transferType && { transferType: editForm.transferType }),
         ...(editForm.receiver && { receiver: editForm.receiver }),
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.post("/api/warehouse/export", payload);
+      await api.post("/warehouse/export", payload);
       setIsCreating(false);
       fetchEntries();
     } catch (err: unknown) {
@@ -170,7 +174,7 @@ export default function ExportDashboard() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Export Warehouse Dashboard</h1>
               <p className="text-gray-600">View and manage export warehouse transactions</p>
@@ -182,6 +186,34 @@ export default function ExportDashboard() {
               + New Transaction
             </button>
           </div>
+
+          {/* Form Type Buttons - Always Visible */}
+          <div className="mb-6 border-b pb-4">
+            <h3 className="text-lg font-semibold mb-3">Transaction Type</h3>
+            <div className="flex flex-wrap gap-3">
+              {["dispatch", "production", "purchase", "transfer"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedFormType(type)}
+                  className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
+                    selectedFormType === type
+                      ? "bg-purple-600 text-white shadow-lg"
+                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Form Type Buttons for Creating New Entry */}
+          {isCreating && (
+            <div className="mb-4 border-t pt-4 border-gray-300">
+              <h3 className="text-lg font-semibold mb-3">Confirm Form Type</h3>
+              <p className="text-sm text-gray-600 mb-3">Creating new entry for: <span className="font-semibold capitalize">{selectedFormType}</span></p>
+            </div>
+          )}
 
           <div className="flex gap-4 mt-6">
             <input
@@ -211,7 +243,6 @@ export default function ExportDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Form Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
@@ -225,15 +256,7 @@ export default function ExportDashboard() {
                       <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4">
-                        <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white">
-                          <option value="dispatch">Dispatch</option>
-                          <option value="production">Production</option>
-                          <option value="purchase">Purchase</option>
-                          <option value="transfer">Transfer</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button onClick={handleSaveNew} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                        <button onClick={handleSaveNew} className="text-purple-600 hover:text-purple-900 mr-3 font-medium">Save</button>
                         <button onClick={handleCancel} className="text-gray-600 hover:text-gray-900">Cancel</button>
                       </td>
                     </tr>
@@ -249,14 +272,6 @@ export default function ExportDashboard() {
                           <td className="px-6 py-4"><input type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                           <td className="px-6 py-4"><input type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                           <td className="px-6 py-4">
-                            <select value={editForm.formType} onChange={(e) => setEditForm({...editForm, formType: e.target.value})} className="w-full px-2 py-1 border rounded text-black bg-white">
-                              <option value="dispatch">Dispatch</option>
-                              <option value="production">Production</option>
-                              <option value="purchase">Purchase</option>
-                              <option value="transfer">Transfer</option>
-                            </select>
-                          </td>
-                          <td className="px-6 py-4">
                             <button onClick={() => handleUpdate(entry._id)} className="text-green-600 hover:text-green-900 mr-3">Save</button>
                             <button onClick={() => setEditingEntry(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
                           </td>
@@ -269,7 +284,6 @@ export default function ExportDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.formType}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <button onClick={() => handleEdit(entry)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
                             <button onClick={() => handleDelete(entry._id)} className="text-red-600 hover:text-red-900">Delete</button>

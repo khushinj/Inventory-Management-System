@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { api } from "../../lib/api";
+import * as XLSX from "xlsx";
 
 type Entry = {
   _id: string;
@@ -194,6 +195,60 @@ export default function ShopDashboard() {
     }
   };
 
+  const handleExportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredEntries.map(entry => ({
+      DNO: entry.dno,
+      Type: entry.type,
+      Color: entry.color,
+      Size: entry.size,
+      Quantity: entry.qty,
+      Date: entry.date?.split("T")[0],
+      Channel: entry.channel,
+      FormType: entry.formType,
+    })));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Shop Transactions");
+    XLSX.writeFile(workbook, `shop_transactions_${selectedFormType}_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  const handleImportFromExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = new Uint8Array(event.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        // Import each row
+        for (const row of jsonData) {
+          await api.post("/shop", {
+            dno: row.DNO || row.dno,
+            type: row.Type || row.type,
+            color: row.Color || row.color,
+            size: row.Size || row.size,
+            qty: Number(row.Quantity || row.qty),
+            date: row.Date || row.date,
+            channel: row.Channel || row.channel || "retail",
+            formType: row.FormType || row.formType || selectedFormType,
+          });
+        }
+
+        alert(`Successfully imported ${jsonData.length} entries!`);
+        fetchEntries();
+      } catch (err) {
+        console.error("Error importing Excel:", err);
+        alert("Failed to import Excel file. Please check the file format.");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = ""; // Reset input
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -209,6 +264,25 @@ export default function ShopDashboard() {
             >
               + New Transaction
             </button>
+          </div>
+
+          {/* Excel Import/Export Buttons */}
+          <div className="mb-6 flex gap-3">
+            <button
+              onClick={handleExportToExcel}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <span>📊</span> Export to Excel
+            </button>
+            <label className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2 cursor-pointer">
+              <span>📥</span> Import from Excel
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImportFromExcel}
+                className="hidden"
+              />
+            </label>
           </div>
 
           {/* Form Type Buttons - Always Visible */}

@@ -154,6 +154,46 @@ export default function ShopDashboard() {
     }
   };
 
+  const handleSaveAndContinue = async (entryId?: string) => {
+    try {
+      if (entryId) {
+        // Update existing entry
+        await api.patch(`/shop/${entryId}`, {
+          ...editForm,
+          formType: selectedFormType,
+        });
+        setEditingEntry(null);
+      } else {
+        // Create new entry
+        await api.post("/shop", {
+          ...editForm,
+          formType: selectedFormType,
+        });
+      }
+      
+      // Reset form and prepare for next entry
+      setEditForm({
+        dno: "",
+        type: "",
+        color: "",
+        size: "",
+        qty: "",
+        date: new Date().toISOString().split("T")[0],
+        channel: "retail",
+      });
+      setIsCreating(true);
+      fetchEntries();
+      
+      // Focus first field for next entry
+      setTimeout(() => dnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error saving entry:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to save entry: " + (axiosError || errorMsg));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -249,7 +289,7 @@ export default function ShopDashboard() {
                       <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4">
-                        <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()} className="w-full px-2 py-1 border rounded text-black bg-white">
+                        <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(); } }} className="w-full px-2 py-1 border rounded text-black bg-white">
                           <option value="retail">Retail</option>
                           <option value="online">Online</option>
                         </select>
@@ -271,7 +311,7 @@ export default function ShopDashboard() {
                           <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4">
-                            <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()} className="w-full px-2 py-1 border rounded  text-black">
+                            <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(entry._id); } }} className="w-full px-2 py-1 border rounded  text-black">
                               <option value="retail">Retail</option>
                               <option value="online">Online</option>
                             </select>

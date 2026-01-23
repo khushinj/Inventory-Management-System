@@ -5,7 +5,6 @@ import {
   PackageX,
   FileText,
   Warehouse,
-  BarChart3,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -24,34 +23,34 @@ const cards: ActionCard[] = [
     title: "Record Sales",
     description: "Record new sales transactions",
     icon: ShoppingCart,
-    gradient: "from-blue-600 to-blue-500",
+    gradient: "blue-600",
     href: "/shop",
   },
   {
     title: "Stock Received",
     description: "Record purchase or inbound stock",
     icon: Package,
-    gradient: "from-emerald-600 to-emerald-500",
+    gradient: "emerald-600",
     href: "/domestic",
   },
   {
     title: "Stock Returned",
     description: "Process returned items across channels",
     icon: PackageX,
-    gradient: "from-orange-600 to-orange-500",
+    gradient: "orange-600",
     href: "/online",
   },
   {
     title: "Daily Report",
     description: "Generate quick summaries (coming soon)",
     icon: FileText,
-    gradient: "from-violet-600 to-violet-500",
+    gradient: "violet-600",
   },
   {
     title: "View Inventory",
     description: "Check current stock levels (coming soon)",
     icon: Warehouse,
-    gradient: "from-indigo-600 to-blue-500",
+    gradient: "indigo-600",
   },
 ];
 
@@ -69,7 +68,7 @@ export default function RetailPage() {
           {cards.map((card) => {
             const content = (
               <div className="relative overflow-hidden rounded-2xl shadow-lg transition-transform duration-300 ease-out hover:-translate-y-1 focus-visible:-translate-y-1">
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient}`} />
+                <div className={`absolute inset-0 bg-${card.gradient}`} />
                 <div
                   className="absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-white/15 blur-3xl"
                   aria-hidden

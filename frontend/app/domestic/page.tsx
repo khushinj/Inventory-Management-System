@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
 
@@ -23,12 +24,16 @@ type Entry = {
 };
 
 export default function DomesticDashboard() {
+  const searchParams = useSearchParams();
+  const formTypeParam = searchParams.get("formType");
+  const transferTypeParam = searchParams.get("transferType");
+  
   const [entries, setEntries] = useState<Entry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [selectedFormType, setSelectedFormType] = useState<string>("dispatch");
+  const [selectedFormType, setSelectedFormType] = useState<string>(formTypeParam || "dispatch");
   const [editForm, setEditForm] = useState({
     dno: "",
     type: "",
@@ -163,7 +168,7 @@ export default function DomesticDashboard() {
       formType: selectedFormType,
       receiver: "",
       supplier: "",
-      transferType: "",
+      transferType: transferTypeParam || "",
       channel: "",
     });
     setIsCreating(true);

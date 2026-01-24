@@ -133,7 +133,7 @@ export default function InvoiceDataEntryForm() {
         <div className="bg-white rounded-xl shadow-md p-8 mb-6 border border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Header Information</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid text-black grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Row 1 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -141,7 +141,7 @@ export default function InvoiceDataEntryForm() {
               </label>
               <input
                 type="text"
-                value={headerInfo.gstinUin}
+                placeholder={headerInfo.gstinUin}
                 onChange={(e) => handleHeaderChange("gstinUin", e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
@@ -153,9 +153,9 @@ export default function InvoiceDataEntryForm() {
               </label>
               <input
                 type="text"
-                value={headerInfo.stateName}
+                placeholder={headerInfo.stateName}
                 onChange={(e) => handleHeaderChange("stateName", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full text-black px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
             
@@ -269,7 +269,7 @@ export default function InvoiceDataEntryForm() {
               </thead>
               <tbody>
                 {items.map((item, index) => (
-                  <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 text-black">
                     <td className="px-3 py-3 text-sm text-gray-900">{index + 1}</td>
                     <td className="px-3 py-3">
                       <input
@@ -289,7 +289,7 @@ export default function InvoiceDataEntryForm() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="px-3 py-3 text-black">
                       <input
                         type="text"
                         placeholder="Color"
@@ -380,7 +380,7 @@ export default function InvoiceDataEntryForm() {
 
         {/* Summary & Terms Section */}
         <div className="bg-white rounded-xl shadow-md p-8 border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Summary & Terms</h2>
+          <h2 className="text-2xl font-bold text-black mb-6">Summary & Terms</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column */}

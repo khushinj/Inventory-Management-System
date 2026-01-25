@@ -386,7 +386,7 @@ export default function ExportDashboard() {
             </label>
           </div>
 
-          {/* Form Type Buttons - Always Visible */}
+
           <div className="mb-6 border-b pb-4">
             <h3 className="text-lg font-semibold text-black mb-3">Transaction Type</h3>
             <div className="flex flex-wrap gap-3">
@@ -406,7 +406,7 @@ export default function ExportDashboard() {
             </div>
           </div>
 
-          {/* Form Type Buttons for Creating New Entry */}
+
           {isCreating && (
             <div className="mb-4 border-t pt-4 border-gray-300">
               <h3 className="text-lg font-semibold mb-3">Confirm Form Type</h3>

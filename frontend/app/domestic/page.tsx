@@ -27,6 +27,7 @@ export default function DomesticDashboard() {
   const searchParams = useSearchParams();
   const formTypeParam = searchParams.get("formType");
   const transferTypeParam = searchParams.get("transferType");
+  const isLockedParam = searchParams.get("locked") === "true";
   
   const [entries, setEntries] = useState<Entry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,6 +35,7 @@ export default function DomesticDashboard() {
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedFormType, setSelectedFormType] = useState<string>(formTypeParam || "dispatch");
+  const [isFormTypeLocked] = useState<boolean>(isLockedParam);
   const [editForm, setEditForm] = useState({
     dno: "",
     type: "",
@@ -363,9 +365,16 @@ export default function DomesticDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Domestic Warehouse Dashboard</h1>
-              <p className="text-gray-600">View and manage domestic warehouse transactions</p>
+            <div className="flex items-center gap-4">
+              {isFormTypeLocked && (
+                <Link href="/domestic-homepage" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2">
+                  ← Back to Homepage
+                </Link>
+              )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Domestic Warehouse Dashboard</h1>
+                <p className="text-gray-600">View and manage domestic warehouse transactions</p>
+              </div>
             </div>
             <button
               onClick={handleCreate}
@@ -396,15 +405,18 @@ export default function DomesticDashboard() {
 
           {/* Form Type Buttons - Always Visible */}
           <div className="mb-6 border-b pb-4">
-            <h3 className="text-lg font-semibold mb-3">Transaction Type</h3>
+            <h3 className="text-lg font-semibold mb-3">Transaction Type {isFormTypeLocked && <span className="text-sm text-gray-500">(Locked)</span>}</h3>
             <div className="flex flex-wrap gap-3">
               {["dispatch", "production", "purchase", "transfer", "return", "sample"].map((type) => (
                 <button
                   key={type}
-                  onClick={() => setSelectedFormType(type)}
+                  onClick={() => !isFormTypeLocked && setSelectedFormType(type)}
+                  disabled={isFormTypeLocked && selectedFormType !== type}
                   className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
                     selectedFormType === type
                       ? "bg-green-600 text-white shadow-lg"
+                      : isFormTypeLocked && selectedFormType !== type
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
                       : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                   }`}
                 >
@@ -412,6 +424,9 @@ export default function DomesticDashboard() {
                 </button>
               ))}
             </div>
+            {isFormTypeLocked && (
+              <p className="text-sm text-gray-500 mt-3">Form type is locked. To change, visit the domestic homepage or access forms directly.</p>
+            )}
           </div>
 
           {/* Form Type Buttons for Creating New Entry */}

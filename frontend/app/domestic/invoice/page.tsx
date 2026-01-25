@@ -53,7 +53,7 @@ export default function InvoiceDataEntryForm() {
     totalQuantity: 4,
     grossTotal: 3836.60,
     invoiceValueWords: "Four Thousand Twenty Eight and Forty Four paisa Only",
-    igstOutput: 191.84,
+    gstOutput: 191.84,
     grandTotal: 4028.44,
     termsCondition: "Certified that the particulars given above are true and correct and the amount indicated represents the price actually charged and that there is no flow of additional consideration directly or indirectly from the buyer.",
   });
@@ -439,13 +439,13 @@ export default function InvoiceDataEntryForm() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  IGST OUTPUT
+                  GST OUTPUT
                 </label>
                 <input
                   type="number"
                   step="0.01"
-                  value={summary.igstOutput}
-                  onChange={(e) => setSummary({ ...summary, igstOutput: Number(e.target.value) })}
+                  value={summary.gstOutput}
+                  onChange={(e) => setSummary({ ...summary, gstOutput: Number(e.target.value) })}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
               </div>

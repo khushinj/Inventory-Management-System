@@ -68,7 +68,7 @@ export default function ShopDashboard() {
 
     const matchesChannel =
       filterChannel === "All Channels" || entry.channel === filterChannel;
-    
+
     const matchesFormType =
       entry.formType === selectedFormType;
 
@@ -174,7 +174,7 @@ export default function ShopDashboard() {
           formType: selectedFormType,
         });
       }
-      
+
       // Reset form and prepare for next entry
       setEditForm({
         dno: "",
@@ -187,7 +187,7 @@ export default function ShopDashboard() {
       });
       setIsCreating(true);
       fetchEntries();
-      
+
       // Focus first field for next entry
       setTimeout(() => dnoRef.current?.focus(), 100);
     } catch (err: unknown) {
@@ -290,17 +290,16 @@ export default function ShopDashboard() {
 
           {/* Form Type Buttons - Always Visible */}
           <div className="mb-6 border-b pb-4">
-            <h3 className="text-lg font-semibold mb-3">Transaction Type</h3>
+            <h3 className="text-lg text-black font-semibold mb-3">Transaction Type</h3>
             <div className="flex flex-wrap gap-3">
               {["import", "sales", "return"].map((type) => (
                 <button
                   key={type}
                   onClick={() => setSelectedFormType(type as "import" | "sales" | "return")}
-                  className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
-                    selectedFormType === type
+                  className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${selectedFormType === type
                       ? "bg-blue-600 text-white shadow-lg"
                       : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                  }`}
+                    }`}
                 >
                   {type}
                 </button>
@@ -316,9 +315,9 @@ export default function ShopDashboard() {
             </div>
           )}
 
-          <div className="flex gap-4 mt-6">\n            
+          <div className="flex gap-4 mt-6">
             <input type="text"
- placeholder="Search by DNO, Type, or Color..."
+              placeholder="Search by DNO, Type, or Color..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 px-4 py-2 text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -359,14 +358,14 @@ export default function ShopDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isCreating && (
                     <tr className="bg-blue-50">
-                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef)} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })} onKeyDown={(e) => handleKeyDown(e, typeRef)} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({ ...editForm, size: e.target.value })} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({ ...editForm, qty: e.target.value })} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4">
-                        <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(); } }} className="w-full px-2 py-1 border rounded text-black bg-white">
+                        <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({ ...editForm, channel: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(); } }} className="w-full px-2 py-1 border rounded text-black bg-white">
                           <option value="retail">Retail</option>
                           <option value="online">Online</option>
                         </select>
@@ -381,14 +380,14 @@ export default function ShopDashboard() {
                     <tr key={entry._id}>
                       {editingEntry === entry._id ? (
                         <>
-                          <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })} onKeyDown={(e) => handleKeyDown(e, typeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })} onKeyDown={(e) => handleKeyDown(e, colorRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({ ...editForm, size: e.target.value })} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({ ...editForm, qty: e.target.value })} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4">
-                            <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({...editForm, channel: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(entry._id); } }} className="w-full px-2 py-1 border rounded  text-black">
+                            <select ref={channelRef} value={editForm.channel} onChange={(e) => setEditForm({ ...editForm, channel: e.target.value })} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSaveAndContinue(entry._id); } }} className="w-full px-2 py-1 border rounded  text-black">
                               <option value="retail">Retail</option>
                               <option value="online">Online</option>
                             </select>

@@ -4,7 +4,7 @@ export function useBackendPing() {
   useEffect(() => {
     const pingBackend = async () => {
       try {
-        // Get base backend URL (not the /api path, just the host)
+
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
         const backendURL = apiURL.replace('/api', '') || 'http://localhost:5000';
         

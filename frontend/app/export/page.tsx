@@ -388,7 +388,7 @@ export default function ExportDashboard() {
 
           {/* Form Type Buttons - Always Visible */}
           <div className="mb-6 border-b pb-4">
-            <h3 className="text-lg font-semibold mb-3">Transaction Type</h3>
+            <h3 className="text-lg font-semibold text-black mb-3">Transaction Type</h3>
             <div className="flex flex-wrap gap-3">
               {["dispatch", "production", "purchase", "transfer"].map((type) => (
                 <button

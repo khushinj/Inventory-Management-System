@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "../../lib/api";
@@ -24,7 +24,7 @@ type Entry = {
   warehouseType?: string;
 };
 
-export default function ExportDashboard() {
+function ExportDashboard() {
   const searchParams = useSearchParams();
   const [lockedFormType, setLockedFormType] = useState<string | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -735,5 +735,13 @@ export default function ExportDashboard() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ExportPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div></div>}>
+      <ExportDashboard />
+    </Suspense>
   );
 }

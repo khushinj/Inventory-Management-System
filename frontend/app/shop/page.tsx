@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "../../lib/api";
@@ -19,7 +19,7 @@ type Entry = {
   domain: string;
 };
 
-export default function ShopDashboard() {
+function ShopDashboard() {
   const searchParams = useSearchParams();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -445,5 +445,13 @@ export default function ShopDashboard() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+      <ShopDashboard />
+    </Suspense>
   );
 }

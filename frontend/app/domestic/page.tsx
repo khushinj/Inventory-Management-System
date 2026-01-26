@@ -289,6 +289,7 @@ export default function DomesticDashboard() {
         color: "",
         size: "",
         qty: "",
+        mrp: "",
         date: new Date().toISOString().split("T")[0],
         formType: selectedFormType,
         receiver: "",

@@ -108,17 +108,11 @@ export default function InventoryPage() {
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">View Inventory</h1>
             <p className="text-sm text-gray-500">All job card entries</p>
           </div>
-          <Link
-            href="/jobcard"
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors font-semibold"
-          >
-            + Add Job Card
-          </Link>
         </div>
       </div>
 

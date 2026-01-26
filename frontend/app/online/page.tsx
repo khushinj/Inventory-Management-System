@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
@@ -24,6 +25,8 @@ type Entry = {
 };
 
 export default function OnlineDashboard() {
+  const searchParams = useSearchParams();
+  const [lockedFormType, setLockedFormType] = useState<string | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -44,6 +47,15 @@ export default function OnlineDashboard() {
     receiver: "",
     supplier: "",
   });
+
+  useEffect(() => {
+    const formTypeParam = searchParams.get("formType");
+    const validFormTypes = ["return", "sales", "transfer", "purchase"];
+    if (formTypeParam && validFormTypes.includes(formTypeParam)) {
+      setLockedFormType(formTypeParam);
+      setSelectedFormType(formTypeParam);
+    }
+  }, [searchParams]);
 
   const dnoRef = useRef<HTMLInputElement>(null);
   const typeRef = useRef<HTMLInputElement>(null);
@@ -397,21 +409,27 @@ export default function OnlineDashboard() {
           {/* Form Type Buttons - Always Visible */}
           <div className="mb-6 border-b pb-4">
             <h3 className="text-lg font-semibold mb-3">Transaction Type</h3>
-            <div className="flex flex-wrap gap-3">
-              {["return", "sales", "transfer", "purchase"].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedFormType(type)}
-                  className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
-                    selectedFormType === type
-                      ? "bg-orange-600 text-white shadow-lg"
-                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
+            {lockedFormType ? (
+              <div className="bg-orange-50 border border-orange-300 px-6 py-3 rounded-lg">
+                <p className="text-gray-600">Form Type: <span className="font-semibold capitalize text-orange-700">{lockedFormType}</span></p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {["return", "sales", "transfer", "purchase"].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedFormType(type)}
+                    className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
+                      selectedFormType === type
+                        ? "bg-orange-600 text-white shadow-lg"
+                        : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Form Type Buttons for Creating New Entry */}

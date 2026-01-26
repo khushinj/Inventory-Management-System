@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
@@ -19,6 +20,7 @@ type Entry = {
 };
 
 export default function ShopDashboard() {
+  const searchParams = useSearchParams();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterChannel, setFilterChannel] = useState("All Channels");
@@ -26,6 +28,7 @@ export default function ShopDashboard() {
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedFormType, setSelectedFormType] = useState<"import" | "sales" | "return">("import");
+  const [lockedFormType, setLockedFormType] = useState<"import" | "sales" | "return" | null>(null);
   const [editForm, setEditForm] = useState({
     dno: "",
     type: "",
@@ -45,8 +48,13 @@ export default function ShopDashboard() {
   const channelRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
+    const formType = searchParams.get("formType") as "import" | "sales" | "return" | null;
+    if (formType && ["import", "sales", "return"].includes(formType)) {
+      setSelectedFormType(formType);
+      setLockedFormType(formType);
+    }
     fetchEntries();
-  }, []);
+  }, [searchParams]);
 
   const fetchEntries = async () => {
     try {
@@ -288,24 +296,35 @@ export default function ShopDashboard() {
             </label>
           </div>
 
-          {/* Form Type Buttons - Always Visible */}
-          <div className="mb-6 border-b pb-4">
-            <h3 className="text-lg text-black font-semibold mb-3">Transaction Type</h3>
-            <div className="flex flex-wrap gap-3">
-              {["import", "sales", "return"].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedFormType(type as "import" | "sales" | "return")}
-                  className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${selectedFormType === type
-                      ? "bg-blue-600 text-white shadow-lg"
-                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                    }`}
-                >
-                  {type}
-                </button>
-              ))}
+          {/* Form Type Buttons - Hidden when locked */}
+          {!lockedFormType && (
+            <div className="mb-6 border-b pb-4">
+              <h3 className="text-lg text-black font-semibold mb-3">Transaction Type</h3>
+              <div className="flex flex-wrap gap-3">
+                {["import", "sales", "return"].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedFormType(type as "import" | "sales" | "return")}
+                    className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${selectedFormType === type
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {lockedFormType && (
+            <div className="mb-6 border-b pb-4 bg-blue-50 p-4 rounded-lg">
+              <h3 className="text-lg text-black font-semibold mb-2">Transaction Type</h3>
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold capitalize">{lockedFormType}</span>
+              </p>
+            </div>
+          )}
 
           {/* Form Type Buttons for Creating New Entry */}
           {isCreating && (

@@ -6,25 +6,25 @@ const formTypes = [
   {
     title: "Shop",
     description: "Record shop sales and inventory movements",
-    href: "/shop",
+    href: "/retail",
     color: "bg-blue-500",
   },
   {
     title: "Domestic Warehouse",
     description: "Manage domestic warehouse transactions",
-    href: "/domestic",
+    href: "/domestic-homepage",
     color: "bg-green-500",
   },
   {
     title: "Export Warehouse",
     description: "Manage export warehouse transactions",
-    href: "/export",
+    href: "/export-homepage",
     color: "bg-purple-500",
   },
   {
     title: "Online Warehouse",
     description: "Manage online warehouse transactions",
-    href: "/online",
+    href: "/online-homepage",
     color: "bg-orange-500",
   },
 ];

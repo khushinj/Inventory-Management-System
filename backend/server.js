@@ -7,6 +7,7 @@ import shopRoutes from "./routes/shop.route.js";
 import domesticRoutes from "./routes/domestic.route.js";
 import exportRoutes from "./routes/export.route.js";
 import onlineRoutes from "./routes/online.route.js";
+import jobCardRoutes from "./routes/jobCard.route.js";
 
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/api/shop", shopRoutes);
 app.use("/api/warehouse/domestic", domesticRoutes);
 app.use("/api/warehouse/export", exportRoutes);
 app.use("/api/warehouse/online", onlineRoutes);
+app.use("/api/jobcard", jobCardRoutes);
 
 // test route
 app.get("/", (req, res) => {

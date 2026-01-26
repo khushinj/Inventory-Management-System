@@ -4,11 +4,9 @@ export function useBackendPing() {
   useEffect(() => {
     const pingBackend = async () => {
       try {
-
-        const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        const backendURL = apiURL.replace('/api', '') || 'http://localhost:5000';
-        
-        const response = await fetch(`${backendURL}/`, {
+        // Use the proxied API endpoint to avoid CORS and localhost issues in dev containers
+        // The Next.js rewrites will forward this to the backend
+        const response = await fetch('/api/shop', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

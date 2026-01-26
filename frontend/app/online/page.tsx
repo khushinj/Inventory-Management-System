@@ -12,6 +12,7 @@ type Entry = {
   color?: string;
   size?: string;
   qty: number;
+  mrp?: number;
   date?: string;
   formType?: string;
   receiver?: string;
@@ -35,6 +36,7 @@ export default function OnlineDashboard() {
     color: "",
     size: "",
     qty: "",
+    mrp: "",
     date: "",
     formType: "",
     platform: "",
@@ -48,6 +50,7 @@ export default function OnlineDashboard() {
   const colorRef = useRef<HTMLInputElement>(null);
   const sizeRef = useRef<HTMLInputElement>(null);
   const qtyRef = useRef<HTMLInputElement>(null);
+  const mrpRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
   const additionalFieldRef = useRef<HTMLInputElement>(null);
 
@@ -103,6 +106,7 @@ export default function OnlineDashboard() {
       color: entry.color || "",
       size: entry.size || "",
       qty: entry.qty?.toString() || "",
+      mrp: entry.mrp?.toString() || "",
       date: entry.date?.split("T")[0] || "",
       formType: entry.formType || "",
       platform: entry.platform || "",
@@ -120,6 +124,7 @@ export default function OnlineDashboard() {
         color: editForm.color,
         size: editForm.size,
         qty: Number(editForm.qty),
+        ...(editForm.mrp && { mrp: Number(editForm.mrp) }),
         date: editForm.date,
         formType: editForm.formType || "return",
         ...(editForm.transferType && { transferType: editForm.transferType }),
@@ -158,6 +163,7 @@ export default function OnlineDashboard() {
       color: "",
       size: "",
       qty: "",
+      mrp: "",
       date: new Date().toISOString().split("T")[0],
       formType: selectedFormType,
       platform: "",
@@ -176,6 +182,7 @@ export default function OnlineDashboard() {
         color: editForm.color,
         size: editForm.size,
         qty: Number(editForm.qty),
+        ...(editForm.mrp && { mrp: Number(editForm.mrp) }),
         date: editForm.date,
         formType: selectedFormType,
         ...(editForm.transferType && { transferType: editForm.transferType }),
@@ -274,6 +281,7 @@ export default function OnlineDashboard() {
         color: "",
         size: "",
         qty: "",
+        mrp: "",
         date: new Date().toISOString().split("T")[0],
         formType: selectedFormType,
         platform: "",
@@ -441,6 +449,9 @@ export default function OnlineDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                    {(selectedFormType === "sales" || (selectedFormType === "transfer" && editForm.transferType === "outwards")) && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MRP</th>
+                    )}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                     {selectedFormType === "purchase" && (
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
@@ -464,7 +475,16 @@ export default function OnlineDashboard() {
                       <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => {
+                        if (selectedFormType === "sales" || (selectedFormType === "transfer" && editForm.transferType === "outwards")) {
+                          handleKeyDown(e, mrpRef);
+                        } else {
+                          handleKeyDown(e, dateRef);
+                        }
+                      }} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      {(selectedFormType === "sales" || (selectedFormType === "transfer" && editForm.transferType === "outwards")) && (
+                        <td className="px-6 py-4"><input ref={mrpRef} type="number" value={editForm.mrp} onChange={(e) => setEditForm({...editForm, mrp: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="MRP" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      )}
                       <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
                         if (selectedFormType === "purchase" || selectedFormType === "transfer" || selectedFormType === "return" || selectedFormType === "sales") {
                           handleKeyDown(e, additionalFieldRef);
@@ -557,7 +577,17 @@ export default function OnlineDashboard() {
                           <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => {
+                            const formType = editForm.formType || "return";
+                            if (formType === "sales" || (formType === "transfer" && editForm.transferType === "outwards")) {
+                              handleKeyDown(e, mrpRef);
+                            } else {
+                              handleKeyDown(e, dateRef);
+                            }
+                          }} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          {(editForm.formType === "sales" || (editForm.formType === "transfer" && editForm.transferType === "outwards")) && (
+                            <td className="px-6 py-4"><input ref={mrpRef} type="number" value={editForm.mrp} onChange={(e) => setEditForm({...editForm, mrp: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="MRP" className="w-full px-2 py-1 border rounded text-black" /></td>
+                          )}
                           <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
                             const formType = editForm.formType || "return";
                             if (formType === "purchase" || formType === "transfer" || formType === "return" || formType === "sales") {
@@ -649,6 +679,9 @@ export default function OnlineDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.color}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
+                          {(entry.formType === "sales" || (entry.formType === "transfer" && entry.transferType === "outwards")) && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.mrp || "-"}</td>
+                          )}
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
                           {entry.formType === "purchase" && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.supplier}</td>

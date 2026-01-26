@@ -33,6 +33,7 @@ const transactionSchema = new mongoose.Schema({
   color: String,
   size: String,
   qty: { type: Number, required: true },
+  mrp: { type: Number },
   date: { type: Date, required: true },
   channel: {
     type: String,

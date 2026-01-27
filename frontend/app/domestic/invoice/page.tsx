@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 type InvoiceItem = {
   id: number;
   category: string;
   itemName: string;
+  designNumber: string;
   color: string;
-  hsn: string;
   s: number;
   m: number;
   l: number;
@@ -79,6 +80,7 @@ function numberToWords(num: number): string {
 
 export default function InvoiceDataEntryForm() {
   const [headerInfo, setHeaderInfo] = useState({
+    dealerName: "",
     buyerName: "",
     date: "",
     city: "",
@@ -89,8 +91,8 @@ export default function InvoiceDataEntryForm() {
       id: 1,
       category: "",
       itemName: "",
+      designNumber: "",
       color: "",
-      hsn: "",
       s: 0,
       m: 0,
       l: 0,
@@ -192,8 +194,8 @@ export default function InvoiceDataEntryForm() {
         id: newId,
         category: "",
         itemName: "",
+        designNumber: "",
         color: "",
-        hsn: "",
         s: 0,
         m: 0,
         l: 0,
@@ -224,17 +226,18 @@ export default function InvoiceDataEntryForm() {
     
     // Header Information
     doc.setFontSize(10);
-    doc.text(`Buyer Name: ${headerInfo.buyerName}`, 20, 35);
-    doc.text(`Date: ${headerInfo.date}`, 20, 42);
-    doc.text(`City: ${headerInfo.city}`, 20, 49);
+    doc.text(`Dealer Name: ${headerInfo.dealerName}`, 20, 35);
+    doc.text(`Buyer Name: ${headerInfo.buyerName}`, 20, 42);
+    doc.text(`Date: ${headerInfo.date}`, 20, 49);
+    doc.text(`City: ${headerInfo.city}`, 20, 56);
     
     // Items Table
     const tableData = items.map((item, index) => [
       index + 1,
       item.category,
       item.itemName,
+      item.designNumber,
       item.color,
-      item.hsn,
       item.s,
       item.m,
       item.l,
@@ -255,9 +258,9 @@ export default function InvoiceDataEntryForm() {
     ]);
     
     autoTable(doc, {
-      startY: 60,
+      startY: 70,
       head: [[
-        'SL', 'Category', 'Item', 'Color', 'HSN', 'S', 'M', 'L', 'XL', 'XXL', 
+        'SL', 'Category', 'Item', 'Design No.', 'Color', 'S', 'M', 'L', 'XL', 'XXL', 
         '3XL', '4XL', '5XL', '6XL', 'QTY', 'MRP', 'DIS%', 'Rate', 'Amt', 'TGST%', 'Tax', 'Total'
       ]],
       body: tableData,
@@ -268,10 +271,41 @@ export default function InvoiceDataEntryForm() {
         0: { cellWidth: 8 },
         1: { cellWidth: 15 },
         2: { cellWidth: 15 },
-        3: { cellWidth: 12 },
+        3: { cellWidth: 18 },
         4: { cellWidth: 12 },
       },
     });
+
+    // Excel export with item details
+    const excelData = items.map((item, index) => ({
+      SL: index + 1,
+      Category: item.category,
+      "Item Name": item.itemName,
+      "Design Number": item.designNumber,
+      Color: item.color,
+      S: item.s,
+      M: item.m,
+      L: item.l,
+      XL: item.xl,
+      XXL: item.xxl,
+      "3XL": item.xxxl,
+      "4XL": item.xxxxl,
+      "5XL": item.xxxxxl,
+      "6XL": item.xxxxxxl,
+      QTY: item.qty,
+      MRP: item.mrp,
+      "DIS%": item.dis,
+      Rate: item.rate,
+      Amount: item.amount,
+      "TGST%": item.tgst,
+      Tax: item.tax,
+      Total: item.amt,
+    }));
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Items");
+    XLSX.writeFile(workbook, `invoice_${headerInfo.date || "document"}.xlsx`);
     
     // Terms and Conditions
     const finalY = (doc as any).lastAutoTable.finalY + 10;
@@ -317,6 +351,18 @@ export default function InvoiceDataEntryForm() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Header Information</h2>
           
           <div className="grid text-black grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name of Dealer
+              </label>
+              <input
+                type="text"
+                value={headerInfo.dealerName}
+                onChange={(e) => handleHeaderChange("dealerName", e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name of Buyer
@@ -375,8 +421,8 @@ export default function InvoiceDataEntryForm() {
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">SL</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">CATEGORY</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">ITEM NAME</th>
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">DESIGN NUMBER</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">COLOR</th>
-                  <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">HSN</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">S</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">M</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">L</th>
@@ -419,22 +465,22 @@ export default function InvoiceDataEntryForm() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
                     </td>
-                    <td className="px-3 py-3 text-black">
+                      <td className="px-3 py-3">
+                        <input
+                          type="text"
+                          placeholder="Design Number"
+                          value={item.designNumber}
+                          onChange={(e) => handleItemChange(item.id, "designNumber", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                        />
+                      </td>
+                      <td className="px-3 py-3 text-black">
                       <input
                         type="text"
                         placeholder="Color"
                         value={item.color}
                         onChange={(e) => handleItemChange(item.id, "color", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                      />
-                    </td>
-                    <td className="px-3 py-3">
-                      <input
-                        type="text"
-                        placeholder="HSN"
-                        value={item.hsn}
-                        onChange={(e) => handleItemChange(item.id, "hsn", e.target.value)}
-                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
                     </td>
                     <td className="px-3 py-3">

@@ -37,6 +37,9 @@ function DomesticDashboard() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedFormType, setSelectedFormType] = useState<string>(formTypeParam || "dispatch");
   const [isFormTypeLocked] = useState<boolean>(isLockedParam);
+  const [showWarehouseModal, setShowWarehouseModal] = useState(false);
+  const [pendingFormType, setPendingFormType] = useState<string | null>(null);
+  const [selectedWarehouse, setSelectedWarehouse] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     dno: "",
     type: "",
@@ -165,6 +168,10 @@ function DomesticDashboard() {
   };
 
   const handleCreate = () => {
+    if ((selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") && !selectedWarehouse) {
+      setShowWarehouseModal(true);
+      return;
+    }
     setEditForm({
       dno: "",
       type: "",
@@ -177,7 +184,7 @@ function DomesticDashboard() {
       receiver: "",
       supplier: "",
       transferType: transferTypeParam || "",
-      channel: "",
+      channel: selectedWarehouse || "",
     });
     setIsCreating(true);
   };
@@ -257,6 +264,35 @@ function DomesticDashboard() {
       return 0;
     });
     setFilteredTransferOptions(filtered);
+  };
+
+  const handleFormTypeClick = (type: string) => {
+    if (isFormTypeLocked && selectedFormType !== type) return;
+    
+    if (type === "transfer inwards" || type === "transfer outwards") {
+      setPendingFormType(type);
+      setSelectedWarehouse(null);
+      setShowWarehouseModal(true);
+    } else {
+      setSelectedFormType(type);
+      setSelectedWarehouse(null);
+    }
+  };
+
+  const handleWarehouseSelect = (warehouse: string) => {
+    setSelectedWarehouse(warehouse);
+    setEditForm({...editForm, channel: warehouse});
+    
+    if (pendingFormType) {
+      setSelectedFormType(pendingFormType);
+      setPendingFormType(null);
+    }
+    
+    setShowWarehouseModal(false);
+  };
+
+  const handleChangeWarehouse = () => {
+    setShowWarehouseModal(true);
   };
 
   const handleSaveAndContinue = async (entryId?: string) => {
@@ -371,6 +407,112 @@ function DomesticDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-black py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Warehouse Selection Modal */}
+        {showWarehouseModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-8 shadow-2xl max-w-4xl w-full">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Select Warehouse Type</h2>
+                <p className="text-gray-600 text-lg">Choose the warehouse option that best fits your needs</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Online Warehouse Card */}
+                <button
+                  onClick={() => handleWarehouseSelect("online")}
+                  className="group relative bg-white border-2 border-gray-200 hover:border-orange-400 rounded-lg p-6 transition-all duration-300 hover:shadow-lg"
+                >
+                  <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.612 15.039A8.978 8.978 0 0112 2c4.97 0 9.185 3.364 10.388 7.86M2.612 8.96A8.978 8.978 0 0112 22c4.97 0 9.185-3.364 10.388-7.86" />
+                        </svg>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Online Warehouse</h3>
+                    <p className="text-gray-600 text-sm mb-4">Manage your digital inventory and fulfill online orders</p>
+                    
+                    <ul className="text-left space-y-2 mb-6">
+                      <li className="flex items-start text-sm text-gray-600">
+                        <span className="text-orange-500 font-bold mr-2">•</span>
+                        <span>Real-time inventory tracking</span>
+                      </li>
+                      <li className="flex items-start text-sm text-gray-600">
+                        <span className="text-orange-500 font-bold mr-2">•</span>
+                        <span>Automated order processing</span>
+                      </li>
+                      <li className="flex items-start text-sm text-gray-600">
+                        <span className="text-orange-500 font-bold mr-2">•</span>
+                        <span>Digital fulfillment integration</span>
+                      </li>
+                    </ul>
+                    
+                    <div className="pt-4 border-t border-gray-200">
+                      <span className="inline-block text-orange-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
+                        Select Online Warehouse →
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Export Warehouse Card */}
+                <button
+                  onClick={() => handleWarehouseSelect("export")}
+                  className="group relative bg-white border-2 border-gray-200 hover:border-purple-400 rounded-lg p-6 transition-all duration-300 hover:shadow-lg"
+                >
+                  <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 015.646 5.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Export Warehouse</h3>
+                    <p className="text-gray-600 text-sm mb-4">Handle international shipments and export logistics</p>
+                    
+                    <ul className="text-left space-y-2 mb-6">
+                      <li className="flex items-start text-sm text-gray-600">
+                        <span className="text-purple-500 font-bold mr-2">•</span>
+                        <span>International shipping support</span>
+                      </li>
+                      <li className="flex items-start text-sm text-gray-600">
+                        <span className="text-purple-500 font-bold mr-2">•</span>
+                        <span>Customs documentation</span>
+                      </li>
+                      <li className="flex items-start text-sm text-gray-600">
+                        <span className="text-purple-500 font-bold mr-2">•</span>
+                        <span>Multi-country logistics</span>
+                      </li>
+                    </ul>
+                    
+                    <div className="pt-4 border-t border-gray-200">
+                      <span className="inline-block text-purple-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
+                        Select Export Warehouse →
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {!pendingFormType && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => {
+                      setShowWarehouseModal(false);
+                    }}
+                    className="px-6 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
@@ -411,14 +553,32 @@ function DomesticDashboard() {
             </label>
           </div>
 
+          {/* Selected Warehouse Display for Transfer Forms */}
+          {(selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") && selectedWarehouse && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">Selected Warehouse:</p>
+                  <p className="text-lg font-semibold text-gray-900 capitalize">{selectedWarehouse === "export" ? "Export Warehouse" : "Online Warehouse"}</p>
+                </div>
+                <button
+                  onClick={handleChangeWarehouse}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                >
+                  Change Warehouse
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Form Type Buttons - Always Visible */}
           <div className="mb-6 border-b pb-4">
             <h3 className="text-lg font-semibold mb-3">Transaction Type {isFormTypeLocked && <span className="text-sm text-gray-500">(Locked)</span>}</h3>
             <div className="flex flex-wrap gap-3">
-              {["dispatch", "production", "purchase", "transfer", "return", "sample"].map((type) => (
+              {["dispatch", "production", "purchase", "transfer inwards", "transfer outwards", "return", "sample"].map((type) => (
                 <button
                   key={type}
-                  onClick={() => !isFormTypeLocked && setSelectedFormType(type)}
+                  onClick={() => handleFormTypeClick(type)}
                   disabled={isFormTypeLocked && selectedFormType !== type}
                   className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${
                     selectedFormType === type
@@ -461,6 +621,22 @@ function DomesticDashboard() {
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
             <p className="mt-4 text-gray-600">Loading transactions...</p>
           </div>
+        ) : (selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") && !selectedWarehouse ? (
+          <div className="bg-white shadow rounded-lg p-12 text-center">
+            <div className="inline-block mb-4">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-3xl">📦</span>
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Select a Warehouse</h3>
+            <p className="text-gray-600 mb-6">Please select a warehouse to proceed with {selectedFormType === "transfer inwards" ? "Transfer Inwards" : "Transfer Outwards"}</p>
+            <button
+              onClick={() => setShowWarehouseModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            >
+              Select Warehouse
+            </button>
+          </div>
         ) : (
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
@@ -472,7 +648,7 @@ function DomesticDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                    {(selectedFormType === "dispatch" || selectedFormType === "sample" || (selectedFormType === "transfer" && editForm.transferType === "outwards")) && (
+                    {(selectedFormType === "dispatch" || selectedFormType === "sample") && (
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MRP</th>
                     )}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
@@ -482,12 +658,8 @@ function DomesticDashboard() {
                     {selectedFormType === "purchase" && (
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
                     )}
-                    {selectedFormType === "transfer" && (
-                      <>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer Type</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receiver</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Channel</th>
-                      </>
+                    {(selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warehouse</th>
                     )}
                     {selectedFormType === "return" && (
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Channel</th>
@@ -503,17 +675,19 @@ function DomesticDashboard() {
                       <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => {
-                        if (selectedFormType === "dispatch" || selectedFormType === "sample" || (selectedFormType === "transfer" && editForm.transferType === "outwards")) {
+                        if (selectedFormType === "dispatch" || selectedFormType === "sample") {
                           handleKeyDown(e, mrpRef);
                         } else {
                           handleKeyDown(e, dateRef);
                         }
                       }} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      {(selectedFormType === "dispatch" || selectedFormType === "sample" || (selectedFormType === "transfer" && editForm.transferType === "outwards")) && (
+                      {(selectedFormType === "dispatch" || selectedFormType === "sample") && (
                         <td className="px-6 py-4"><input ref={mrpRef} type="number" value={editForm.mrp} onChange={(e) => setEditForm({...editForm, mrp: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="MRP" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       )}
                       <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
-                        if (selectedFormType === "dispatch" || selectedFormType === "sample" || selectedFormType === "purchase" || selectedFormType === "transfer" || selectedFormType === "return") {
+                        if (selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") {
+                          handleKeyDown(e, undefined, true);
+                        } else if (selectedFormType === "dispatch" || selectedFormType === "sample" || selectedFormType === "purchase" || selectedFormType === "return") {
                           handleKeyDown(e, additionalFieldRef);
                         } else {
                           handleKeyDown(e, undefined, true);
@@ -525,70 +699,19 @@ function DomesticDashboard() {
                       {selectedFormType === "purchase" && (
                         <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true)} placeholder="Supplier" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       )}
-                      {selectedFormType === "transfer" && (
-                        <>
-                          <td className="px-6 py-4">
-                            <div className="relative">
-                              <input
-                                ref={additionalFieldRef}
-                                type="text"
-                                value={editForm.transferType}
-                                onChange={(e) => handleTransferInputChange(e.target.value)}
-                                onFocus={() => setShowTransferDropdown(true)}
-                                onBlur={() => setTimeout(() => setShowTransferDropdown(false), 200)}
-                                placeholder="Transfer Type"
-                                className="w-full px-2 py-1 border rounded text-black bg-white"
-                              />
-                              {showTransferDropdown && filteredTransferOptions.length > 0 && (
-                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
-                                  {filteredTransferOptions.map((option, idx) => (
-                                    <div
-                                      key={idx}
-                                      onClick={() => {
-                                        setEditForm({...editForm, transferType: option});
-                                        setShowTransferDropdown(false);
-                                      }}
-                                      className="px-3 py-2 hover:bg-green-50 cursor-pointer text-black"
-                                    >
-                                      {option}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4"><input type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                          <td className="px-6 py-4">
-                            <div className="relative">
-                              <input
-                                type="text"
-                                value={editForm.channel}
-                                onChange={(e) => handleChannelInputChange(e.target.value)}
-                                onFocus={() => setShowChannelDropdown(true)}
-                                onBlur={() => setTimeout(() => setShowChannelDropdown(false), 200)}
-                                onKeyDown={(e) => handleKeyDown(e, undefined, true)}
-                                placeholder="Channel"
-                                className="w-full px-2 py-1 border rounded text-black bg-white"
-                              />
-                              {showChannelDropdown && filteredChannelOptions.filter(opt => opt === "export" || opt === "online").length > 0 && (
-                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
-                                  {filteredChannelOptions.filter(opt => opt === "export" || opt === "online").map((option, idx) => (
-                                    <div
-                                      key={idx}
-                                      onClick={() => {
-                                        setEditForm({...editForm, channel: option});
-                                        setShowChannelDropdown(false);
-                                      }}
-                                      className="px-3 py-2 hover:bg-green-50 cursor-pointer text-black"
-                                    >
-                                      {option}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </>
+                      {(selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") && (
+                        <td className="px-6 py-4">
+                          <div className="relative">
+                            <input
+                              ref={additionalFieldRef}
+                              type="text"
+                              value={editForm.channel}
+                              readOnly
+                              placeholder="Warehouse"
+                              className="w-full px-2 py-1 border rounded text-black bg-gray-100 cursor-not-allowed"
+                            />
+                          </div>
+                        </td>
                       )}
                       {selectedFormType === "return" && (
                         <td className="px-6 py-4">
@@ -639,18 +762,18 @@ function DomesticDashboard() {
                           <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => {
                             const formType = editForm.formType || "dispatch";
-                            if (formType === "dispatch" || formType === "sample" || (formType === "transfer" && editForm.transferType === "outwards")) {
+                            if (formType === "dispatch" || formType === "sample") {
                               handleKeyDown(e, mrpRef);
                             } else {
                               handleKeyDown(e, dateRef);
                             }
                           }} className="w-full px-2 py-1 border rounded" /></td>
-                          {(editForm.formType === "dispatch" || editForm.formType === "sample" || (editForm.formType === "transfer" && editForm.transferType === "outwards")) && (
+                          {(editForm.formType === "dispatch" || editForm.formType === "sample") && (
                             <td className="px-6 py-4"><input ref={mrpRef} type="number" value={editForm.mrp} onChange={(e) => setEditForm({...editForm, mrp: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="MRP" className="w-full px-2 py-1 border rounded" /></td>
                           )}
                           <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
                             const formType = editForm.formType || "dispatch";
-                            if (formType === "dispatch" || formType === "sample" || formType === "purchase" || formType === "transfer" || formType === "return") {
+                            if (formType === "dispatch" || formType === "sample" || formType === "purchase" || formType === "transfer inwards" || formType === "transfer outwards" || formType === "return") {
                               handleKeyDown(e, additionalFieldRef);
                             } else {
                               handleKeyDown(e, undefined, true, entry._id);
@@ -662,70 +785,17 @@ function DomesticDashboard() {
                           {editForm.formType === "purchase" && (
                             <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)} placeholder="Supplier" className="w-full px-2 py-1 border rounded" /></td>
                           )}
-                          {editForm.formType === "transfer" && (
-                            <>
-                              <td className="px-6 py-4">
-                                <div className="relative">
-                                  <input
-                                    ref={additionalFieldRef}
-                                    type="text"
-                                    value={editForm.transferType}
-                                    onChange={(e) => handleTransferInputChange(e.target.value)}
-                                    onFocus={() => setShowTransferDropdown(true)}
-                                    onBlur={() => setTimeout(() => setShowTransferDropdown(false), 200)}
-                                    placeholder="Transfer Type"
-                                    className="w-full px-2 py-1 border rounded"
-                                  />
-                                  {showTransferDropdown && filteredTransferOptions.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
-                                      {filteredTransferOptions.map((option, idx) => (
-                                        <div
-                                          key={idx}
-                                          onClick={() => {
-                                            setEditForm({...editForm, transferType: option});
-                                            setShowTransferDropdown(false);
-                                          }}
-                                          className="px-3 py-2 hover:bg-green-50 cursor-pointer"
-                                        >
-                                          {option}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4"><input type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} placeholder="Receiver" className="w-full px-2 py-1 border rounded" /></td>
-                              <td className="px-6 py-4">
-                                <div className="relative">
-                                  <input
-                                    type="text"
-                                    value={editForm.channel}
-                                    onChange={(e) => handleChannelInputChange(e.target.value)}
-                                    onFocus={() => setShowChannelDropdown(true)}
-                                    onBlur={() => setTimeout(() => setShowChannelDropdown(false), 200)}
-                                    onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)}
-                                    placeholder="Channel"
-                                    className="w-full px-2 py-1 border rounded"
-                                  />
-                                  {showChannelDropdown && filteredChannelOptions.filter(opt => opt === "export" || opt === "online").length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-48 overflow-y-auto">
-                                      {filteredChannelOptions.filter(opt => opt === "export" || opt === "online").map((option, idx) => (
-                                        <div
-                                          key={idx}
-                                          onClick={() => {
-                                            setEditForm({...editForm, channel: option});
-                                            setShowChannelDropdown(false);
-                                          }}
-                                          className="px-3 py-2 hover:bg-green-50 cursor-pointer"
-                                        >
-                                          {option}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                            </>
+                          {(editForm.formType === "transfer inwards" || editForm.formType === "transfer outwards") && (
+                            <td className="px-6 py-4">
+                              <input 
+                                ref={additionalFieldRef}
+                                type="text" 
+                                value={editForm.channel} 
+                                readOnly
+                                placeholder="Warehouse" 
+                                className="w-full px-2 py-1 border rounded bg-gray-100 cursor-not-allowed"
+                              />
+                            </td>
                           )}
                           {editForm.formType === "return" && (
                             <td className="px-6 py-4">
@@ -772,7 +842,7 @@ function DomesticDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.color}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
-                          {(entry.formType === "dispatch" || entry.formType === "sample" || (entry.formType === "transfer" && entry.transferType === "outwards")) && (
+                          {(entry.formType === "dispatch" || entry.formType === "sample") && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.mrp || "-"}</td>
                           )}
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
@@ -782,12 +852,8 @@ function DomesticDashboard() {
                           {entry.formType === "purchase" && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.supplier}</td>
                           )}
-                          {entry.formType === "transfer" && (
-                            <>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.transferType}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.receiver}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.channel}</td>
-                            </>
+                          {(entry.formType === "transfer inwards" || entry.formType === "transfer outwards") && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.channel}</td>
                           )}
                           {entry.formType === "return" && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.channel}</td>

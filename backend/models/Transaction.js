@@ -21,6 +21,8 @@ const transactionSchema = new mongoose.Schema({
       "production",
       "purchase",
       "transfer",
+      "transfer inwards",
+      "transfer outwards",
       "return",
       "sample",
       "sales",

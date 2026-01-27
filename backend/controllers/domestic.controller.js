@@ -5,6 +5,8 @@ const allowedDomesticForms = [
   "production",
   "purchase",
   "transfer",
+  "transfer inwards",
+  "transfer outwards",
   "return",
   "sample",
 ];

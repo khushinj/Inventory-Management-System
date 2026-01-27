@@ -1,6 +1,6 @@
 import { getTransactionModel } from "../models/Transaction.js";
 
-const allowedOnlineForms = ["return", "sales", "transfer", "purchase"];
+const allowedOnlineForms = ["return", "sales", "transfer", "purchase", "transfer inwards", "transfer outwards"];
 
 export const createOnlineEntry = async (req, res) => {
   try {

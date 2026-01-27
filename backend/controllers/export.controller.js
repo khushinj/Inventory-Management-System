@@ -1,6 +1,6 @@
 import { getTransactionModel } from "../models/Transaction.js";
 
-const allowedExportForms = ["dispatch", "production", "purchase", "transfer"];
+const allowedExportForms = ["dispatch", "production", "purchase", "transfer", "transfer inwards", "transfer outwards"];
 
 export const createExportEntry = async (req, res) => {
   try {

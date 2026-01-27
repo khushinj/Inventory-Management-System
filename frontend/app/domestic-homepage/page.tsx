@@ -75,14 +75,14 @@ const operations: OperationCard[] = [
     description: "Receive incoming transfers",
     icon: ArrowDownToLine,
     bgColor: "bg-cyan-500",
-    href: "/domestic?formType=transfer&transferType=inwards&locked=true",
+    href: "/domestic?formType=transfer inwards&locked=true",
   },
   {
     title: "Transfer Outward",
     description: "Send outgoing transfers",
     icon: ArrowUpFromLine,
     bgColor: "bg-pink-500",
-    href: "/domestic?formType=transfer&transferType=outwards&locked=true",
+    href: "/domestic?formType=transfer outwards&locked=true",
   },
 ];
 

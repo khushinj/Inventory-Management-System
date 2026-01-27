@@ -6,7 +6,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-type InvoiceItem = {
+type PurchaseOrderItem = {
   id: number;
   category: string;
   itemName: string;
@@ -78,7 +78,7 @@ function numberToWords(num: number): string {
   return result + " Only";
 }
 
-export default function InvoiceDataEntryForm() {
+export default function PurchaseOrderEntryForm() {
   const [headerInfo, setHeaderInfo] = useState({
     dealerName: "",
     buyerName: "",
@@ -86,7 +86,7 @@ export default function InvoiceDataEntryForm() {
     city: "",
   });
 
-  const [items, setItems] = useState<InvoiceItem[]>([
+  const [items, setItems] = useState<PurchaseOrderItem[]>([
     {
       id: 1,
       category: "",
@@ -116,7 +116,7 @@ export default function InvoiceDataEntryForm() {
   const [summary, setSummary] = useState({
     totalQuantity: 4,
     grossTotal: 3836.60,
-    invoiceValueWords: "Four Thousand Twenty Eight and Forty Four paisa Only",
+    purchaseOrderValueWords: "Four Thousand Twenty Eight and Forty Four paisa Only",
     gstOutput: 191.84,
     grandTotal: 4028.44,
     termsCondition: "Certified that the particulars given above are true and correct and the amount indicated represents the price actually charged and that there is no flow of additional consideration directly or indirectly from the buyer.",
@@ -132,19 +132,19 @@ export default function InvoiceDataEntryForm() {
     const grossTotal = items.reduce((sum, item) => sum + item.amount, 0);
     const gstOutput = items.reduce((sum, item) => sum + item.tax, 0);
     const grandTotal = items.reduce((sum, item) => sum + item.amt, 0);
-    const invoiceValueWords = numberToWords(grandTotal);
+    const purchaseOrderValueWords = numberToWords(grandTotal);
 
     setSummary({
       totalQuantity,
       grossTotal: parseFloat(grossTotal.toFixed(2)),
-      invoiceValueWords,
+      purchaseOrderValueWords,
       gstOutput: parseFloat(gstOutput.toFixed(2)),
       grandTotal: parseFloat(grandTotal.toFixed(2)),
       termsCondition: "Certified that the particulars given above are true and correct and the amount indicated represents the price actually charged and that there is no flow of additional consideration directly or indirectly from the buyer.",
     });
   }, [items]);
 
-  const calculateItemValues = (item: InvoiceItem): InvoiceItem => {
+  const calculateItemValues = (item: PurchaseOrderItem): PurchaseOrderItem => {
     // Calculate QTY: sum of all sizes
     const qty = item.s + item.m + item.l + item.xl + item.xxl + item.xxxl + item.xxxxl + item.xxxxxl + item.xxxxxxl;
     
@@ -174,7 +174,7 @@ export default function InvoiceDataEntryForm() {
     };
   };
 
-  const handleItemChange = (id: number, field: keyof InvoiceItem, value: string | number) => {
+  const handleItemChange = (id: number, field: keyof PurchaseOrderItem, value: string | number) => {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === id) {
@@ -222,7 +222,7 @@ export default function InvoiceDataEntryForm() {
     
     // Title
     doc.setFontSize(20);
-    doc.text("INVOICE", 105, 20, { align: "center" });
+    doc.text("PURCHASE ORDER", 105, 20, { align: "center" });
     
     // Header Information
     doc.setFontSize(10);
@@ -305,7 +305,7 @@ export default function InvoiceDataEntryForm() {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Items");
-    XLSX.writeFile(workbook, `invoice_${headerInfo.date || "document"}.xlsx`);
+    XLSX.writeFile(workbook, `purchase_order_${headerInfo.date || "document"}.xlsx`);
     
     // Terms and Conditions
     const finalY = (doc as any).lastAutoTable.finalY + 10;
@@ -316,7 +316,7 @@ export default function InvoiceDataEntryForm() {
     doc.text(termsLines, 20, finalY + 7);
     
     // Download PDF
-    doc.save(`invoice_${headerInfo.date || 'document'}.pdf`);
+    doc.save(`purchase_order_${headerInfo.date || 'document'}.pdf`);
   };
 
   return (
@@ -324,7 +324,7 @@ export default function InvoiceDataEntryForm() {
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold text-gray-900">Invoice Data Entry Form</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Purchase Order Entry Form</h1>
           <button
             onClick={handleSaveData}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors"
@@ -625,10 +625,10 @@ export default function InvoiceDataEntryForm() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Invoice Value (in Words) - Indian Rupees
+                  Purchase Order Value (in Words) - Indian Rupees
                 </label>
                 <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100 text-black text-sm leading-relaxed min-h-[100px]">
-                  {summary.invoiceValueWords}
+                  {summary.purchaseOrderValueWords}
                 </div>
               </div>
               
@@ -675,7 +675,7 @@ export default function InvoiceDataEntryForm() {
 
           {/* Footer Text */}
           <div className="mt-8 text-center">
-            <p className="text-sm italic text-gray-500">This is a Computer Generated Invoice</p>
+            <p className="text-sm italic text-gray-500">This is a Computer Generated Purchase Order</p>
           </div>
         </div>
       </div>

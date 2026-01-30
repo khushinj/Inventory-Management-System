@@ -1,32 +1,5 @@
 import mongoose from "mongoose";
 
-const variantSchema = new mongoose.Schema({
-  color: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  size: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  quantity: {
-    type: Number,
-    required: true,
-  },
-  location: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  type: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-}, { _id: false });
-
 const jobCardSchema = new mongoose.Schema({
   designNumber: {
     type: String,
@@ -48,6 +21,10 @@ const jobCardSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  gsm: {
+    type: Number,
+    required: true,
+  },
   mrp: {
     type: Number,
     required: true,
@@ -55,10 +32,6 @@ const jobCardSchema = new mongoose.Schema({
   image: {
     type: String, // Store base64 image or URL
     required: false,
-  },
-  variants: {
-    type: [variantSchema],
-    default: [],
   },
   createdAt: {
     type: Date,

@@ -5,23 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { api } from "../../lib/api";
 
-type Variant = {
-  color: string;
-  size: string;
-  quantity: string;
-  location: string;
-  type: string;
-};
-
 type JobCard = {
   _id: string;
   designNumber: string;
   brand: string;
   fabric: string;
   fabricComposition: string;
+  gsm: number;
   mrp: number;
   image?: string;
-  variants?: Variant[];
   createdAt: string;
 };
 
@@ -232,51 +224,10 @@ export default function InventoryPage() {
                       <DetailBlock label="Brand" value={card.brand} />
                       <DetailBlock label="Fabric" value={card.fabric} />
                       <DetailBlock label="Fabric Composition" value={card.fabricComposition} />
+                      <DetailBlock label="GSM" value={card.gsm} />
                       <DetailBlock label="MRP" value={`₹${card.mrp}`} />
                     </div>
                   </div>
-
-                  {card.variants && card.variants.length > 0 && (
-                    <div className="border-t px-6 pb-6">
-                      <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-4">Available Stock</h3>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Colour</th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Size</th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Quantity</th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Location</th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Type</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-100">
-                            {card.variants.map((variant, idx) => (
-                              <tr key={idx}>
-                                <td className="px-4 py-3">
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className="w-3 h-3 rounded-full border border-gray-300"
-                                      style={{ backgroundColor: variant.color.toLowerCase() }}
-                                    />
-                                    <span className="text-gray-900">{variant.color}</span>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-3 text-gray-900">{variant.size}</td>
-                                <td className="px-4 py-3">
-                                  <span className="px-3 py-1 bg-gray-900 text-white rounded-full text-sm font-semibold">
-                                    {variant.quantity}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3 text-gray-900">{variant.location}</td>
-                                <td className="px-4 py-3 text-gray-900">{variant.type}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))
             )}

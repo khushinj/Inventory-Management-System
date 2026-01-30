@@ -5,24 +5,15 @@ import Link from "next/link";
 import { api } from "../../lib/api";
 import Image from "next/image";
 
-type VariantRow = {
-  id: string;
-  color: string;
-  size: string;
-  quantity: string;
-  location: string;
-  type: string;
-};
-
 type JobCardForm = {
   designNumber: string;
   brand: string;
   fabric: string;
   fabricComposition: string;
+  gsm: string;
   mrp: string;
   image: string;
   imagePreview?: string;
-  variants: VariantRow[];
 };
 
 type SavedJobCard = {
@@ -31,9 +22,9 @@ type SavedJobCard = {
   brand: string;
   fabric: string;
   fabricComposition: string;
+  gsm: number;
   mrp: number;
   image?: string;
-  variants?: VariantRow[];
   createdAt: string;
 };
 
@@ -43,18 +34,9 @@ export default function JobCardPage() {
     brand: "",
     fabric: "",
     fabricComposition: "",
+    gsm: "",
     mrp: "",
     image: "",
-    variants: [
-      {
-        id: Date.now().toString(),
-        color: "",
-        size: "",
-        quantity: "",
-        location: "",
-        type: "",
-      },
-    ],
   });
 
   const [savedJobCards, setSavedJobCards] = useState<SavedJobCard[]>([]);
@@ -81,42 +63,19 @@ export default function JobCardPage() {
   };
 
   const addVariantRow = () => {
-    setFormData({
-      ...formData,
-      variants: [
-        ...formData.variants,
-        {
-          id: Date.now().toString(),
-          color: "",
-          size: "",
-          quantity: "",
-          location: "",
-          type: "",
-        },
-      ],
-    });
+    // Removed - variants no longer used
   };
 
   const deleteVariantRow = (id: string) => {
-    if (formData.variants.length > 1) {
-      setFormData({
-        ...formData,
-        variants: formData.variants.filter((v) => v.id !== id),
-      });
-    }
+    // Removed - variants no longer used
   };
 
   const updateVariantRow = (
     id: string,
-    field: keyof VariantRow,
+    field: string,
     value: string
   ) => {
-    setFormData({
-      ...formData,
-      variants: formData.variants.map((v) =>
-        v.id === id ? { ...v, [field]: value } : v
-      ),
-    });
+    // Removed - variants no longer used
   };
 
   const updateMainField = (field: keyof JobCardForm, value: string) => {
@@ -149,24 +108,11 @@ export default function JobCardPage() {
         !formData.brand ||
         !formData.fabric ||
         !formData.fabricComposition ||
+        !formData.gsm ||
         !formData.mrp
       ) {
         alert("Please fill all main product fields");
         return;
-      }
-
-      // Validate variant rows
-      for (const variant of formData.variants) {
-        if (
-          !variant.color ||
-          !variant.size ||
-          !variant.quantity ||
-          !variant.location ||
-          !variant.type
-        ) {
-          alert("Please fill all fields in all variant rows");
-          return;
-        }
       }
 
       const payload = {
@@ -174,9 +120,9 @@ export default function JobCardPage() {
         brand: formData.brand,
         fabric: formData.fabric,
         fabricComposition: formData.fabricComposition,
+        gsm: Number(formData.gsm),
         mrp: Number(formData.mrp),
         image: formData.image,
-        variants: formData.variants,
       };
 
       await api.post("/jobcard", payload);
@@ -189,18 +135,9 @@ export default function JobCardPage() {
         brand: "",
         fabric: "",
         fabricComposition: "",
+        gsm: "",
         mrp: "",
         image: "",
-        variants: [
-          {
-            id: Date.now().toString(),
-            color: "",
-            size: "",
-            quantity: "",
-            location: "",
-            type: "",
-          },
-        ],
       });
 
       fetchJobCards();
@@ -275,27 +212,20 @@ export default function JobCardPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Entry Form Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Add New Job Card
-          </h2>
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Design Info</h2>
 
           {/* Main Product Details */}
-          <div className="border-2 border-indigo-200 rounded-lg p-6 mb-6 bg-indigo-50">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Main Product Details
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Image Upload */}
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Image
-                </label>
-                <div className="flex flex-col items-center gap-3">
-                  {formData.imagePreview ? (
-                    <div className="relative w-32 h-32">
+          <div className="space-y-8">
+            {/* 1. Upload Pictures */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">1. Upload Pictures</h3>
+              <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8">
+                {formData.imagePreview ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative w-48 h-48">
                       <Image
                         src={formData.imagePreview}
                         alt="Preview"
@@ -303,27 +233,52 @@ export default function JobCardPage() {
                         className="object-cover rounded border-2 border-gray-300"
                       />
                     </div>
-                  ) : (
-                    <div className="w-32 h-32 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
-                      <span className="text-gray-400 text-sm">No image</span>
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleImageUpload(file);
-                    }}
-                    className="text-sm"
-                  />
-                </div>
+                    <label className="inline-block">
+                      <span className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold cursor-pointer">
+                        Change Image
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(file);
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-4 py-12">
+                    <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    <p className="text-gray-600 font-medium">No images uploaded</p>
+                    <label className="inline-block">
+                      <span className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold cursor-pointer">
+                        Choose files
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(file);
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
+            </div>
 
-              {/* Design Number */}
+            {/* Form Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 2. Design Number */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Design Number *
+                <label className="block text-base font-semibold text-gray-900 mb-2">
+                  2. Design Number
                 </label>
                 <input
                   type="text"
@@ -331,43 +286,29 @@ export default function JobCardPage() {
                   onChange={(e) =>
                     updateMainField("designNumber", e.target.value)
                   }
-                  placeholder="e.g., DN-001"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                  placeholder="Enter design number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
               </div>
 
-              {/* Brand */}
+              {/* 3. Fabric */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Brand *
-                </label>
-                <input
-                  type="text"
-                  value={formData.brand}
-                  onChange={(e) => updateMainField("brand", e.target.value)}
-                  placeholder="e.g., Nike"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
-                />
-              </div>
-
-              {/* Fabric */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fabric *
+                <label className="block text-base font-semibold text-gray-900 mb-2">
+                  3. Fabric
                 </label>
                 <input
                   type="text"
                   value={formData.fabric}
                   onChange={(e) => updateMainField("fabric", e.target.value)}
-                  placeholder="e.g., Cotton"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                  placeholder="Enter fabric type"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
               </div>
 
-              {/* Fabric Composition */}
+              {/* 4. Fabric Composition */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fabric Composition *
+                <label className="block text-base font-semibold text-gray-900 mb-2">
+                  4. Fabric Composition
                 </label>
                 <input
                   type="text"
@@ -376,154 +317,78 @@ export default function JobCardPage() {
                     updateMainField("fabricComposition", e.target.value)
                   }
                   placeholder="e.g., 100% Cotton"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
               </div>
 
-              {/* MRP */}
+              {/* 5. Brand */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  MRP *
+                <label className="block text-base font-semibold text-gray-900 mb-2">
+                  5. Brand
+                </label>
+                <input
+                  type="text"
+                  value={formData.brand}
+                  onChange={(e) => updateMainField("brand", e.target.value)}
+                  placeholder="Enter brand"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                />
+              </div>
+
+              {/* 6. GSM */}
+              <div>
+                <label className="block text-base font-semibold text-gray-900 mb-2">
+                  6. GSM
+                </label>
+                <input
+                  type="number"
+                  value={formData.gsm}
+                  onChange={(e) => updateMainField("gsm", e.target.value)}
+                  placeholder="Enter GSM"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                />
+              </div>
+
+              {/* 7. MRP */}
+              <div>
+                <label className="block text-base font-semibold text-gray-900 mb-2">
+                  7. MRP
                 </label>
                 <input
                   type="number"
                   value={formData.mrp}
                   onChange={(e) => updateMainField("mrp", e.target.value)}
-                  placeholder="e.g., 1500"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                  placeholder="Enter MRP"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
               </div>
             </div>
           </div>
 
-          {/* Variants Section */}
-          <div className="border-2 border-green-200 rounded-lg p-6 bg-green-50">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Product Variants
-              </h3>
-              <button
-                onClick={addVariantRow}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
-              >
-                + Add Variant
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Color *
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Size *
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Quantity *
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Location *
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Type *
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {formData.variants.map((variant) => (
-                    <tr key={variant.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={variant.color}
-                          onChange={(e) =>
-                            updateVariantRow(variant.id, "color", e.target.value)
-                          }
-                          placeholder="Color"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={variant.size}
-                          onChange={(e) =>
-                            updateVariantRow(variant.id, "size", e.target.value)
-                          }
-                          placeholder="Size"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="number"
-                          value={variant.quantity}
-                          onChange={(e) =>
-                            updateVariantRow(
-                              variant.id,
-                              "quantity",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Qty"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={variant.location}
-                          onChange={(e) =>
-                            updateVariantRow(
-                              variant.id,
-                              "location",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Location"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={variant.type}
-                          onChange={(e) =>
-                            updateVariantRow(variant.id, "type", e.target.value)
-                          }
-                          placeholder="Type"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-800"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => deleteVariantRow(variant.id)}
-                          disabled={formData.variants.length === 1}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-30 disabled:cursor-not-allowed font-semibold"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="mt-6 flex justify-end">
+          {/* Action Buttons */}
+          <div className="mt-8 flex justify-between gap-4">
+            <button
+              onClick={() => {
+                setFormData({
+                  designNumber: "",
+                  brand: "",
+                  fabric: "",
+                  fabricComposition: "",
+                  gsm: "",
+                  mrp: "",
+                  image: "",
+                });
+              }}
+              className="px-8 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+            >
+              Reset
+            </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              className="px-8 py-3 bg-black text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Saving..." : "Save Job Card"}
+              {saving ? "Saving..." : "Submit Design Info"}
             </button>
           </div>
         </div>

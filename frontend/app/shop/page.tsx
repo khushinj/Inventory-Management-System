@@ -68,20 +68,22 @@ function ShopDashboard() {
     }
   };
 
-  const filteredEntries = entries.filter((entry) => {
-    const matchesSearch =
-      entry.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.color?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredEntries = entries
+    .filter((entry) => {
+      const matchesSearch =
+        entry.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        entry.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        entry.color?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesChannel =
-      filterChannel === "All Channels" || entry.channel === filterChannel;
+      const matchesChannel =
+        filterChannel === "All Channels" || entry.channel === filterChannel;
 
-    const matchesFormType =
-      entry.formType === selectedFormType;
+      const matchesFormType =
+        entry.formType === selectedFormType;
 
-    return matchesSearch && matchesChannel && matchesFormType;
-  });
+      return matchesSearch && matchesChannel && matchesFormType;
+    })
+    .slice(-30);
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);

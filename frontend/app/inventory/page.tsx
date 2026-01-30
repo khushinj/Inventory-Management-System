@@ -75,26 +75,28 @@ export default function InventoryPage() {
     setSelectedMrpRange(selectedMrpRange === index ? null : index);
   };
 
-  const filteredJobCards = jobCards.filter((card) => {
-    const matchesSearch =
-      card.designNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.fabric.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredJobCards = jobCards
+    .filter((card) => {
+      const matchesSearch =
+        card.designNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        card.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        card.fabric.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFabric =
-      selectedFabrics.length === 0 ||
-      selectedFabrics.some((f) =>
-        card.fabric.toLowerCase().includes(f.toLowerCase())
-      );
+      const matchesFabric =
+        selectedFabrics.length === 0 ||
+        selectedFabrics.some((f) =>
+          card.fabric.toLowerCase().includes(f.toLowerCase())
+        );
 
-    let matchesMrp = true;
-    if (selectedMrpRange !== null) {
-      const range = MRP_RANGES[selectedMrpRange];
-      matchesMrp = card.mrp >= range.min && card.mrp <= range.max;
-    }
+      let matchesMrp = true;
+      if (selectedMrpRange !== null) {
+        const range = MRP_RANGES[selectedMrpRange];
+        matchesMrp = card.mrp >= range.min && card.mrp <= range.max;
+      }
 
-    return matchesSearch && matchesFabric && matchesMrp;
-  });
+      return matchesSearch && matchesFabric && matchesMrp;
+    })
+    .slice(-30);
 
   return (
     <div className="min-h-screen bg-gray-100">

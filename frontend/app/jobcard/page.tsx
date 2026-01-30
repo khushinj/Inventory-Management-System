@@ -183,12 +183,14 @@ export default function JobCardPage() {
     }
   };
 
-  const filteredJobCards = savedJobCards.filter(
-    (card) =>
-      card.designNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.fabric.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredJobCards = savedJobCards
+    .filter(
+      (card) =>
+        card.designNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        card.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        card.fabric.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .slice(-30);
 
   return (
     <div className="min-h-screen bg-gray-50">

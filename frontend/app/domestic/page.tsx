@@ -96,18 +96,20 @@ function DomesticDashboard() {
     }
   };
 
-  const filteredEntries = entries.filter((entry) => {
-    const matchesSearch =
-      entry.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.color?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.formType?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredEntries = entries
+    .filter((entry) => {
+      const matchesSearch =
+        entry.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        entry.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        entry.color?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        entry.formType?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFormType =
-      entry.formType === selectedFormType;
+      const matchesFormType =
+        entry.formType === selectedFormType;
 
-    return matchesSearch && matchesFormType;
-  });
+      return matchesSearch && matchesFormType;
+    })
+    .slice(-30);
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);

@@ -8,6 +8,7 @@ import domesticRoutes from "./routes/domestic.route.js";
 import exportRoutes from "./routes/export.route.js";
 import onlineRoutes from "./routes/online.route.js";
 import jobCardRoutes from "./routes/jobCard.route.js";
+import shopInventoryRoutes from "./routes/shopInventory.route.js";
 
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.use("/api/warehouse/domestic", domesticRoutes);
 app.use("/api/warehouse/export", exportRoutes);
 app.use("/api/warehouse/online", onlineRoutes);
 app.use("/api/jobcard", jobCardRoutes);
+app.use("/api/shop-inventory", shopInventoryRoutes);
 
 // test route
 app.get("/", (req, res) => {

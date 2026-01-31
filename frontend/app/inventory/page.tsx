@@ -35,7 +35,7 @@ const MRP_RANGES = [
   { label: "Under ₹1000", min: 0, max: 1000 },
   { label: "Until ₹2k", min: 0, max: 2000 },
   { label: "Until ₹3k", min: 0, max: 3000 },
-  // Till ₹5k should only show 4k-5k as requested
+
   { label: "Till ₹5k", min: 4000, max: 5000 },
 ];
 
@@ -100,7 +100,7 @@ export default function InventoryPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
+
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div>
@@ -110,7 +110,7 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* Search */}
+
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="relative">
@@ -138,14 +138,14 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* Content with sidebar */}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-          {/* Sidebar filters */}
+
           <aside className="bg-white border rounded-lg shadow-sm p-6 h-fit sticky top-20 self-start">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Filters</h2>
 
-            {/* Fabric type */}
+
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Fabric Type</h3>
               <div className="space-y-3">
@@ -163,7 +163,7 @@ export default function InventoryPage() {
               </div>
             </div>
 
-            {/* MRP */}
+
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">MRP Range</h3>
               <div className="space-y-3">

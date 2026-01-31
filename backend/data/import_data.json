@@ -1,0 +1,406 @@
+[
+  {
+    "dno": "SGRAGPD-3394",
+    "color": "Green",
+    "sizes": {
+      "S": 2,
+      "M": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SKBS-502",
+    "color": "Mustard",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SKBDFSKB-124",
+    "color": "Yellow",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "import"
+  },
+  {
+    "dno": "SCHGRASKD-932",
+    "color": "Green",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 4,
+    "type": "import"
+  },
+  {
+    "dno": "SPKSS-A935",
+    "color": "PINK",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "4XL": 1
+    },
+    "totalQty": 4,
+    "type": "import"
+  },
+  {
+    "dno": "SRTSKD-A062",
+    "color": "RUST",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "import"
+  },
+  {
+    "dno": "SKBDT-513",
+    "color": "ROYAL Blue",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "import"
+  },
+  {
+    "dno": "SBGSKD-A007",
+    "color": "BEIGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "import"
+  },
+  {
+    "dno": "SCHRDSKD-A033",
+    "color": "RED",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SCHREDSKD-A032",
+    "color": "RED",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SGRCHSKD-A019",
+    "color": "GREEN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "import"
+  },
+  {
+    "dno": "SGRBDHSKD-A031",
+    "color": "GREEN",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "4XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SKBDFSKB-125",
+    "color": "MINT",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SKDFSKB-122",
+    "color": "PINK",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SYLUSKD-A053",
+    "color": "YELLOW",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "XL": 1,
+      "XXL": 1,
+      "4XL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SPKSKD-A021",
+    "color": "PINK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SVGRPRKP-A802",
+    "color": "GREEN",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "4XL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SKBHSKB-187",
+    "color": "INDIGO",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SBKEMCDS-4342",
+    "color": "BLACK",
+    "sizes": {
+      "M": 2,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SVORPRKP-A063",
+    "color": "ORANGE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "4XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SGREMSKD-2151",
+    "color": "GREEN",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SBGPRKP-A909",
+    "color": "BEIGE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "REPKRYKP-3020",
+    "color": "PINK",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SGREMK-3212",
+    "color": "GREEN",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 2,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SDNMLK-A827",
+    "color": "BLUE",
+    "sizes": {
+      "M": 2,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "4XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SDNMDR-A830",
+    "color": "BLUE",
+    "sizes": {
+      "S": 1,
+      "L": 2,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SDNEMK-A840",
+    "color": "BLUE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "4XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "ANCINFLK-9052",
+    "color": "INDIGO",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "import"
+  },
+  {
+    "dno": "SPRLRYK-3037",
+    "color": "PURPLE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "import"
+  },
+  {
+    "dno": "SVBUPRCD-A819",
+    "color": "TEAL-DFTD",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "import"
+  },
+  {
+    "dno": "SGRCPRDR-A824",
+    "color": "GREEN",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "import"
+  },
+  {
+    "dno": "SBUPRDR-3063",
+    "color": "BLUE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "import"
+  }
+]

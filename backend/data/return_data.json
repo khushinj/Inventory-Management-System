@@ -1,0 +1,3684 @@
+[
+  {
+    "dno": "NG-19728",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19727",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19725A",
+    "color": "ECRU MELANGE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19722A",
+    "color": "SILVER GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19725A",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19722A",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2001",
+    "color": "SKY",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2001",
+    "color": "LEMON",
+    "sizes": {
+      "XXL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2001",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2001",
+    "color": "BLUE",
+    "sizes": {
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19980",
+    "color": "WHITE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19980",
+    "color": "RED",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19980",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19957",
+    "color": "DARK OLIVE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19957",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19957",
+    "color": "WINE",
+    "sizes": {
+      "M": 1,
+      "XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2002",
+    "color": "BOTTLE GREEN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2002",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2002",
+    "color": "SAGE GREEN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2002",
+    "color": "RUST",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2003",
+    "color": "RED",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2003",
+    "color": "WHITE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2003",
+    "color": "OLIVE",
+    "sizes": {
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-2003",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91438",
+    "color": "L-BROWN",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91440",
+    "color": "OFFWHITE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250553",
+    "color": "NAVY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250553",
+    "color": "WHITE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250553",
+    "color": "E. GREEN",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250553",
+    "color": "RUST",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250554",
+    "color": "LILAC",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250554",
+    "color": "BLACK",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250554",
+    "color": "KHAKI",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-250554",
+    "color": "INDIGO",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "TB-002/6",
+    "color": "GREEN/EMERALD",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "TB-002/7",
+    "color": "MIDNIGHT BLUE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "TB-002/10",
+    "color": "SILVER GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "TB-002/12",
+    "color": "WOOD",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "TB-011",
+    "color": "WHITE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "BEIGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1,
+      "3XL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "GREY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "BLACK",
+    "sizes": {
+      "S": 2,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "OLIVE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "D.GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "NAVY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "WHITE",
+    "sizes": {
+      "S": 1,
+      "M": 2,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 2
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "TB-014/351149",
+    "color": "WINE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "SH-6301",
+    "color": "MIX",
+    "sizes": {
+      "L": 7,
+      "XL": 10,
+      "XXL": 12
+    },
+    "totalQty": 29,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20043",
+    "color": "DARK GREY",
+    "sizes": {
+      "XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20043",
+    "color": "OLIVE",
+    "sizes": {
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-3602",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20014",
+    "color": "P.GREEN",
+    "sizes": {
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20014",
+    "color": "GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19838",
+    "color": "AOP",
+    "sizes": {
+      "L": 1,
+      "XXL": 2
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-3001",
+    "color": "ONION",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 2,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-3001",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20046",
+    "color": "BLUE",
+    "sizes": {
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20046",
+    "color": "SKY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20046",
+    "color": "P.GREEN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20046",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20046",
+    "color": "STRIPRD OLIVE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-3003",
+    "color": "WHITE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-3003",
+    "color": "BLACK",
+    "sizes": {
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1,
+      "4XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20045",
+    "color": "SKY BLUE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20045",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91285",
+    "color": "BLACK",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91285",
+    "color": "GREY",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91285",
+    "color": "RED",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91285",
+    "color": "YELLOW",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91285",
+    "color": "ROYAL",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91285",
+    "color": "WHITE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90476",
+    "color": "BLACK",
+    "sizes": {
+      "L": 2,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90476",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19384",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19384",
+    "color": "PINK",
+    "sizes": {
+      "XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19336",
+    "color": "BLUE MELANGE",
+    "sizes": {
+      "M": 1,
+      "XL": 2
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19336",
+    "color": "ANTHRA MELANGE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19382",
+    "color": "WINE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90679",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90679",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "XXL": 2
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19397",
+    "color": "PINK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19397",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19398",
+    "color": "RUST",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19398",
+    "color": "SAGE GREEN",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90436",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90436",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-002",
+    "color": "OFFWHITE",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90451",
+    "color": "GREY/WHITE",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351171",
+    "color": "CORNSTALK",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19605",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19385",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19385",
+    "color": "MUSTARD",
+    "sizes": {
+      "M": 1,
+      "XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19356",
+    "color": "NAVY",
+    "sizes": {
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19356",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19356",
+    "color": "MUSTARD",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19336",
+    "color": "RUST",
+    "sizes": {
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19330",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19341",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 2,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19341",
+    "color": "WINE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19341",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1,
+      "XL": 2,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19341",
+    "color": "OLIVE",
+    "sizes": {
+      "XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19348",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19348",
+    "color": "BLACK",
+    "sizes": {
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19349",
+    "color": "BRICK/BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-90682",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-90682",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19349",
+    "color": "ECRU/TEAL",
+    "sizes": {
+      "M": 2,
+      "L": 2,
+      "XL": 2,
+      "XXL": 1
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19349",
+    "color": "INDIGO",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19349",
+    "color": "WINE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19349",
+    "color": "B.GREEN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19321",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19321",
+    "color": "ANTHRA MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19321",
+    "color": "BLUE MELANGE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19339",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19339",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19339",
+    "color": "MAROON",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19342",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "L": 1,
+      "XXL": 2
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19342",
+    "color": "WINE/BLINK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19342",
+    "color": "DARK/GREEN",
+    "sizes": {
+      "L": 2,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19344",
+    "color": "OLIVE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19344",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19344",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19390",
+    "color": "L.ONION",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19389",
+    "color": "RESBERRY/WINE",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19386",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19320",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19315",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19315",
+    "color": "MUSTARD",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19315",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1010",
+    "color": "COOTTECH BLUE",
+    "sizes": {
+      "S": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1010",
+    "color": "COOTTECH BLUE",
+    "sizes": {
+      "3XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1012",
+    "color": "MID BATA",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 2
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1012",
+    "color": "MID BATA",
+    "sizes": {
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1012",
+    "color": "KHAKI TINT",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1005",
+    "color": "GREY BLAST",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1005",
+    "color": "GREY BLAST",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1005",
+    "color": "INDIGO BLAST",
+    "sizes": {
+      "XXL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1005",
+    "color": "INDIGO BLAST",
+    "sizes": {
+      "4XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1009",
+    "color": "CLASSIC BLUE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1009",
+    "color": "CLASSIC BLUE",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "MD-0033",
+    "color": "HARD WASH",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MD-0033",
+    "color": "VINTAGE BLUE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "MD-003",
+    "color": "SALT N PAPER",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MD-0053",
+    "color": "SALT N PAPER",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "MD-1007",
+    "color": "SALT N PAPER",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "MDS-1006",
+    "color": "HARD WASH",
+    "sizes": {
+      "M": 2,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "MDS-1007",
+    "color": "DARK BLUE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MDS-1006",
+    "color": "TINT GREEN",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MDS-1007",
+    "color": "",
+    "sizes": {
+      "XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19866",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19866",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19866",
+    "color": "MQUVE WINE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19865",
+    "color": "INDIAN TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19865",
+    "color": "OFFWHITE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19867",
+    "color": "OFFWHITE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19867",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19867",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19865",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19852",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19852",
+    "color": "FAWN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19852",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19851",
+    "color": "BEIGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19851",
+    "color": "CHARCOAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19850",
+    "color": "BROWN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-90845",
+    "color": "OLIVE",
+    "sizes": {
+      "S": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19343",
+    "color": "INDIGO",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19343",
+    "color": "B.GREEN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19343",
+    "color": "WINE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19322",
+    "color": "BLACK/GREY",
+    "sizes": {
+      "M": 2,
+      "L": 2,
+      "XL": 2,
+      "XXL": 2
+    },
+    "totalQty": 8,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19322",
+    "color": "MAROON/ECU.MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 2,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90448/1",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "SSG-90448/1",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20056",
+    "color": "D.GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20054",
+    "color": "BEIGE/OFFWHITE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20054",
+    "color": "OLIVE/OFFWHITE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20055",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-20055",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2678",
+    "color": "MIX",
+    "sizes": {
+      "M": 16,
+      "L": 1
+    },
+    "totalQty": 17,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2674",
+    "color": "COLOUR MIX",
+    "sizes": {
+      "M": 11,
+      "L": 5
+    },
+    "totalQty": 16,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2678",
+    "color": "MIX",
+    "sizes": {
+      "M": 20,
+      "L": 6
+    },
+    "totalQty": 26,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2642",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2649",
+    "color": "GREEN",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2618",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2626",
+    "color": "BEIGE/NAVY",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2641",
+    "color": "SAGE GREEN",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2602",
+    "color": "SAGE GREEN NAVY",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2610",
+    "color": "NAVY",
+    "sizes": {
+      "M": 2
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2621",
+    "color": "L.GREY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2644",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2632",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2640",
+    "color": "LAVENDER",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2639",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2636",
+    "color": "GREY",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2606",
+    "color": "BLUE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2648",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2629",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2658",
+    "color": "BLUE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2623",
+    "color": "BLUE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2628",
+    "color": "BLUE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2607",
+    "color": "SAGE GREEN",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2661",
+    "color": "BLACK MELANGE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2630",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2646",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2659",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2608",
+    "color": "TEAL",
+    "sizes": {
+      "L": 2
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2660",
+    "color": "OFFWHITE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2604",
+    "color": "OFFWHITE/MELANGE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2627",
+    "color": "OFFWHITE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2611",
+    "color": "OLIVE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2611",
+    "color": "GREY",
+    "sizes": {
+      "L": 2
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2611",
+    "color": "BURDUNDY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2611",
+    "color": "GREY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2654",
+    "color": "TEAL",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2615",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2609",
+    "color": "MAROON",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2635",
+    "color": "GREY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2634",
+    "color": "BEIGE",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2675",
+    "color": "COLOURS MIX",
+    "sizes": {
+      "L": 11
+    },
+    "totalQty": 11,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2673",
+    "color": "COLOUR MIX",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2601",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2671",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2672",
+    "color": "WHITE",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2602",
+    "color": "FAWN",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351170",
+    "color": "BEIGE",
+    "sizes": {
+      "S": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351170",
+    "color": "GREY",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 2,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351234",
+    "color": "BEIGE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 2,
+      "3XL": 1
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351109",
+    "color": "OLIVE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351144/A",
+    "color": "(A)BURNT BRICK",
+    "sizes": {
+      "S": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351144/D",
+    "color": "(D)WHITE/NAVY",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351144/C",
+    "color": "©HAZELNUT",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 2,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 9,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351144",
+    "color": "RUST",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351144/1119",
+    "color": "OFFWHITE",
+    "sizes": {
+      "L": 2,
+      "XL": 1,
+      "XXL": 2,
+      "3XL": 2
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351120",
+    "color": "BLACK",
+    "sizes": {
+      "S": 1,
+      "M": 2,
+      "L": 1,
+      "XL": 1,
+      "XXL": 3,
+      "3XL": 2
+    },
+    "totalQty": 10,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351115/1113",
+    "color": "TEAL PISTA",
+    "sizes": {
+      "S": 2,
+      "M": 1,
+      "L": 1,
+      "XL": 2,
+      "XXL": 2,
+      "3XL": 1
+    },
+    "totalQty": 9,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351112",
+    "color": "BRICK/WINE",
+    "sizes": {
+      "S": 2,
+      "M": 2,
+      "L": 2,
+      "XL": 2,
+      "XXL": 2,
+      "3XL": 2
+    },
+    "totalQty": 12,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351117/1122",
+    "color": "BEIGE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 2,
+      "XL": 2,
+      "XXL": 2,
+      "3XL": 2
+    },
+    "totalQty": 10,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351116",
+    "color": "BROWN",
+    "sizes": {
+      "S": 2,
+      "M": 1,
+      "L": 2,
+      "XL": 2,
+      "XXL": 2,
+      "3XL": 2
+    },
+    "totalQty": 11,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351188",
+    "color": "PEACH/BROWN",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351184",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351187",
+    "color": "WINE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351181",
+    "color": "GREY",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351189",
+    "color": "D.BLUE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 2,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351183",
+    "color": "OFFWHITE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351182",
+    "color": "BEIGE",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351186",
+    "color": "BLACK",
+    "sizes": {
+      "S": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351185",
+    "color": "L.T.KHAKI",
+    "sizes": {
+      "XXL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351172",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351172",
+    "color": "GREY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351172",
+    "color": "CHARCOAL",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351232",
+    "color": "PLUM",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351111",
+    "color": "GREY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 2,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351111",
+    "color": "WHITE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 2,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351110",
+    "color": "GREY",
+    "sizes": {
+      "S": 1,
+      "M": 2,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351233",
+    "color": "EVERGREEN",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351110",
+    "color": "BLACK",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351140",
+    "color": "PLUM",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351138",
+    "color": "BEIGE",
+    "sizes": {
+      "M": 2,
+      "L": 1,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351138",
+    "color": "WHITE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351195",
+    "color": "KHAKI",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351195",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351195",
+    "color": "COFFEE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351197",
+    "color": "D.TEAL",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351197",
+    "color": "KHAKI",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351197",
+    "color": "COFFEE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351100",
+    "color": "MOCHA",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351100",
+    "color": "COFFEE",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351100",
+    "color": "BLACK",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351100",
+    "color": "KHAKI",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351100",
+    "color": "D.TEAL",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NGW-351100",
+    "color": "AIR BLUE",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91502",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91502",
+    "color": "OLIVE",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91502",
+    "color": "ANTHRA",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91502",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1,
+      "XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-91502",
+    "color": "BLACK",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "INDIGO MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "ECRU MELANGE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 2,
+      "3XL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "ANTHRA MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 2,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "INDIGO MELANGE",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "ANTHRA MELANGE",
+    "sizes": {
+      "3XL": 2,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "BLACK",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19842",
+    "color": "ECRU MELANGE",
+    "sizes": {
+      "3XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19842",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19842",
+    "color": "INDIGO MELANGE",
+    "sizes": {
+      "3XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19970",
+    "color": "MIDNIGHT BLUE",
+    "sizes": {
+      "M": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19971",
+    "color": "TEAL",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19971",
+    "color": "MIDNIGHT BLUE",
+    "sizes": {
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19968",
+    "color": "GRANITE GREY",
+    "sizes": {
+      "M": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19968",
+    "color": "BROWN",
+    "sizes": {
+      "M": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "NAVY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "BLACK",
+    "sizes": {
+      "M": 2,
+      "XL": 2,
+      "XXL": 2
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "BRIGHT INDIGO",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "OLIVE GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "OLIVE",
+    "sizes": {
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "OLIVE GREY",
+    "sizes": {
+      "3XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "OLIVE",
+    "sizes": {
+      "3XL": 2,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "BLACK",
+    "sizes": {
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "BRIGHT INDIGO",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "NAVY",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19938",
+    "color": "BLACK INK",
+    "sizes": {
+      "M": 1,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19938",
+    "color": "FROST GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19938",
+    "color": "NAVY",
+    "sizes": {
+      "L": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19938",
+    "color": "BLACK",
+    "sizes": {
+      "XXL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19839",
+    "color": "L.GREY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19839",
+    "color": "D.GREY",
+    "sizes": {
+      "M": 2,
+      "L": 1,
+      "XL": 2,
+      "XXL": 1
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19839",
+    "color": "NAVY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19803",
+    "color": "AIR FORCE",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 2
+    },
+    "totalQty": 6,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19803",
+    "color": "NAVY",
+    "sizes": {
+      "M": 2,
+      "L": 2,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 7,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19802",
+    "color": "L.GREY",
+    "sizes": {
+      "S": 1,
+      "M": 1,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19802",
+    "color": "D.GREY",
+    "sizes": {
+      "M": 1,
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2680",
+    "color": "MIX",
+    "sizes": {
+      "M": 27,
+      "L": 7,
+      "XL": 2
+    },
+    "totalQty": 36,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19405",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19970",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19403",
+    "color": "WINE",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19403",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402",
+    "color": "BLUE MELANGE",
+    "sizes": {
+      "S": 1,
+      "L": 1,
+      "XL": 2
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402",
+    "color": "ECRU MELANGE",
+    "sizes": {
+      "L": 1,
+      "XL": 2
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19403",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 2,
+      "XL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19403",
+    "color": "INDIGO",
+    "sizes": {
+      "L": 2,
+      "XL": 2,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19403",
+    "color": "WINE",
+    "sizes": {
+      "L": 1,
+      "XL": 2,
+      "XXL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402P",
+    "color": "NAVY",
+    "sizes": {
+      "XL": 2
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402P",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402P",
+    "color": "NAVY",
+    "sizes": {
+      "3XL": 2,
+      "4XL": 1,
+      "5XL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402P",
+    "color": "BLACK",
+    "sizes": {
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19405",
+    "color": "ANTHRA MELANGE",
+    "sizes": {
+      "XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402",
+    "color": "NAVY",
+    "sizes": {
+      "S": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19405P",
+    "color": "BLACK",
+    "sizes": {
+      "3XL": 2,
+      "4XL": 2
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19405P",
+    "color": "NAVY",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19405P",
+    "color": "BLACK",
+    "sizes": {
+      "3XL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19405P",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 2,
+      "5XL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  }
+]

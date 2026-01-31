@@ -5,12 +5,13 @@ import {
   updateDomesticEntry,
   deleteDomesticEntry
 } from "../controllers/domestic.controller.js";
+import { autoRecalculateInventory } from "../middleware/autoRecalculateInventory.js";
 
 const router = express.Router();
 
-router.post("/", createDomesticEntry);
+router.post("/", autoRecalculateInventory, createDomesticEntry);
 router.get("/", getDomesticEntries);
-router.patch("/:id", updateDomesticEntry);
-router.delete("/:id", deleteDomesticEntry);
+router.patch("/:id", autoRecalculateInventory, updateDomesticEntry);
+router.delete("/:id", autoRecalculateInventory, deleteDomesticEntry);
 
 export default router;

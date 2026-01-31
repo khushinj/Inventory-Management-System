@@ -305,7 +305,7 @@ export default function DailyReportPage() {
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-semibold text-slate-800">Balance Sheet</h2>
+              <h2 className="text-2xl font-semibold text-slate-800">Records</h2>
               <p className="text-sm text-slate-600 mt-1">
                 {reports.length === 0 ? "No records available" : `${reports.length} record${reports.length !== 1 ? "s" : ""} loaded`}
               </p>

@@ -38,9 +38,16 @@ export default function DailyReportPage() {
   const fetchReports = async () => {
     try {
       const response = await api.get("/daily-report");
-      setReports(response.data.data);
+      if (response.data.data && Array.isArray(response.data.data)) {
+        setReports(response.data.data);
+        console.log("✅ Reports fetched:", response.data.data.length, "records");
+      } else {
+        console.warn("⚠️ Unexpected response format:", response.data);
+        setReports([]);
+      }
     } catch (error) {
-      console.error("Error fetching reports:", error);
+      console.error("❌ Error fetching reports:", error);
+      setReports([]);
     }
   };
 
@@ -65,6 +72,7 @@ export default function DailyReportPage() {
       const response = await api.post("/daily-report", formData);
       
       setMessage({ type: "success", text: response.data.message });
+      
       // Reset form
       setFormData({
         date: new Date().toISOString().split("T")[0],
@@ -75,8 +83,14 @@ export default function DailyReportPage() {
         creditNote: 0,
         expense: 0,
       });
-      // Refresh reports
-      fetchReports();
+      
+      // Refresh reports to show new data
+      await fetchReports();
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Network error. Please try again.";
       setMessage({ type: "error", text: errorMessage });
@@ -289,7 +303,14 @@ export default function DailyReportPage() {
 
         {/* Balance Sheet */}
         <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-semibold text-slate-800 mb-6">Records</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-800">Balance Sheet</h2>
+              <p className="text-sm text-slate-600 mt-1">
+                {reports.length === 0 ? "No records available" : `${reports.length} record${reports.length !== 1 ? "s" : ""} loaded`}
+              </p>
+            </div>
+          </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">

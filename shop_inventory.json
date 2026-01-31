@@ -675,7 +675,7 @@
     "size": "M",
     "import": 1,
     "return": 0,
-    "sales": 5,
+    "sales": 6,
     "net": 0,
     "type": "import"
   },
@@ -685,7 +685,7 @@
     "size": "L",
     "import": 0,
     "return": 0,
-    "sales": 3,
+    "sales": 4,
     "net": 0,
     "type": "sales"
   },
@@ -1255,7 +1255,7 @@
     "size": "M",
     "import": 8,
     "return": 0,
-    "sales": 11,
+    "sales": 12,
     "net": 0,
     "type": "import"
   },

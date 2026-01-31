@@ -195,7 +195,7 @@ export default function InventoryPage() {
             )}
           </aside>
 
-          {/* Main list */}
+
           <div className="space-y-8">
             {loading ? (
               <div className="text-center py-12">

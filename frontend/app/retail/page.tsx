@@ -52,6 +52,7 @@ const cards: ActionCard[] = [
     description: "Check current stock levels (coming soon)",
     icon: Warehouse,
     gradient: "indigo-600",
+    href:"/shop-inventory",
   },
 ];
 

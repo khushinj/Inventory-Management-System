@@ -42,9 +42,10 @@ const cards: ActionCard[] = [
   },
   {
     title: "Daily Report",
-    description: "Generate quick summaries (coming soon)",
+    description: "Track daily sales, expenses, and performance",
     icon: FileText,
     gradient: "violet-600",
+    href: "/daily-report",
   },
   {
     title: "View Inventory",

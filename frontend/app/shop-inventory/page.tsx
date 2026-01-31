@@ -322,11 +322,11 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
       if (matchingCard) {
         setProductDetails({
           designNumber: matchingCard.designNumber,
-          brand: matchingCard.brand,
-          fabric: matchingCard.fabric,
-          fabricComposition: matchingCard.fabricComposition,
-          gsm: matchingCard.gsm,
-          mrp: matchingCard.mrp,
+          // brand: matchingCard.brand,
+          // fabric: matchingCard.fabric,
+          // fabricComposition: matchingCard.fabricComposition,
+          // gsm: matchingCard.gsm,
+          // mrp: matchingCard.mrp,
           image: matchingCard.image,
         });
       } else {
@@ -398,7 +398,7 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
               Edit
             </Link> */}
           </div>
-          {productDetails?.brand && (
+          {/* {productDetails?.brand && (
             <DetailBlock label="Brand" value={productDetails.brand} />
           )}
           {productDetails?.fabric && (
@@ -415,7 +415,7 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
           )}
           {productDetails?.mrp && (
             <DetailBlock label="MRP" value={`₹${productDetails.mrp}`} />
-          )}
+          )} */}
 
           {/* Available Stock Table */}
           <div className="mt-8">

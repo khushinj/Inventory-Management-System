@@ -83,7 +83,7 @@ function ShopDashboard() {
 
       return matchesSearch && matchesChannel && matchesFormType;
     })
-    .slice(-30);
+    .slice(0, 30);
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);

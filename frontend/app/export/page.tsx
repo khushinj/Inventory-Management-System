@@ -108,7 +108,7 @@ function ExportDashboard() {
 
       return matchesSearch && matchesFormType;
     })
-    .slice(-30);
+    .slice(0,30);
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);

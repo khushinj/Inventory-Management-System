@@ -190,7 +190,7 @@ export default function JobCardPage() {
         card.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
         card.fabric.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .slice(-30);
+    .slice(0,30);
 
   return (
     <div className="min-h-screen bg-gray-50">

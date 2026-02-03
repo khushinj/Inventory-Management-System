@@ -875,7 +875,7 @@
     "size": "XL",
     "import": 0,
     "return": 0,
-    "sales": 7,
+    "sales": 9,
     "net": 0,
     "type": "sales"
   },
@@ -1703,6 +1703,16 @@
     "designNumber": "ct-105",
     "color": "D.OLIVE",
     "size": "4XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "j",
+    "color": "HY",
+    "size": "L",
     "import": 1,
     "return": 0,
     "sales": 0,
@@ -4732,6 +4742,16 @@
   {
     "designNumber": "ng-19402p",
     "color": "NAVY",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ng-19402p",
+    "color": "NAVY",
     "size": "XL",
     "import": 0,
     "return": 2,
@@ -4841,6 +4861,16 @@
   },
   {
     "designNumber": "ng-19403",
+    "color": "INFIGO",
+    "size": "XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ng-19403",
     "color": "WINE",
     "size": "M",
     "import": 0,
@@ -4865,8 +4895,8 @@
     "size": "XL",
     "import": 0,
     "return": 2,
-    "sales": 0,
-    "net": 2,
+    "sales": 1,
+    "net": 1,
     "type": "return"
   },
   {
@@ -13955,8 +13985,8 @@
     "size": "L",
     "import": 0,
     "return": 3,
-    "sales": 1,
-    "net": 2,
+    "sales": 2,
+    "net": 1,
     "type": "return"
   },
   {
@@ -14125,8 +14155,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14945,7 +14975,7 @@
     "size": "XL",
     "import": 1,
     "return": 1,
-    "sales": 2,
+    "sales": 3,
     "net": 0,
     "type": "import"
   },

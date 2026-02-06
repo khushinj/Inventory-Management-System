@@ -39,7 +39,7 @@ export default function DailyReportPage() {
 
   // Calculate total sale
   const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
-  const closingBalance = totalSale - formData.expense - formData.deposited;
+  const closingBalance = formData.cashSale - formData.expense - formData.deposited;
   // Opening balance is the most recent report's net amount (reports are sorted newest first)
   const openingBalance = reports.length > 0 ? (reports[0].net || 0) : 0;
 

@@ -28,7 +28,7 @@ class DailyReportService {
     // Calculate totals
     const totalSale = this.calculateTotalSale(cashSale, upi, creditCard, creditNote);
     const net = this.calculateNet(totalSale, expense);
-    const closingBalance = totalSale - (expense || 0) - (deposited || 0);
+    const closingBalance = (cashSale || 0) - (expense || 0) - (deposited || 0);
 
     const previousReport = await DailyReport.findOne({ date: { $lt: reportDate } })
       .sort({ date: -1 })

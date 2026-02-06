@@ -40,9 +40,9 @@ export default function DailyReportPage() {
 
   // Calculate total sale
   const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
-  // Opening balance is the most recent report's net amount (reports are sorted newest first)
+  // Opening balance is the most recent report's closing balance (reports are sorted newest first)
   // For the first entry ever, it should be editable
-  const openingBalance = reports.length > 0 ? (reports[0].net || 0) : formData.openingBalance;
+  const openingBalance = reports.length > 0 ? (reports[0].closingBalance || 0) : formData.openingBalance;
   const isFirstEntry = reports.length === 0;
   const closingBalance = openingBalance + formData.cashSale - formData.expense - formData.deposited;
   const net = openingBalance + totalSale - formData.expense - formData.deposited;
@@ -83,7 +83,10 @@ export default function DailyReportPage() {
     setMessage(null);
 
     try {
-      const response = await api.post("/daily-report", formData);
+      const response = await api.post("/daily-report", {
+        ...formData,
+        openingBalance,
+      });
       
       setMessage({ type: "success", text: response.data.message });
       

@@ -30,9 +30,9 @@ class DailyReportService {
     
     const previousReport = await DailyReport.findOne({ date: { $lt: reportDate } })
       .sort({ date: -1 })
-      .select('net');
+      .select('closingBalance');
     // Use custom opening balance only if this is the first report (no previous reports)
-    const openingBalance = previousReport ? previousReport.net : (customOpeningBalance || 0);
+    const openingBalance = previousReport ? previousReport.closingBalance : (customOpeningBalance || 0);
     
     const closingBalance = openingBalance + (cashSale || 0) - (expense || 0) - (deposited || 0);
     const net = openingBalance + totalSale - (expense || 0) - (deposited || 0);

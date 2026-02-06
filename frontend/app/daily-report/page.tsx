@@ -6,24 +6,30 @@ import { api } from "../../lib/api";
 interface DailyReport {
   _id: string;
   date: string;
-  cashInHand: number;
+  openingBalance: number;
   cashSale: number;
   upi: number;
   creditCard: number;
   creditNote: number;
+  deposited: number;
+  qty: number;
+  note: string;
   totalSale: number;
   expense: number;
+  closingBalance: number;
   net: number;
 }
 
 export default function DailyReportPage() {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
-    cashInHand: 0,
     cashSale: 0,
     upi: 0,
     creditCard: 0,
     creditNote: 0,
+    deposited: 0,
+    qty: 0,
+    note: "",
     expense: 0,
   });
 
@@ -33,6 +39,9 @@ export default function DailyReportPage() {
 
   // Calculate total sale
   const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
+  const closingBalance = totalSale - formData.expense - formData.deposited;
+  // Opening balance is the most recent report's net amount (reports are sorted newest first)
+  const openingBalance = reports.length > 0 ? (reports[0].net || 0) : 0;
 
   // Fetch all reports
   const fetchReports = async () => {
@@ -55,11 +64,12 @@ export default function DailyReportPage() {
     fetchReports();
   }, []);
 
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "date" ? value : parseFloat(value) || 0,
+      [name]: name === "date" || name === "note" ? value : parseFloat(value) || 0,
     }));
   };
 
@@ -76,11 +86,13 @@ export default function DailyReportPage() {
       // Reset form
       setFormData({
         date: new Date().toISOString().split("T")[0],
-        cashInHand: 0,
         cashSale: 0,
         upi: 0,
         creditCard: 0,
         creditNote: 0,
+        deposited: 0,
+        qty: 0,
+        note: "",
         expense: 0,
       });
       
@@ -106,23 +118,29 @@ export default function DailyReportPage() {
 
     return reports.reduce(
       (acc, report) => ({
-        cashInHand: acc.cashInHand + report.cashInHand,
-        cashSale: acc.cashSale + report.cashSale,
-        upi: acc.upi + report.upi,
-        creditCard: acc.creditCard + report.creditCard,
-        creditNote: acc.creditNote + report.creditNote,
-        totalSale: acc.totalSale + report.totalSale,
-        expense: acc.expense + report.expense,
-        net: acc.net + report.net,
+        openingBalance: acc.openingBalance + (report.openingBalance || 0),
+        cashSale: acc.cashSale + (report.cashSale || 0),
+        upi: acc.upi + (report.upi || 0),
+        creditCard: acc.creditCard + (report.creditCard || 0),
+        creditNote: acc.creditNote + (report.creditNote || 0),
+        deposited: acc.deposited + (report.deposited || 0),
+        qty: acc.qty + (report.qty || 0),
+        totalSale: acc.totalSale + (report.totalSale || 0),
+        expense: acc.expense + (report.expense || 0),
+        closingBalance: acc.closingBalance + (report.closingBalance || 0),
+        net: acc.net + (report.net || 0),
       }),
       {
-        cashInHand: 0,
+        openingBalance: 0,
         cashSale: 0,
         upi: 0,
         creditCard: 0,
         creditNote: 0,
+        deposited: 0,
+        qty: 0,
         totalSale: 0,
         expense: 0,
+        closingBalance: 0,
         net: 0,
       }
     );
@@ -172,19 +190,19 @@ export default function DailyReportPage() {
                 />
               </div>
 
-              {/* Today Cash in Hand */}
+              {/* Opening Balance */}
               <div>
-                <label htmlFor="cashInHand" className="block text-sm font-medium text-slate-700 mb-2">
-                  Today Cash in Hand
+                <label htmlFor="openingBalance" className="block text-sm font-medium text-slate-700 mb-2">
+                  Opening Balance
                 </label>
                 <input
                   type="number"
-                  id="cashInHand"
-                  name="cashInHand"
-                //   value={formData.cashInHand}
-                  onChange={handleInputChange}
+                  id="openingBalance"
+                  name="openingBalance"
+                  value={openingBalance.toFixed(2)}
+                  readOnly
                   step="0.01"
-                  className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 bg-slate-100 text-black border border-slate-200 rounded-lg text-slate-600 cursor-not-allowed"
                   placeholder="0.00"
                 />
               </div>
@@ -257,6 +275,54 @@ export default function DailyReportPage() {
                 />
               </div>
 
+              {/* Deposited */}
+              <div>
+                <label htmlFor="deposited" className="block text-sm font-medium text-slate-700 mb-2">
+                  Deposited
+                </label>
+                <input
+                  type="number"
+                  id="deposited"
+                  name="deposited"
+                  onChange={handleInputChange}
+                  step="0.01"
+                  className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Qty */}
+              <div>
+                <label htmlFor="qty" className="block text-sm font-medium text-slate-700 mb-2">
+                  Qty
+                </label>
+                <input
+                  type="number"
+                  id="qty"
+                  name="qty"
+                  onChange={handleInputChange}
+                  step="1"
+                  className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0"
+                />
+              </div>
+
+              {/* Note */}
+              <div>
+                <label htmlFor="note" className="block text-sm font-medium text-slate-700 mb-2">
+                  Note
+                </label>
+                <input
+                  type="text"
+                  id="note"
+                  name="note"
+                  value={formData.note}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Add a note"
+                />
+              </div>
+
               {/* Total Sale (Auto-calculated) */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -265,6 +331,20 @@ export default function DailyReportPage() {
                 <input
                   type="number"
                   value={totalSale.toFixed(2)}
+                  readOnly
+                  className="w-full px-4 py-2.5 bg-slate-100 text-black border border-slate-200 rounded-lg text-slate-600 cursor-not-allowed"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Closing Balance */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Closing Balance (Auto-calculated)
+                </label>
+                <input
+                  type="number"
+                  value={closingBalance.toFixed(2)}
                   readOnly
                   className="w-full px-4 py-2.5 bg-slate-100 text-black border border-slate-200 rounded-lg text-slate-600 cursor-not-allowed"
                   placeholder="0.00"
@@ -317,13 +397,17 @@ export default function DailyReportPage() {
               <thead>
                 <tr className="border-b-2 border-slate-200">
                   <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Date</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Cash in Hand</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Opening Balance</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Cash Sale</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">UPI</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Credit Card</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Credit Note</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Deposited</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Qty</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Note</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Total Sale</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Expense</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Closing Balance</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Net</th>
                 </tr>
               </thead>
@@ -334,28 +418,40 @@ export default function DailyReportPage() {
                       {new Date(report.date).toLocaleDateString("en-GB")}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{report.cashInHand.toFixed(2)}
+                      ₹{(report.openingBalance || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{report.cashSale.toFixed(2)}
+                      ₹{(report.cashSale || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{report.upi.toFixed(2)}
+                      ₹{(report.upi || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{report.creditCard.toFixed(2)}
+                      ₹{(report.creditCard || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{report.creditNote.toFixed(2)}
+                      ₹{(report.creditNote || 0).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-900 text-right">
+                      ₹{(report.deposited || 0).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-900 text-right">
+                      {report.qty || 0}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-900">
+                      {report.note || "-"}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-slate-900 text-right">
-                      ₹{report.totalSale.toFixed(2)}
+                      ₹{(report.totalSale || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-red-600 text-right">
-                      ₹{report.expense.toFixed(2)}
+                      ₹{(report.expense || 0).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-semibold text-slate-900 text-right">
+                      ₹{(report.closingBalance || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
-                      ₹{report.net.toFixed(2)}
+                      ₹{(report.net || 0).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -363,7 +459,7 @@ export default function DailyReportPage() {
                   <tr className="bg-slate-100 font-semibold border-t-2 border-slate-300">
                     <td className="px-4 py-3 text-sm text-slate-900">Total</td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{totals.cashInHand.toFixed(2)}
+                      ₹{totals.openingBalance.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
                       ₹{totals.cashSale.toFixed(2)}
@@ -378,10 +474,22 @@ export default function DailyReportPage() {
                       ₹{totals.creditNote.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
+                      ₹{totals.deposited.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-900 text-right">
+                      {totals.qty}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-500">
+                      -
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-900 text-right">
                       ₹{totals.totalSale.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-red-600 text-right">
                       ₹{totals.expense.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-900 text-right">
+                      ₹{totals.closingBalance.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-green-600 text-right">
                       ₹{totals.net.toFixed(2)}

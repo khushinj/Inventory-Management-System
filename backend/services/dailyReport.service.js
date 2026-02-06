@@ -20,7 +20,7 @@ class DailyReportService {
 
   // Create or update daily report
   async saveReport(reportData) {
-    const { date, cashInHand, cashSale, upi, creditCard, creditNote, expense } = reportData;
+    const { date, cashSale, upi, creditCard, creditNote, expense, qty, note, deposited } = reportData;
 
     // Normalize date
     const reportDate = this.normalizeDate(date);
@@ -28,19 +28,29 @@ class DailyReportService {
     // Calculate totals
     const totalSale = this.calculateTotalSale(cashSale, upi, creditCard, creditNote);
     const net = this.calculateNet(totalSale, expense);
+    const closingBalance = totalSale - (expense || 0) - (deposited || 0);
+
+    const previousReport = await DailyReport.findOne({ date: { $lt: reportDate } })
+      .sort({ date: -1 })
+      .select('net');
+    const openingBalance = previousReport ? previousReport.net : 0;
 
     // Check if report exists for this date
     const existingReport = await DailyReport.findOne({ date: reportDate });
 
     if (existingReport) {
       // Update existing report
-      existingReport.cashInHand = cashInHand || 0;
+      existingReport.openingBalance = openingBalance;
       existingReport.cashSale = cashSale || 0;
       existingReport.upi = upi || 0;
       existingReport.creditCard = creditCard || 0;
       existingReport.creditNote = creditNote || 0;
+      existingReport.qty = qty || 0;
+      existingReport.note = note || '';
+      existingReport.deposited = deposited || 0;
       existingReport.expense = expense || 0;
       existingReport.totalSale = totalSale;
+      existingReport.closingBalance = closingBalance;
       existingReport.net = net;
 
       return await existingReport.save();
@@ -49,13 +59,17 @@ class DailyReportService {
     // Create new report
     const newReport = new DailyReport({
       date: reportDate,
-      cashInHand: cashInHand || 0,
+      openingBalance,
       cashSale: cashSale || 0,
       upi: upi || 0,
       creditCard: creditCard || 0,
       creditNote: creditNote || 0,
+      qty: qty || 0,
+      note: note || '',
+      deposited: deposited || 0,
       expense: expense || 0,
       totalSale,
+      closingBalance,
       net,
     });
 
@@ -123,13 +137,15 @@ class DailyReportService {
     if (reports.length === 0) {
       return {
         totalReports: 0,
-        totalCashInHand: 0,
+        totalOpeningBalance: 0,
         totalCashSale: 0,
         totalUPI: 0,
         totalCreditCard: 0,
         totalCreditNote: 0,
+        totalDeposited: 0,
         totalSale: 0,
         totalExpense: 0,
+        totalClosingBalance: 0,
         totalNet: 0,
         averageDailySale: 0,
         averageDailyExpense: 0,
@@ -139,23 +155,27 @@ class DailyReportService {
 
     const summary = reports.reduce(
       (acc, report) => ({
-        totalCashInHand: acc.totalCashInHand + report.cashInHand,
+        totalOpeningBalance: acc.totalOpeningBalance + report.openingBalance,
         totalCashSale: acc.totalCashSale + report.cashSale,
         totalUPI: acc.totalUPI + report.upi,
         totalCreditCard: acc.totalCreditCard + report.creditCard,
         totalCreditNote: acc.totalCreditNote + report.creditNote,
+        totalDeposited: acc.totalDeposited + report.deposited,
         totalSale: acc.totalSale + report.totalSale,
         totalExpense: acc.totalExpense + report.expense,
+        totalClosingBalance: acc.totalClosingBalance + report.closingBalance,
         totalNet: acc.totalNet + report.net,
       }),
       {
-        totalCashInHand: 0,
+        totalOpeningBalance: 0,
         totalCashSale: 0,
         totalUPI: 0,
         totalCreditCard: 0,
         totalCreditNote: 0,
+        totalDeposited: 0,
         totalSale: 0,
         totalExpense: 0,
+        totalClosingBalance: 0,
         totalNet: 0,
       }
     );

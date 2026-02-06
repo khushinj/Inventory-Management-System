@@ -1,6 +1,6 @@
 // Validation middleware for daily report
 export const validateDailyReport = (req, res, next) => {
-  const { date, cashInHand, cashSale, upi, creditCard, creditNote, expense } = req.body;
+  const { date, cashSale, upi, creditCard, creditNote, expense, qty, note, deposited } = req.body;
 
   // Validate date
   if (!date) {
@@ -20,12 +20,13 @@ export const validateDailyReport = (req, res, next) => {
 
   // Validate numeric fields (they should be numbers and >= 0)
   const numericFields = {
-    cashInHand,
     cashSale,
     upi,
     creditCard,
     creditNote,
     expense,
+    qty,
+    deposited,
   };
 
   for (const [field, value] of Object.entries(numericFields)) {
@@ -47,12 +48,14 @@ export const validateDailyReport = (req, res, next) => {
   }
 
   // Sanitize and set defaults for numeric fields
-  req.body.cashInHand = Number(cashInHand) || 0;
   req.body.cashSale = Number(cashSale) || 0;
   req.body.upi = Number(upi) || 0;
   req.body.creditCard = Number(creditCard) || 0;
   req.body.creditNote = Number(creditNote) || 0;
   req.body.expense = Number(expense) || 0;
+  req.body.qty = Number(qty) || 0;
+  req.body.deposited = Number(deposited) || 0;
+  req.body.note = typeof note === 'string' ? note.trim() : '';
 
   next();
 };

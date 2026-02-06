@@ -6,7 +6,7 @@ const dailyReportSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  cashInHand: {
+  openingBalance: {
     type: Number,
     required: true,
     default: 0,
@@ -31,12 +31,32 @@ const dailyReportSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  deposited: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  qty: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  note: {
+    type: String,
+    default: "",
+    trim: true,
+  },
   totalSale: {
     type: Number,
     required: true,
     default: 0,
   },
   expense: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  closingBalance: {
     type: Number,
     required: true,
     default: 0,
@@ -53,6 +73,7 @@ const dailyReportSchema = new mongoose.Schema({
 // Calculate total sale before saving
 dailyReportSchema.pre('save', function() {
   this.totalSale = this.cashSale + this.upi + this.creditCard + this.creditNote;
+  this.closingBalance = this.totalSale - this.expense - this.deposited;
   this.net = this.totalSale - this.expense;
 });
 

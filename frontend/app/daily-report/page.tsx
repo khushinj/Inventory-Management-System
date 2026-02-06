@@ -23,6 +23,7 @@ interface DailyReport {
 export default function DailyReportPage() {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
+    openingBalance: '',
     cashSale: 0,
     upi: 0,
     creditCard: 0,
@@ -41,7 +42,9 @@ export default function DailyReportPage() {
   const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
   const closingBalance = formData.cashSale - formData.expense - formData.deposited;
   // Opening balance is the most recent report's net amount (reports are sorted newest first)
-  const openingBalance = reports.length > 0 ? (reports[0].net || 0) : 0;
+  // For the first entry ever, it should be editable
+  const openingBalance = reports.length > 0 ? (reports[0].net || 0) : formData.openingBalance;
+  const isFirstEntry = reports.length === 0;
 
   // Fetch all reports
   const fetchReports = async () => {
@@ -86,6 +89,7 @@ export default function DailyReportPage() {
       // Reset form
       setFormData({
         date: new Date().toISOString().split("T")[0],
+        openingBalance: 0,
         cashSale: 0,
         upi: 0,
         creditCard: 0,
@@ -193,16 +197,21 @@ export default function DailyReportPage() {
               {/* Opening Balance */}
               <div>
                 <label htmlFor="openingBalance" className="block text-sm font-medium text-slate-700 mb-2">
-                  Opening Balance
+                  Opening Balance {isFirstEntry && <span className="text-blue-600">(Editable - First Entry)</span>}
                 </label>
                 <input
                   type="number"
                   id="openingBalance"
                   name="openingBalance"
-                  value={openingBalance.toFixed(2)}
-                  readOnly
+                  value={isFirstEntry ? formData.openingBalance : openingBalance.toFixed(2)}
+                  onChange={handleInputChange}
+                  readOnly={!isFirstEntry}
                   step="0.01"
-                  className="w-full px-4 py-2.5 bg-slate-100 text-black border border-slate-200 rounded-lg text-slate-600 cursor-not-allowed"
+                  className={`w-full px-4 py-2.5 text-black border border-slate-200 rounded-lg ${
+                    isFirstEntry 
+                      ? 'bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent' 
+                      : 'bg-slate-100 text-slate-600 cursor-not-allowed'
+                  }`}
                   placeholder="0.00"
                 />
               </div>

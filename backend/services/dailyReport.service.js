@@ -20,7 +20,7 @@ class DailyReportService {
 
   // Create or update daily report
   async saveReport(reportData) {
-    const { date, cashSale, upi, creditCard, creditNote, expense, qty, note, deposited } = reportData;
+    const { date, cashSale, upi, creditCard, creditNote, expense, qty, note, deposited, openingBalance: customOpeningBalance } = reportData;
 
     // Normalize date
     const reportDate = this.normalizeDate(date);
@@ -33,7 +33,8 @@ class DailyReportService {
     const previousReport = await DailyReport.findOne({ date: { $lt: reportDate } })
       .sort({ date: -1 })
       .select('net');
-    const openingBalance = previousReport ? previousReport.net : 0;
+    // Use custom opening balance only if this is the first report (no previous reports)
+    const openingBalance = previousReport ? previousReport.net : (customOpeningBalance || 0);
 
     // Check if report exists for this date
     const existingReport = await DailyReport.findOne({ date: reportDate });

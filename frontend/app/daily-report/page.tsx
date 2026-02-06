@@ -23,7 +23,7 @@ interface DailyReport {
 export default function DailyReportPage() {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
-    openingBalance: '',
+    openingBalance: 0,
     cashSale: 0,
     upi: 0,
     creditCard: 0,
@@ -40,7 +40,7 @@ export default function DailyReportPage() {
 
   // Calculate total sale
   const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
-  const closingBalance = formData.cashSale - formData.expense - formData.deposited;
+  const closingBalance = formData.openingBalance + formData.cashSale  - formData.expense - formData.deposited;
   // Opening balance is the most recent report's net amount (reports are sorted newest first)
   // For the first entry ever, it should be editable
   const openingBalance = reports.length > 0 ? (reports[0].net || 0) : formData.openingBalance;
@@ -205,6 +205,7 @@ export default function DailyReportPage() {
                   name="openingBalance"
                   value={isFirstEntry ? formData.openingBalance : openingBalance.toFixed(2)}
                   onChange={handleInputChange}
+                  onFocus={(e) => isFirstEntry && e.target.select()}
                   readOnly={!isFirstEntry}
                   step="0.01"
                   className={`w-full px-4 py-2.5 text-black border border-slate-200 rounded-lg ${

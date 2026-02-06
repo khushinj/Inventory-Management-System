@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "../../lib/api";
+import * as XLSX from "xlsx";
 
 interface DailyReport {
   _id: string;
@@ -182,6 +183,74 @@ export default function DailyReportPage() {
   };
 
   const totals = calculateTotals();
+
+  const downloadExcel = () => {
+    // Prepare data for Excel
+    const excelData = reports.map((report) => ({
+      Date: new Date(report.date).toLocaleDateString("en-GB"),
+      "Opening Balance": (report.openingBalance || 0).toFixed(2),
+      "Cash Sale": (report.cashSale || 0).toFixed(2),
+      UPI: (report.upi || 0).toFixed(2),
+      "Credit Card": (report.creditCard || 0).toFixed(2),
+      "Credit Note": (report.creditNote || 0).toFixed(2),
+      Deposited: (report.deposited || 0).toFixed(2),
+      Qty: report.qty || 0,
+      Note: report.note || "-",
+      "Total Sale": (report.totalSale || 0).toFixed(2),
+      Expense: (report.expense || 0).toFixed(2),
+      "Closing Balance": (report.closingBalance || 0).toFixed(2),
+      Net: (report.net || 0).toFixed(2),
+    }));
+
+    // Add totals row if available
+    if (totals && !hasDraftData) {
+      excelData.push({
+        Date: "Total",
+        "Opening Balance": totals.openingBalance.toFixed(2),
+        "Cash Sale": totals.cashSale.toFixed(2),
+        UPI: totals.upi.toFixed(2),
+        "Credit Card": totals.creditCard.toFixed(2),
+        "Credit Note": totals.creditNote.toFixed(2),
+        Deposited: totals.deposited.toFixed(2),
+        Qty: totals.qty,
+        Note: "-",
+        "Total Sale": totals.totalSale.toFixed(2),
+        Expense: totals.expense.toFixed(2),
+        "Closing Balance": totals.closingBalance.toFixed(2),
+        Net: totals.net.toFixed(2),
+      });
+    }
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 12 }, // Date
+      { wch: 15 }, // Opening Balance
+      { wch: 12 }, // Cash Sale
+      { wch: 12 }, // UPI
+      { wch: 12 }, // Credit Card
+      { wch: 12 }, // Credit Note
+      { wch: 12 }, // Deposited
+      { wch: 8 },  // Qty
+      { wch: 25 }, // Note
+      { wch: 12 }, // Total Sale
+      { wch: 12 }, // Expense
+      { wch: 15 }, // Closing Balance
+      { wch: 12 }, // Net
+    ];
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Reports");
+
+    // Generate file name with current date
+    const fileName = `Daily_Reports_${new Date().toISOString().split("T")[0]}.xlsx`;
+
+    // Download file
+    XLSX.writeFile(workbook, fileName);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
@@ -445,6 +514,28 @@ export default function DailyReportPage() {
                 {reports.length === 0 ? "No records available" : `${reports.length} record${reports.length !== 1 ? "s" : ""} loaded`}
               </p>
             </div>
+            {reports.length > 0 && (
+              <button
+                onClick={downloadExcel}
+                className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 focus:ring-4 focus:ring-slate-300 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Download Excel
+              </button>
+            )}
           </div>
 
           <div className="overflow-x-auto">

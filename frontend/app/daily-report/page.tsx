@@ -120,11 +120,22 @@ export default function DailyReportPage() {
     }
   };
 
-  // Calculate totals for balance sheet
-  const calculateTotals = () => {
-    if (reports.length === 0) return null;
+  const hasDraftData =
+    formData.cashSale !== 0 ||
+    formData.upi !== 0 ||
+    formData.creditCard !== 0 ||
+    formData.creditNote !== 0 ||
+    formData.deposited !== 0 ||
+    formData.qty !== 0 ||
+    formData.expense !== 0 ||
+    formData.note.trim() !== "" ||
+    (isFirstEntry && formData.openingBalance !== 0);
 
-    return reports.reduce(
+  // Calculate totals for balance sheet (include current form values as a live preview)
+  const calculateTotals = () => {
+    if (reports.length === 0 && !hasDraftData) return null;
+
+    const baseTotals = reports.reduce(
       (acc, report) => ({
         openingBalance: acc.openingBalance + (report.openingBalance || 0),
         cashSale: acc.cashSale + (report.cashSale || 0),
@@ -152,6 +163,22 @@ export default function DailyReportPage() {
         net: 0,
       }
     );
+
+    if (!hasDraftData) return baseTotals;
+
+    return {
+      openingBalance: baseTotals.openingBalance + openingBalance,
+      cashSale: baseTotals.cashSale + formData.cashSale,
+      upi: baseTotals.upi + formData.upi,
+      creditCard: baseTotals.creditCard + formData.creditCard,
+      creditNote: baseTotals.creditNote + formData.creditNote,
+      deposited: baseTotals.deposited + formData.deposited,
+      qty: baseTotals.qty + formData.qty,
+      totalSale: baseTotals.totalSale + totalSale,
+      expense: baseTotals.expense + formData.expense,
+      closingBalance: baseTotals.closingBalance + closingBalance,
+      net: baseTotals.net + net,
+    };
   };
 
   const totals = calculateTotals();
@@ -485,7 +512,9 @@ export default function DailyReportPage() {
                 ))}
                 {totals && (
                   <tr className="bg-slate-100 font-semibold border-t-2 border-slate-300">
-                    <td className="px-4 py-3 text-sm text-slate-900">Total</td>
+                    <td className="px-4 py-3 text-sm text-slate-900">
+                      {hasDraftData ? "Total (incl. draft)" : "Total"}
+                    </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
                       ₹{totals.openingBalance.toFixed(2)}
                     </td>

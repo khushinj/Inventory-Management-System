@@ -40,11 +40,12 @@ export default function DailyReportPage() {
 
   // Calculate total sale
   const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
-  const closingBalance = formData.openingBalance + formData.cashSale  - formData.expense - formData.deposited;
   // Opening balance is the most recent report's net amount (reports are sorted newest first)
   // For the first entry ever, it should be editable
   const openingBalance = reports.length > 0 ? (reports[0].net || 0) : formData.openingBalance;
   const isFirstEntry = reports.length === 0;
+  const closingBalance = openingBalance + formData.cashSale - formData.expense - formData.deposited;
+  const net = openingBalance + totalSale - formData.expense - formData.deposited;
 
   // Fetch all reports
   const fetchReports = async () => {
@@ -374,6 +375,20 @@ export default function DailyReportPage() {
                   onChange={handleInputChange}
                   step="0.01"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Net (Auto-calculated) */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Net (Auto-calculated)
+                </label>
+                <input
+                  type="number"
+                  value={net.toFixed(2)}
+                  readOnly
+                  className="w-full px-4 py-2.5 bg-slate-100 text-black border border-slate-200 rounded-lg text-slate-600 cursor-not-allowed"
                   placeholder="0.00"
                 />
               </div>

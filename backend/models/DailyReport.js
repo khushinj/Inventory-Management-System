@@ -73,8 +73,8 @@ const dailyReportSchema = new mongoose.Schema({
 // Calculate total sale before saving
 dailyReportSchema.pre('save', function() {
   this.totalSale = this.cashSale + this.upi + this.creditCard + this.creditNote;
-  this.closingBalance = this.cashSale - this.expense - this.deposited;
-  this.net = this.totalSale - this.expense;
+  this.closingBalance = this.openingBalance + this.cashSale - this.expense - this.deposited;
+  this.net = this.openingBalance + this.totalSale - this.expense - this.deposited;
 });
 
 const DailyReport = mongoose.model('DailyReport', dailyReportSchema);

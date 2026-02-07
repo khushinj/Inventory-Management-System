@@ -22,7 +22,7 @@ const operations: OperationCard[] = [
     description: "Check stock levels and product details",
     icon: Eye,
     bgColor: "bg-blue-500",
-    href: "/inventory",
+    href: "/export-inventory",
   },
   {
     title: "Dispatch",

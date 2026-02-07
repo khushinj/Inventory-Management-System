@@ -8,7 +8,7 @@ const operations = [
     title: "View Inventory",
     description: "Browse and search product catalog",
     icon: Eye,
-    href: "/inventory",
+    href: "/online-inventory",
     color: "bg-orange-500",
     hoverColor: "hover:bg-orange-600",
   },

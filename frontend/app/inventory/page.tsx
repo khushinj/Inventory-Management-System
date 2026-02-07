@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "../../lib/api";
+import { isValidImageSource } from "../../lib/imageUtils";
 
 type JobCard = {
   _id: string;
@@ -213,7 +214,7 @@ export default function InventoryPage() {
                   <div className="md:flex md:gap-10 p-6">
                     <div className="md:w-1/2 w-full">
                       <div className="relative w-full h-[520px] bg-gray-100 rounded-lg overflow-hidden">
-                        {card.image ? (
+                        {card.image && isValidImageSource(card.image) ? (
                           <Image src={card.image} alt={card.designNumber} fill className="object-cover" />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center text-gray-400">No Image</div>

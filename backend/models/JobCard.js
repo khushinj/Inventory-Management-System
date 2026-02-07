@@ -30,7 +30,7 @@ const jobCardSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String, // Store base64 image or URL
+    type: String, // Store Cloudinary URL (or base64 for backwards compatibility)
     required: false,
   },
   createdAt: {

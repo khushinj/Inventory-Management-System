@@ -1,4 +1,5 @@
 import express from "express";
+import upload from "../config/multer.js";
 import {
   createJobCard,
   createMultipleJobCards,
@@ -11,12 +12,13 @@ import {
 
 const router = express.Router();
 
-router.post("/", createJobCard);
+// Routes with image upload support
+router.post("/", upload.single('image'), createJobCard);
 router.post("/bulk", createMultipleJobCards);
 router.get("/", getAllJobCards);
 router.get("/search", searchJobCards);
 router.get("/:id", getJobCardById);
-router.patch("/:id", updateJobCard);
+router.patch("/:id", upload.single('image'), updateJobCard);
 router.delete("/:id", deleteJobCard);
 
 export default router;

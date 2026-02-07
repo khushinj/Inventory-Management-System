@@ -12,7 +12,7 @@ type JobCardForm = {
   fabricComposition: string;
   gsm: string;
   mrp: string;
-  image: string;
+  imageFile?: File | null;
   imagePreview?: string;
 };
 
@@ -36,7 +36,7 @@ export default function JobCardPage() {
     fabricComposition: "",
     gsm: "",
     mrp: "",
-    image: "",
+    imageFile: null,
   });
 
   const [savedJobCards, setSavedJobCards] = useState<SavedJobCard[]>([]);
@@ -88,11 +88,10 @@ export default function JobCardPage() {
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64String = reader.result as string;
       setFormData({
         ...formData,
-        image: base64String,
-        imagePreview: base64String,
+        imageFile: file,
+        imagePreview: reader.result as string,
       });
     };
     reader.readAsDataURL(file);
@@ -115,17 +114,24 @@ export default function JobCardPage() {
         return;
       }
 
-      const payload = {
-        designNumber: formData.designNumber,
-        brand: formData.brand,
-        fabric: formData.fabric,
-        fabricComposition: formData.fabricComposition,
-        gsm: Number(formData.gsm),
-        mrp: Number(formData.mrp),
-        image: formData.image,
-      };
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append('designNumber', formData.designNumber);
+      formDataToSend.append('brand', formData.brand);
+      formDataToSend.append('fabric', formData.fabric);
+      formDataToSend.append('fabricComposition', formData.fabricComposition);
+      formDataToSend.append('gsm', formData.gsm);
+      formDataToSend.append('mrp', formData.mrp);
+      
+      if (formData.imageFile) {
+        formDataToSend.append('image', formData.imageFile);
+      }
 
-      await api.post("/jobcard", payload);
+      await api.post("/jobcard", formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       alert("Job card saved successfully!");
 
@@ -137,7 +143,7 @@ export default function JobCardPage() {
         fabricComposition: "",
         gsm: "",
         mrp: "",
-        image: "",
+        imageFile: null,
       });
 
       fetchJobCards();
@@ -378,7 +384,7 @@ export default function JobCardPage() {
                   fabricComposition: "",
                   gsm: "",
                   mrp: "",
-                  image: "",
+                  imageFile: null,
                 });
               }}
               className="px-8 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-semibold"

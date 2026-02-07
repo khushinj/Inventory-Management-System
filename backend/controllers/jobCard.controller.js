@@ -1,9 +1,27 @@
 import JobCard from "../models/JobCard.js";
+import { uploadToCloudinary, deleteFromCloudinary, extractPublicId, isBase64Image } from "../utils/cloudinaryUpload.js";
 
 // Create a new job card entry
 export const createJobCard = async (req, res) => {
   try {
-    const jobCard = await JobCard.create(req.body);
+    let imageUrl = null;
+    
+    // Handle image upload
+    if (req.file) {
+      // If file is uploaded via multer
+      imageUrl = req.file.path; // Cloudinary URL from multer-storage-cloudinary
+    } else if (req.body.image && isBase64Image(req.body.image)) {
+      // If base64 image is sent in request body (backwards compatibility)
+      const uploadResult = await uploadToCloudinary(req.body.image, 'jobcards');
+      imageUrl = uploadResult.url;
+    }
+    
+    const jobCardData = {
+      ...req.body,
+      image: imageUrl || req.body.image
+    };
+    
+    const jobCard = await JobCard.create(jobCardData);
     res.status(201).json(jobCard);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -52,15 +70,51 @@ export const getJobCardById = async (req, res) => {
 // Update a job card entry
 export const updateJobCard = async (req, res) => {
   try {
-    const jobCard = await JobCard.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const existingJobCard = await JobCard.findById(req.params.id);
     
-    if (!jobCard) {
+    if (!existingJobCard) {
       return res.status(404).json({ error: "Job card not found" });
     }
+    
+    let imageUrl = existingJobCard.image;
+    
+    // Handle image upload
+    if (req.file) {
+      // Delete old image from Cloudinary if it exists
+      if (existingJobCard.image) {
+        const publicId = extractPublicId(existingJobCard.image);
+        if (publicId) {
+          await deleteFromCloudinary(publicId).catch(err => 
+            console.error('Failed to delete old image:', err)
+          );
+        }
+      }
+      imageUrl = req.file.path; // New Cloudinary URL
+    } else if (req.body.image && isBase64Image(req.body.image)) {
+      // Delete old image from Cloudinary if it exists
+      if (existingJobCard.image) {
+        const publicId = extractPublicId(existingJobCard.image);
+        if (publicId) {
+          await deleteFromCloudinary(publicId).catch(err => 
+            console.error('Failed to delete old image:', err)
+          );
+        }
+      }
+      // Upload new base64 image
+      const uploadResult = await uploadToCloudinary(req.body.image, 'jobcards');
+      imageUrl = uploadResult.url;
+    }
+    
+    const updateData = {
+      ...req.body,
+      image: imageUrl
+    };
+    
+    const jobCard = await JobCard.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true, runValidators: true }
+    );
     
     res.json(jobCard);
   } catch (err) {
@@ -71,11 +125,23 @@ export const updateJobCard = async (req, res) => {
 // Delete a job card entry
 export const deleteJobCard = async (req, res) => {
   try {
-    const jobCard = await JobCard.findByIdAndDelete(req.params.id);
+    const jobCard = await JobCard.findById(req.params.id);
     
     if (!jobCard) {
       return res.status(404).json({ error: "Job card not found" });
     }
+    
+    // Delete image from Cloudinary if it exists
+    if (jobCard.image) {
+      const publicId = extractPublicId(jobCard.image);
+      if (publicId) {
+        await deleteFromCloudinary(publicId).catch(err => 
+          console.error('Failed to delete image from Cloudinary:', err)
+        );
+      }
+    }
+    
+    await JobCard.findByIdAndDelete(req.params.id);
     
     res.json({ message: "Job card deleted successfully" });
   } catch (err) {

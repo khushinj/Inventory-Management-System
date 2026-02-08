@@ -46,7 +46,7 @@ const COLORS = [
   "MIX",
 ];
 
-export default function OnlineInventoryPage() {
+export default function DomesticInventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,7 +70,7 @@ export default function OnlineInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const response = await api.get("/inventory/warehouse/online");
+      const response = await api.get("/inventory/warehouse/domestic");
       setInventory(response.data.items || []);
     } catch (err) {
       console.error("Error fetching inventory:", err);
@@ -128,10 +128,10 @@ export default function OnlineInventoryPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">
-              Online Inventory
+              Domestic Inventory
             </h1>
             <p className="text-sm text-gray-500">
-              Stock levels across online warehouse
+              Stock levels across domestic warehouse
             </p>
           </div>
         </div>
@@ -427,11 +427,11 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
                           <td className="px-3 py-2 text-xs">
                             <div className="flex items-center gap-2">
                               <span className="text-gray-900 font-medium">{item.size}</span>
-                              {/* {item.outbound > 0 && (
+                              {item.outbound > 0 && (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
                                   ⚠ Dispatched
                                 </span>
-                              )} */}
+                              )}
                             </div>
                           </td>
                           <td className="px-3 py-2 text-xs text-right text-green-600 font-semibold">

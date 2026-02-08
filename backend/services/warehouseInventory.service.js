@@ -1,6 +1,31 @@
 import { getTransactionModel } from "../models/Transaction.js";
 
 /**
+ * Normalize design number
+ */
+const normalizeDesignNumber = (dno) => {
+  if (!dno) return "N/A";
+  return dno.toString().trim().toUpperCase();
+};
+
+/**
+ * Normalize color
+ */
+const normalizeColor = (color) => {
+  if (!color) return "N/A";
+  // Remove extra spaces and convert to uppercase
+  return color.toString().trim().replace(/\s+/g, " ").toUpperCase();
+};
+
+/**
+ * Normalize size
+ */
+const normalizeSize = (size) => {
+  if (!size) return "N/A";
+  return size.toString().trim().toUpperCase();
+};
+
+/**
  * Calculate inventory for a specific warehouse type (export/online/domestic)
  */
 export const calculateWarehouseInventory = async (warehouseType) => {
@@ -19,15 +44,19 @@ export const calculateWarehouseInventory = async (warehouseType) => {
 
     const transactions = allTransactions.flat();
 
-    // Group by design number
+    // Group by design number with normalization
     transactions.forEach((txn) => {
-      const key = `${txn.dno}_${txn.color || "N/A"}_${txn.size || "N/A"}`;
+      const normalizedDno = normalizeDesignNumber(txn.dno);
+      const normalizedColor = normalizeColor(txn.color);
+      const normalizedSize = normalizeSize(txn.size);
+      
+      const key = `${normalizedDno}_${normalizedColor}_${normalizedSize}`;
       
       if (!inventory[key]) {
         inventory[key] = {
-          dno: txn.dno,
-          color: txn.color || "N/A",
-          size: txn.size || "N/A",
+          dno: normalizedDno,
+          color: normalizedColor,
+          size: normalizedSize,
           inbound: 0,
           outbound: 0,
           stock: 0,

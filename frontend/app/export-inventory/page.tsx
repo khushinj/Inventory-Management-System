@@ -72,10 +72,18 @@ export default function ExportInventoryPage() {
 
   const fetchInventory = async () => {
     try {
+      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/export`;
+      console.log("🔗 Full Backend URL:", fullUrl);
       const response = await api.get("/inventory/warehouse/export");
+      console.log("✅ Response data:", response.data);
       setInventory(response.data.inventory || []);
-    } catch (err) {
-      console.error("Error fetching inventory:", err);
+    } catch (err: any) {
+      console.error("❌ Error fetching export inventory:", err);
+      if (err.response) {
+        console.error("  Status:", err.response.status);
+        console.error("  Data:", err.response.data);
+        console.error("  URL requested:", fullUrl);
+      }
       setInventory([]);
     }
   };

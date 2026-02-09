@@ -15,7 +15,7 @@ const router = express.Router();
  * GET /api/inventory/warehouse/:type
  * Get full inventory for a warehouse (domestic, export, online)
  */
-router.get("/api/warehouse/:type", async (req, res) => {
+router.get("/warehouse/:type", async (req, res) => {
   try {
     const { type } = req.params;
     if (!["domestic", "export", "online"].includes(type)) {

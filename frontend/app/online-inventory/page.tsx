@@ -71,10 +71,18 @@ export default function OnlineInventoryPage() {
 
   const fetchInventory = async () => {
     try {
+      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/online`;
+      console.log("🔗 Full Backend URL:", fullUrl);
       const response = await api.get("/inventory/warehouse/online");
+      console.log("✅ Response data:", response.data);
       setInventory(response.data.inventory || []);
-    } catch (err) {
-      console.error("Error fetching inventory:", err);
+    } catch (err: any) {
+      console.error("❌ Error fetching online inventory:", err);
+      if (err.response) {
+        console.error("  Status:", err.response.status);
+        console.error("  Data:", err.response.data);
+        console.error("  URL requested:", fullUrl);
+      }
       setInventory([]);
     }
   };

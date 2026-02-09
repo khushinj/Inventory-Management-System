@@ -1,25 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
+import { api } from "../../lib/api";
 
 export function useBackendPing() {
   useEffect(() => {
     const pingBackend = async () => {
       try {
-        // Use the proxied API endpoint to avoid CORS and localhost issues in dev containers
-        // The Next.js rewrites will forward this to the backend
-        const response = await fetch('/api/shop', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await api.get("/shop");
 
-        if (response.ok) {
-          console.log('✓ Backend ping successful at', new Date().toLocaleTimeString());
+        if (response.status >= 200 && response.status < 300) {
+          console.log("✓ Backend ping successful at", new Date().toLocaleTimeString());
         } else {
-          console.warn('⚠ Backend ping returned status:', response.status);
+          console.warn("⚠ Backend ping returned status:", response.status);
         }
       } catch (error) {
-        console.error('✗ Backend ping failed:', error);
+        console.error("✗ Backend ping failed:", error);
       }
     };
 

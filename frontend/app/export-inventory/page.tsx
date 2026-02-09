@@ -73,22 +73,15 @@ export default function ExportInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      console.log("🔗 Full Backend URL:", fullUrl);
       const response = await api.get("/inventory/warehouse/export");
-      console.log("✅ Full Response:", response);
-      console.log("✅ Response data:", response.data);
-      console.log("✅ Response keys:", Object.keys(response.data));
-      
-      // Try both possible field names
       const inventoryData = response.data.inventory || response.data.items || [];
-      console.log("📦 Inventory array length:", inventoryData.length);
       setInventory(inventoryData);
     } catch (err: any) {
       console.error("❌ Error fetching export inventory:", err);
       if (err.response) {
         console.error("  Status:", err.response.status);
-        console.error("  Data:", err.response.data);
-        console.error("  URL requested:", fullUrl);
+        // console.error("  Data:", err.response.data);
+        // console.error("  URL requested:", fullUrl);
       }
       setInventory([]);
     }
@@ -116,9 +109,9 @@ export default function ExportInventoryPage() {
   }, {} as { [key: string]: InventoryItem[] });
   
   // Log grouping results
-  console.log("📑 Inventory array:", inventory.length, "items");
-  console.log("📊 Grouped by design:", Object.keys(groupedByDesign).length, "designs");
-  console.log("🔍 Grouped data:", groupedByDesign);
+  // console.log("📑 Inventory array:", inventory.length, "items");
+  // console.log("📊 Grouped by design:", Object.keys(groupedByDesign).length, "designs");
+  // console.log("🔍 Grouped data:", groupedByDesign);
 
   // Filter
   const filteredDesigns = Object.entries(groupedByDesign).filter(
@@ -142,7 +135,7 @@ export default function ExportInventoryPage() {
     }
   );
   
-  console.log("🌿 Filtered designs:", filteredDesigns.length, "designs");
+  // console.log("🌿 Filtered designs:", filteredDesigns.length, "designs");
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -275,7 +268,7 @@ export default function ExportInventoryPage() {
               </div>
             ) : (
               <>
-                {console.log("🎨 Rendering filteredDesigns:", filteredDesigns.length, filteredDesigns)}
+                {/* {console.log("🎨 Rendering filteredDesigns:", filteredDesigns.length, filteredDesigns)} */}
                 {filteredDesigns.map(([designNumber, items]) => (
                   <ProductCard key={designNumber} designNumber={designNumber} items={items} />
                 ))}

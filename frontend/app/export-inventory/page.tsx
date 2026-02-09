@@ -69,10 +69,10 @@ export default function ExportInventoryPage() {
       setLoading(false);
     }
   };
+      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/export`;
 
   const fetchInventory = async () => {
     try {
-      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/export`;
       console.log("🔗 Full Backend URL:", fullUrl);
       const response = await api.get("/inventory/warehouse/export");
       console.log("✅ Full Response:", response);

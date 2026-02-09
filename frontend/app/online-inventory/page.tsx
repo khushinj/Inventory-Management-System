@@ -68,10 +68,10 @@ export default function OnlineInventoryPage() {
       setLoading(false);
     }
   };
+      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/online`;
 
   const fetchInventory = async () => {
     try {
-      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/online`;
       console.log("🔗 Full Backend URL:", fullUrl);
       const response = await api.get("/inventory/warehouse/online");
       console.log("✅ Full Response:", response);

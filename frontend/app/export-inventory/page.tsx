@@ -55,6 +55,7 @@ export default function ExportInventoryPage() {
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
 
   useEffect(() => {
+    console.log("API link:", api.defaults.baseURL);
     initializeInventory();
   }, []);
 

@@ -19,17 +19,31 @@ router.get("/warehouse/:type", async (req, res) => {
   try {
     const { type } = req.params;
     if (!["domestic", "export", "online"].includes(type)) {
-      return res.status(400).json({ error: "Invalid warehouse type" });
+      return res.status(400).json({ 
+        success: false,
+        error: "Invalid warehouse type" 
+      });
     }
 
-    const inventory = await calculateWarehouseInventory(type);
+    console.log(`Fetching ${type} inventory...`);
+    const inventoryMap = await calculateWarehouseInventory(type);
+    const inventory = Object.values(inventoryMap || {});
+    
+    console.log(`${type} inventory found: ${inventory.length} items`);
+    
     res.json({
+      success: true,
       warehouseType: type,
-      itemsCount: Object.keys(inventory).length,
-      items: Object.values(inventory),
+      inventory: inventory,
+      totalRecords: inventory.length,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(`Error fetching ${req.params?.type} inventory:`, error.message);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      warehouseType: req.params?.type,
+    });
   }
 });
 
@@ -45,9 +59,16 @@ router.get("/warehouse/:type/summary", async (req, res) => {
     }
 
     const summary = await getWarehouseInventorySummary(type);
-    res.json(summary);
+    res.json({
+      success: true,
+      ...summary,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(`Error getting ${req.params.type} inventory summary:`, error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message 
+    });
   }
 });
 
@@ -131,6 +152,36 @@ router.get("/compare-all", async (req, res) => {
   try {
     const comparison = await compareAllWarehouses();
     res.json(comparison);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/debug/:type", async (req, res) => {
+  try {
+    const { type } = req.params;
+    if (!["domestic", "export", "online"].includes(type)) {
+      return res.status(400).json({ error: "Invalid warehouse type" });
+    }
+
+    const { getTransactionModel } = await import("../models/Transaction.js");
+    const formTypes = ["dispatch", "production", "purchase", "transfer", "transfer inwards", "transfer outwards", "return", "sales", "sample"];
+    
+    const counts = {};
+    for (const formType of formTypes) {
+      try {
+        const Model = getTransactionModel("warehouse", type, formType);
+        const count = await Model.countDocuments();
+        counts[formType] = count;
+      } catch (e) {
+        counts[formType] = "error";
+      }
+    }
+
+    res.json({
+      warehouseType: type,
+      transactionCounts: counts,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -72,7 +72,7 @@ export default function OnlineInventoryPage() {
   const fetchInventory = async () => {
     try {
       const response = await api.get("/inventory/warehouse/online");
-      setInventory(response.data.items || []);
+      setInventory(response.data.inventory || []);
     } catch (err) {
       console.error("Error fetching inventory:", err);
       setInventory([]);

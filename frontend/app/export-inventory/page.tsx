@@ -69,15 +69,20 @@ export default function ExportInventoryPage() {
       setLoading(false);
     }
   };
-      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/export`;
 
   const fetchInventory = async () => {
     try {
-      // const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/export`;
+      const fullUrl = `${api.defaults.baseURL}/inventory/warehouse/export`;
       console.log("🔗 Full Backend URL:", fullUrl);
       const response = await api.get("/inventory/warehouse/export");
+      console.log("✅ Full Response:", response);
       console.log("✅ Response data:", response.data);
-      setInventory(response.data.inventory || []);
+      console.log("✅ Response keys:", Object.keys(response.data));
+      
+      // Try both possible field names
+      const inventoryData = response.data.inventory || response.data.items || [];
+      console.log("📦 Inventory array length:", inventoryData.length);
+      setInventory(inventoryData);
     } catch (err: any) {
       console.error("❌ Error fetching export inventory:", err);
       if (err.response) {
@@ -109,6 +114,11 @@ export default function ExportInventoryPage() {
     acc[item.dno].push(item);
     return acc;
   }, {} as { [key: string]: InventoryItem[] });
+  
+  // Log grouping results
+  console.log("📑 Inventory array:", inventory.length, "items");
+  console.log("📊 Grouped by design:", Object.keys(groupedByDesign).length, "designs");
+  console.log("🔍 Grouped data:", groupedByDesign);
 
   // Filter
   const filteredDesigns = Object.entries(groupedByDesign).filter(
@@ -131,6 +141,8 @@ export default function ExportInventoryPage() {
       return matchesSearch && matchesSize && matchesColor;
     }
   );
+  
+  console.log("🌿 Filtered designs:", filteredDesigns.length, "designs");
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -262,9 +274,12 @@ export default function ExportInventoryPage() {
                 </p>
               </div>
             ) : (
-              filteredDesigns.map(([designNumber, items]) => (
-                <ProductCard key={designNumber} designNumber={designNumber} items={items} />
-              ))
+              <>
+                {console.log("🎨 Rendering filteredDesigns:", filteredDesigns.length, filteredDesigns)}
+                {filteredDesigns.map(([designNumber, items]) => (
+                  <ProductCard key={designNumber} designNumber={designNumber} items={items} />
+                ))}
+              </>
             )}
 
             {!loading && filteredDesigns.length > 0 && (

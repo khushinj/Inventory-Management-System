@@ -774,7 +774,9 @@ function ShopDashboard() {
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
                           <input 
-                            ref={(el) => importSizeRefs.current[size] = el}
+                            ref={(el) => {
+                              importSizeRefs.current[size] = el;
+                            }}
                             type="number" 
                             value={newImportRow.sizes[size] || ""} 
                             onChange={(e) => setNewImportRow({
@@ -820,7 +822,9 @@ function ShopDashboard() {
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
                           <input 
-                            ref={(el) => returnSizeRefs.current[size] = el}
+                            ref={(el) => {
+                              returnSizeRefs.current[size] = el;
+                            }}
                             type="number" 
                             value={newReturnRow.sizes[size] || ""} 
                             onChange={(e) => setNewReturnRow({

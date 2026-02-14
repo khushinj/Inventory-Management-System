@@ -79,6 +79,11 @@ function OnlineDashboard() {
   const transferColorRef = useRef<HTMLInputElement>(null);
   const transferSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
 
+  // Refs for purchase form with horizontal size columns
+  const purchaseDnoRef = useRef<HTMLInputElement>(null);
+  const purchaseColorRef = useRef<HTMLInputElement>(null);
+  const purchaseSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+
   // State for transfer form with horizontal size columns
   const [transferRows, setTransferRows] = useState<SampleRow[]>([]);
   const [isCreatingTransfer, setIsCreatingTransfer] = useState(false);
@@ -93,6 +98,22 @@ function OnlineDashboard() {
     color: "",
     sizes: {}
   });
+
+  // State for purchase form with horizontal size columns
+  const [purchaseRows, setPurchaseRows] = useState<SampleRow[]>([]);
+  const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
+  const [editingPurchaseRow, setEditingPurchaseRow] = useState<string | null>(null);
+  const [newPurchaseRow, setNewPurchaseRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editPurchaseForm, setEditPurchaseForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+
   const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
   const [platformOptions] = useState<string[]>([
@@ -120,6 +141,7 @@ function OnlineDashboard() {
       const onlineRes = await api.get("/warehouse/online");
       setEntries(onlineRes.data);
       groupTransferEntries(onlineRes.data);
+      groupPurchaseEntries(onlineRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
     } finally {
@@ -146,6 +168,27 @@ function OnlineDashboard() {
     });
     
     setTransferRows(Object.values(grouped));
+  };
+
+  const groupPurchaseEntries = (allEntries: Entry[]) => {
+    const purchaseEntries = allEntries.filter(entry => entry.formType === "purchase");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    purchaseEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        grouped[key].sizes[entry.size] = entry.qty;
+      }
+    });
+    
+    setPurchaseRows(Object.values(grouped));
   };
 
   const filteredEntries = entries
@@ -697,7 +740,9 @@ function OnlineDashboard() {
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
                           <input 
-                            ref={(el) => transferSizeRefs.current[size] = el}
+                            ref={(el) => {
+                              transferSizeRefs.current[size] = el;
+                            }}
                             type="number" 
                             value={newTransferRow.sizes[size] || ""} 
                             onChange={(e) => setNewTransferRow({

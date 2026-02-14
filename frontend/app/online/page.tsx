@@ -24,6 +24,14 @@ type Entry = {
   warehouseType?: string;
 };
 
+type SampleRow = {
+  dno: string;
+  color: string;
+  sizes: {
+    [size: string]: number;
+  };
+};
+
 function OnlineDashboard() {
   const searchParams = useSearchParams();
   const [lockedFormType, setLockedFormType] = useState<string | null>(null);
@@ -66,6 +74,27 @@ function OnlineDashboard() {
   const dateRef = useRef<HTMLInputElement>(null);
   const additionalFieldRef = useRef<HTMLInputElement>(null);
 
+  // Refs for transfer form with horizontal size columns
+  const transferDnoRef = useRef<HTMLInputElement>(null);
+  const transferColorRef = useRef<HTMLInputElement>(null);
+  const transferSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+
+  // State for transfer form with horizontal size columns
+  const [transferRows, setTransferRows] = useState<SampleRow[]>([]);
+  const [isCreatingTransfer, setIsCreatingTransfer] = useState(false);
+  const [editingTransferRow, setEditingTransferRow] = useState<string | null>(null);
+  const [newTransferRow, setNewTransferRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editTransferForm, setEditTransferForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+
   const [platformOptions] = useState<string[]>([
     "amazon",
     "flipkart",
@@ -90,11 +119,33 @@ function OnlineDashboard() {
       setLoading(true);
       const onlineRes = await api.get("/warehouse/online");
       setEntries(onlineRes.data);
+      groupTransferEntries(onlineRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const groupTransferEntries = (allEntries: Entry[]) => {
+    const transferEntries = allEntries.filter(entry => entry.formType === "transfer");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    transferEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        grouped[key].sizes[entry.size] = entry.qty;
+      }
+    });
+    
+    setTransferRows(Object.values(grouped));
   };
 
   const filteredEntries = entries
@@ -171,21 +222,26 @@ function OnlineDashboard() {
   };
 
   const handleCreate = () => {
-    setEditForm({
-      dno: "",
-      type: "",
-      color: "",
-      size: "",
-      qty: "",
-      mrp: "",
-      date: new Date().toISOString().split("T")[0],
-      formType: selectedFormType,
-      platform: "",
-      transferType: "",
-      receiver: "",
-      supplier: "",
-    });
-    setIsCreating(true);
+    if (selectedFormType === "transfer") {
+      setIsCreatingTransfer(true);
+      setTimeout(() => transferDnoRef.current?.focus(), 100);
+    } else {
+      setEditForm({
+        dno: "",
+        type: "",
+        color: "",
+        size: "",
+        qty: "",
+        mrp: "",
+        date: new Date().toISOString().split("T")[0],
+        formType: selectedFormType,
+        platform: "",
+        transferType: "",
+        receiver: "",
+        supplier: "",
+      });
+      setIsCreating(true);
+    }
   };
 
   const handleSaveNew = async () => {
@@ -314,6 +370,146 @@ function OnlineDashboard() {
       const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
       alert("Failed to save entry: " + (axiosError || errorMsg));
     }
+  };
+
+  // Transfer form handlers with horizontal size columns
+  const handleTransferKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        transferColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        transferSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SIZES.indexOf(size);
+        if (currentIndex < SIZES.length - 1) {
+          const nextSize = SIZES[currentIndex + 1];
+          transferSizeRefs.current[nextSize]?.focus();
+        } else {
+          // Last size field, save the entry
+          handleSaveTransferRow();
+        }
+      }
+    }
+  };
+
+  const handleSaveTransferRow = async () => {
+    try {
+      // Create individual entries for each size with quantity
+      const promises = SIZES.map(size => {
+        const qty = newTransferRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/online", {
+            dno: newTransferRow.dno,
+            type: "",
+            color: newTransferRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "transfer",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      // Reset form and refocus for next entry
+      setNewTransferRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+      setTimeout(() => transferDnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error creating transfer entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create transfer entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleEditTransferRow = (dno: string, color: string) => {
+    const key = `${dno}_${color}`;
+    setEditingTransferRow(key);
+    const row = transferRows.find(r => r.dno === dno && r.color === color);
+    if (row) {
+      setEditTransferForm({...row});
+    }
+  };
+
+  const handleUpdateTransferRow = async (dno: string, color: string) => {
+    try {
+      // Delete all existing entries for this dno+color combination
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "transfer" && e.dno === dno && e.color === color
+      );
+      
+      const deletePromises = entriesToDelete.map(entry => 
+        api.delete(`/warehouse/online/${entry._id}`)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      // Create new entries for each size with quantity
+      const promises = SIZES.map(size => {
+        const qty = editTransferForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/online", {
+            dno: editTransferForm.dno,
+            type: "",
+            color: editTransferForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "transfer",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      setEditingTransferRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating transfer entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to update transfer entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleDeleteTransferRow = async (dno: string, color: string) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${dno} - ${color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "transfer" && e.dno === dno && e.color === color
+        );
+        
+        const deletePromises = entriesToDelete.map(entry => 
+          api.delete(`/warehouse/online/${entry._id}`)
+        );
+        
+        await Promise.all(deletePromises);
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting transfer entries:", err);
+        alert("Failed to delete transfer entries");
+      }
+    }
+  };
+
+  const handleCancelTransfer = () => {
+    setIsCreatingTransfer(false);
+    setNewTransferRow({
+      dno: "",
+      color: "",
+      sizes: {}
+    });
   };
 
   const handleExportToExcel = () => {
@@ -457,6 +653,135 @@ function OnlineDashboard() {
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
             <p className="mt-4 text-gray-600">Loading transactions...</p>
+          </div>
+        ) : selectedFormType === "transfer" ? (
+          // Horizontal size column format for transfer
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                    {SIZES.map(size => (
+                      <th key={size} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{size}</th>
+                    ))}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {isCreatingTransfer && (
+                    <tr className="bg-orange-50">
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={transferDnoRef}
+                          type="text" 
+                          value={newTransferRow.dno} 
+                          onChange={(e) => setNewTransferRow({...newTransferRow, dno: e.target.value})} 
+                          onKeyDown={(e) => handleTransferKeyDown(e, 'dno')}
+                          placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={transferColorRef}
+                          type="text" 
+                          value={newTransferRow.color} 
+                          onChange={(e) => setNewTransferRow({...newTransferRow, color: e.target.value})} 
+                          onKeyDown={(e) => handleTransferKeyDown(e, 'color')}
+                          placeholder="Color" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      {SIZES.map(size => (
+                        <td key={size} className="px-6 py-4">
+                          <input 
+                            ref={(el) => transferSizeRefs.current[size] = el}
+                            type="number" 
+                            value={newTransferRow.sizes[size] || ""} 
+                            onChange={(e) => setNewTransferRow({
+                              ...newTransferRow, 
+                              sizes: {...newTransferRow.sizes, [size]: Number(e.target.value) || 0}
+                            })} 
+                            onKeyDown={(e) => handleTransferKeyDown(e, `size-${size}`)}
+                            placeholder="Qty" 
+                            className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                      ))}
+                      <td className="px-6 py-4">
+                        <button onClick={handleSaveTransferRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                        <button onClick={handleCancelTransfer} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                      </td>
+                    </tr>
+                  )}
+                  {transferRows.map((row, idx) => {
+                    const rowKey = `${row.dno}_${row.color}`;
+                    const isEditing = editingTransferRow === rowKey;
+                    
+                    return (
+                      <tr key={idx} className={isEditing ? "bg-blue-50" : ""}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editTransferForm.dno} 
+                                onChange={(e) => setEditTransferForm({...editTransferForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editTransferForm.color} 
+                                onChange={(e) => setEditTransferForm({...editTransferForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editTransferForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditTransferForm({
+                                    ...editTransferForm, 
+                                    sizes: {...editTransferForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4">
+                              <button onClick={() => handleUpdateTransferRow(row.dno, row.color)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingTransferRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditTransferRow(row.dno, row.color)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteTransferRow(row.dno, row.color)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {transferRows.length === 0 && !isCreatingTransfer && (
+                <div className="text-center py-12 text-gray-500">
+                  No transfer transactions found.
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="bg-white shadow rounded-lg overflow-hidden">

@@ -19,6 +19,14 @@ type Entry = {
   domain: string;
 };
 
+type SampleRow = {
+  dno: string;
+  color: string;
+  sizes: {
+    [size: string]: number;
+  };
+};
+
 function ShopDashboard() {
   const searchParams = useSearchParams();
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -47,6 +55,43 @@ function ShopDashboard() {
   const dateRef = useRef<HTMLInputElement>(null);
   const channelRef = useRef<HTMLSelectElement>(null);
 
+  // Refs for import and return forms with horizontal size columns
+  const importDnoRef = useRef<HTMLInputElement>(null);
+  const importColorRef = useRef<HTMLInputElement>(null);
+  const importSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const returnDnoRef = useRef<HTMLInputElement>(null);
+  const returnColorRef = useRef<HTMLInputElement>(null);
+  const returnSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+
+  // State for import and return forms with horizontal size columns
+  const [importRows, setImportRows] = useState<SampleRow[]>([]);
+  const [returnRows, setReturnRows] = useState<SampleRow[]>([]);
+  const [isCreatingImport, setIsCreatingImport] = useState(false);
+  const [isCreatingReturn, setIsCreatingReturn] = useState(false);
+  const [editingImportRow, setEditingImportRow] = useState<string | null>(null);
+  const [editingReturnRow, setEditingReturnRow] = useState<string | null>(null);
+  const [newImportRow, setNewImportRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [newReturnRow, setNewReturnRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editImportForm, setEditImportForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editReturnForm, setEditReturnForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+
   useEffect(() => {
     const formType = searchParams.get("formType") as "import" | "sales" | "return" | null;
     if (formType && ["import", "sales", "return"].includes(formType)) {
@@ -61,11 +106,55 @@ function ShopDashboard() {
       setLoading(true);
       const shopRes = await api.get("/shop");
       setEntries(shopRes.data);
+      groupImportEntries(shopRes.data);
+      groupReturnEntries(shopRes.data);
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const groupImportEntries = (allEntries: Entry[]) => {
+    const importEntries = allEntries.filter(entry => entry.formType === "import");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    importEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        grouped[key].sizes[entry.size] = entry.qty;
+      }
+    });
+    
+    setImportRows(Object.values(grouped));
+  };
+
+  const groupReturnEntries = (allEntries: Entry[]) => {
+    const returnEntries = allEntries.filter(entry => entry.formType === "return");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    returnEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        grouped[key].sizes[entry.size] = entry.qty;
+      }
+    });
+    
+    setReturnRows(Object.values(grouped));
   };
 
   const filteredEntries = entries
@@ -125,16 +214,24 @@ function ShopDashboard() {
   };
 
   const handleCreate = () => {
-    setEditForm({
-      dno: "",
-      type: "",
-      color: "",
-      size: "",
-      qty: "",
-      date: new Date().toISOString().split("T")[0],
-      channel: "retail",
-    });
-    setIsCreating(true);
+    if (selectedFormType === "import") {
+      setIsCreatingImport(true);
+      setTimeout(() => importDnoRef.current?.focus(), 100);
+    } else if (selectedFormType === "return") {
+      setIsCreatingReturn(true);
+      setTimeout(() => returnDnoRef.current?.focus(), 100);
+    } else {
+      setEditForm({
+        dno: "",
+        type: "",
+        color: "",
+        size: "",
+        qty: "",
+        date: new Date().toISOString().split("T")[0],
+        channel: "retail",
+      });
+      setIsCreating(true);
+    }
   };
 
   const handleSaveNew = async () => {
@@ -206,6 +303,280 @@ function ShopDashboard() {
       const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
       alert("Failed to save entry: " + (axiosError || errorMsg));
     }
+  };
+
+  // Import form handlers with horizontal size columns
+  const handleImportKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        importColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        importSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SIZES.indexOf(size);
+        if (currentIndex < SIZES.length - 1) {
+          const nextSize = SIZES[currentIndex + 1];
+          importSizeRefs.current[nextSize]?.focus();
+        } else {
+          handleSaveImportRow();
+        }
+      }
+    }
+  };
+
+  const handleSaveImportRow = async () => {
+    try {
+      const promises = SIZES.map(size => {
+        const qty = newImportRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/shop", {
+            dno: newImportRow.dno,
+            type: "",
+            color: newImportRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "import",
+            channel: "retail",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      setNewImportRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+      setTimeout(() => importDnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error creating import entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create import entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleEditImportRow = (dno: string, color: string) => {
+    const key = `${dno}_${color}`;
+    setEditingImportRow(key);
+    const row = importRows.find(r => r.dno === dno && r.color === color);
+    if (row) {
+      setEditImportForm({...row});
+    }
+  };
+
+  const handleUpdateImportRow = async (dno: string, color: string) => {
+    try {
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "import" && e.dno === dno && e.color === color
+      );
+      
+      const deletePromises = entriesToDelete.map(entry => 
+        api.delete(`/shop/${entry._id}`)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      const promises = SIZES.map(size => {
+        const qty = editImportForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/shop", {
+            dno: editImportForm.dno,
+            type: "",
+            color: editImportForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "import",
+            channel: "retail",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      setEditingImportRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating import entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to update import entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleDeleteImportRow = async (dno: string, color: string) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${dno} - ${color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "import" && e.dno === dno && e.color === color
+        );
+        
+        const deletePromises = entriesToDelete.map(entry => 
+          api.delete(`/shop/${entry._id}`)
+        );
+        
+        await Promise.all(deletePromises);
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting import entries:", err);
+        alert("Failed to delete import entries");
+      }
+    }
+  };
+
+  const handleCancelImport = () => {
+    setIsCreatingImport(false);
+    setNewImportRow({
+      dno: "",
+      color: "",
+      sizes: {}
+    });
+  };
+
+  // Return form handlers with horizontal size columns
+  const handleReturnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        returnColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        returnSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SIZES.indexOf(size);
+        if (currentIndex < SIZES.length - 1) {
+          const nextSize = SIZES[currentIndex + 1];
+          returnSizeRefs.current[nextSize]?.focus();
+        } else {
+          handleSaveReturnRow();
+        }
+      }
+    }
+  };
+
+  const handleSaveReturnRow = async () => {
+    try {
+      const promises = SIZES.map(size => {
+        const qty = newReturnRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/shop", {
+            dno: newReturnRow.dno,
+            type: "",
+            color: newReturnRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "return",
+            channel: "retail",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      setNewReturnRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+      setTimeout(() => returnDnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error creating return entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create return entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleEditReturnRow = (dno: string, color: string) => {
+    const key = `${dno}_${color}`;
+    setEditingReturnRow(key);
+    const row = returnRows.find(r => r.dno === dno && r.color === color);
+    if (row) {
+      setEditReturnForm({...row});
+    }
+  };
+
+  const handleUpdateReturnRow = async (dno: string, color: string) => {
+    try {
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "return" && e.dno === dno && e.color === color
+      );
+      
+      const deletePromises = entriesToDelete.map(entry => 
+        api.delete(`/shop/${entry._id}`)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      const promises = SIZES.map(size => {
+        const qty = editReturnForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/shop", {
+            dno: editReturnForm.dno,
+            type: "",
+            color: editReturnForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "return",
+            channel: "retail",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      setEditingReturnRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating return entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to update return entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleDeleteReturnRow = async (dno: string, color: string) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${dno} - ${color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "return" && e.dno === dno && e.color === color
+        );
+        
+        const deletePromises = entriesToDelete.map(entry => 
+          api.delete(`/shop/${entry._id}`)
+        );
+        
+        await Promise.all(deletePromises);
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting return entries:", err);
+        alert("Failed to delete return entries");
+      }
+    }
+  };
+
+  const handleCancelReturn = () => {
+    setIsCreatingReturn(false);
+    setNewReturnRow({
+      dno: "",
+      color: "",
+      sizes: {}
+    });
   };
 
   const handleExportToExcel = () => {
@@ -359,6 +730,244 @@ function ShopDashboard() {
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <p className="mt-4 text-gray-600">Loading transactions...</p>
+          </div>
+        ) : (selectedFormType === "import" || selectedFormType === "return") ? (
+          // Horizontal size column format for import and return
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                    {SIZES.map(size => (
+                      <th key={size} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{size}</th>
+                    ))}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {selectedFormType === "import" && isCreatingImport && (
+                    <tr className="bg-blue-50">
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={importDnoRef}
+                          type="text" 
+                          value={newImportRow.dno} 
+                          onChange={(e) => setNewImportRow({...newImportRow, dno: e.target.value})} 
+                          onKeyDown={(e) => handleImportKeyDown(e, 'dno')}
+                          placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={importColorRef}
+                          type="text" 
+                          value={newImportRow.color} 
+                          onChange={(e) => setNewImportRow({...newImportRow, color: e.target.value})} 
+                          onKeyDown={(e) => handleImportKeyDown(e, 'color')}
+                          placeholder="Color" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      {SIZES.map(size => (
+                        <td key={size} className="px-6 py-4">
+                          <input 
+                            ref={(el) => importSizeRefs.current[size] = el}
+                            type="number" 
+                            value={newImportRow.sizes[size] || ""} 
+                            onChange={(e) => setNewImportRow({
+                              ...newImportRow, 
+                              sizes: {...newImportRow.sizes, [size]: Number(e.target.value) || 0}
+                            })} 
+                            onKeyDown={(e) => handleImportKeyDown(e, `size-${size}`)}
+                            placeholder="Qty" 
+                            className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                      ))}
+                      <td className="px-6 py-4">
+                        <button onClick={handleSaveImportRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                        <button onClick={handleCancelImport} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                      </td>
+                    </tr>
+                  )}
+                  {selectedFormType === "return" && isCreatingReturn && (
+                    <tr className="bg-blue-50">
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={returnDnoRef}
+                          type="text" 
+                          value={newReturnRow.dno} 
+                          onChange={(e) => setNewReturnRow({...newReturnRow, dno: e.target.value})} 
+                          onKeyDown={(e) => handleReturnKeyDown(e, 'dno')}
+                          placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={returnColorRef}
+                          type="text" 
+                          value={newReturnRow.color} 
+                          onChange={(e) => setNewReturnRow({...newReturnRow, color: e.target.value})} 
+                          onKeyDown={(e) => handleReturnKeyDown(e, 'color')}
+                          placeholder="Color" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      {SIZES.map(size => (
+                        <td key={size} className="px-6 py-4">
+                          <input 
+                            ref={(el) => returnSizeRefs.current[size] = el}
+                            type="number" 
+                            value={newReturnRow.sizes[size] || ""} 
+                            onChange={(e) => setNewReturnRow({
+                              ...newReturnRow, 
+                              sizes: {...newReturnRow.sizes, [size]: Number(e.target.value) || 0}
+                            })} 
+                            onKeyDown={(e) => handleReturnKeyDown(e, `size-${size}`)}
+                            placeholder="Qty" 
+                            className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                      ))}
+                      <td className="px-6 py-4">
+                        <button onClick={handleSaveReturnRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                        <button onClick={handleCancelReturn} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                      </td>
+                    </tr>
+                  )}
+                  {selectedFormType === "import" && importRows.map((row, idx) => {
+                    const rowKey = `${row.dno}_${row.color}`;
+                    const isEditing = editingImportRow === rowKey;
+                    
+                    return (
+                      <tr key={idx} className={isEditing ? "bg-blue-50" : ""}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editImportForm.dno} 
+                                onChange={(e) => setEditImportForm({...editImportForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editImportForm.color} 
+                                onChange={(e) => setEditImportForm({...editImportForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editImportForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditImportForm({
+                                    ...editImportForm, 
+                                    sizes: {...editImportForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4">
+                              <button onClick={() => handleUpdateImportRow(row.dno, row.color)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingImportRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditImportRow(row.dno, row.color)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteImportRow(row.dno, row.color)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })}
+                  {selectedFormType === "return" && returnRows.map((row, idx) => {
+                    const rowKey = `${row.dno}_${row.color}`;
+                    const isEditing = editingReturnRow === rowKey;
+                    
+                    return (
+                      <tr key={idx} className={isEditing ? "bg-blue-50" : ""}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editReturnForm.dno} 
+                                onChange={(e) => setEditReturnForm({...editReturnForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editReturnForm.color} 
+                                onChange={(e) => setEditReturnForm({...editReturnForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editReturnForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditReturnForm({
+                                    ...editReturnForm, 
+                                    sizes: {...editReturnForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4">
+                              <button onClick={() => handleUpdateReturnRow(row.dno, row.color)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingReturnRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditReturnRow(row.dno, row.color)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteReturnRow(row.dno, row.color)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {selectedFormType === "import" && importRows.length === 0 && !isCreatingImport && (
+                <div className="text-center py-12 text-gray-500">
+                  No import transactions found.
+                </div>
+              )}
+              {selectedFormType === "return" && returnRows.length === 0 && !isCreatingReturn && (
+                <div className="text-center py-12 text-gray-500">
+                  No return transactions found.
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="bg-white shadow rounded-lg overflow-hidden">

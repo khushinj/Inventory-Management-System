@@ -396,13 +396,13 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
               <div className="text-2xl font-bold text-green-600">
                 {items.reduce((sum, item) => sum + item.inbound, 0)}
               </div>
-              <div className="text-xs font-medium text-gray-600">Inbound</div>
+              <div className="text-xs font-medium text-gray-600">Import</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
                 {items.reduce((sum, item) => sum + item.outbound, 0)}
               </div>
-              <div className="text-xs font-medium text-gray-600">Outbound</div>
+              <div className="text-xs font-medium text-gray-600">Sale</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
@@ -428,10 +428,10 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
                       Size
                     </th>
                     <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                      Inbound
+                      Import
                     </th>
                     <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                      Outbound
+                      Sale
                     </th>
                     <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
                       Stock

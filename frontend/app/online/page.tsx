@@ -268,6 +268,9 @@ function OnlineDashboard() {
     if (selectedFormType === "transfer") {
       setIsCreatingTransfer(true);
       setTimeout(() => transferDnoRef.current?.focus(), 100);
+    } else if (selectedFormType === "purchase") {
+      setIsCreatingPurchase(true);
+      setTimeout(() => purchaseDnoRef.current?.focus(), 100);
     } else {
       setEditForm({
         dno: "",
@@ -555,6 +558,141 @@ function OnlineDashboard() {
     });
   };
 
+  // Purchase form handlers with horizontal size columns
+  const handlePurchaseKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        purchaseColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        purchaseSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SIZES.indexOf(size);
+        if (currentIndex < SIZES.length - 1) {
+          const nextSize = SIZES[currentIndex + 1];
+          purchaseSizeRefs.current[nextSize]?.focus();
+        } else {
+          handleSavePurchaseRow();
+        }
+      }
+    }
+  };
+
+  const handleSavePurchaseRow = async () => {
+    try {
+      const promises = SIZES.map(size => {
+        const qty = newPurchaseRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/online", {
+            dno: newPurchaseRow.dno,
+            type: "",
+            color: newPurchaseRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "purchase",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      setNewPurchaseRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+      setTimeout(() => purchaseDnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error creating purchase entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create purchase entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleEditPurchaseRow = (dno: string, color: string) => {
+    const key = `${dno}_${color}`;
+    setEditingPurchaseRow(key);
+    const row = purchaseRows.find(r => r.dno === dno && r.color === color);
+    if (row) {
+      setEditPurchaseForm({...row});
+    }
+  };
+
+  const handleUpdatePurchaseRow = async (dno: string, color: string) => {
+    try {
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "purchase" && e.dno === dno && e.color === color
+      );
+      
+      const deletePromises = entriesToDelete.map(entry => 
+        api.delete(`/warehouse/online/${entry._id}`)
+      );
+      
+      await Promise.all(deletePromises);
+      
+      const promises = SIZES.map(size => {
+        const qty = editPurchaseForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/online", {
+            dno: editPurchaseForm.dno,
+            type: "",
+            color: editPurchaseForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "purchase",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      setEditingPurchaseRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating purchase entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to update purchase entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleDeletePurchaseRow = async (dno: string, color: string) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${dno} - ${color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "purchase" && e.dno === dno && e.color === color
+        );
+        
+        const deletePromises = entriesToDelete.map(entry => 
+          api.delete(`/warehouse/online/${entry._id}`)
+        );
+        
+        await Promise.all(deletePromises);
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting purchase entries:", err);
+        alert("Failed to delete purchase entries");
+      }
+    }
+  };
+
+  const handleCancelPurchase = () => {
+    setIsCreatingPurchase(false);
+    setNewPurchaseRow({
+      dno: "",
+      color: "",
+      sizes: {}
+    });
+  };
+
   const handleExportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filteredEntries.map(entry => ({
       DNO: entry.dno,
@@ -696,6 +834,137 @@ function OnlineDashboard() {
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
             <p className="mt-4 text-gray-600">Loading transactions...</p>
+          </div>
+        ) : selectedFormType === "purchase" ? (
+          // Horizontal size column format for purchase
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                    {SIZES.map(size => (
+                      <th key={size} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{size}</th>
+                    ))}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {isCreatingPurchase && (
+                    <tr className="bg-orange-50">
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={purchaseDnoRef}
+                          type="text" 
+                          value={newPurchaseRow.dno} 
+                          onChange={(e) => setNewPurchaseRow({...newPurchaseRow, dno: e.target.value})} 
+                          onKeyDown={(e) => handlePurchaseKeyDown(e, 'dno')}
+                          placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={purchaseColorRef}
+                          type="text" 
+                          value={newPurchaseRow.color} 
+                          onChange={(e) => setNewPurchaseRow({...newPurchaseRow, color: e.target.value})} 
+                          onKeyDown={(e) => handlePurchaseKeyDown(e, 'color')}
+                          placeholder="Color" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      {SIZES.map(size => (
+                        <td key={size} className="px-6 py-4">
+                          <input 
+                            ref={(el) => {
+                              purchaseSizeRefs.current[size] = el;
+                            }}
+                            type="number" 
+                            value={newPurchaseRow.sizes[size] || ""} 
+                            onChange={(e) => setNewPurchaseRow({
+                              ...newPurchaseRow, 
+                              sizes: {...newPurchaseRow.sizes, [size]: Number(e.target.value) || 0}
+                            })} 
+                            onKeyDown={(e) => handlePurchaseKeyDown(e, `size-${size}`)}
+                            placeholder="Qty" 
+                            className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                      ))}
+                      <td className="px-6 py-4">
+                        <button onClick={handleSavePurchaseRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                        <button onClick={handleCancelPurchase} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                      </td>
+                    </tr>
+                  )}
+                  {purchaseRows.map((row, idx) => {
+                    const rowKey = `${row.dno}_${row.color}`;
+                    const isEditing = editingPurchaseRow === rowKey;
+                    
+                    return (
+                      <tr key={idx} className={isEditing ? "bg-blue-50" : ""}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editPurchaseForm.dno} 
+                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editPurchaseForm.color} 
+                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editPurchaseForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditPurchaseForm({
+                                    ...editPurchaseForm, 
+                                    sizes: {...editPurchaseForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4">
+                              <button onClick={() => handleUpdatePurchaseRow(row.dno, row.color)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingPurchaseRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SIZES.map(size => (
+                              <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditPurchaseRow(row.dno, row.color)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeletePurchaseRow(row.dno, row.color)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {purchaseRows.length === 0 && !isCreatingPurchase && (
+                <div className="text-center py-12 text-gray-500">
+                  No purchase transactions found.
+                </div>
+              )}
+            </div>
           </div>
         ) : selectedFormType === "transfer" ? (
           // Horizontal size column format for transfer

@@ -16,13 +16,7 @@ const formTypes = [
     color: "bg-green-500",
   },
   {
-    title: "Export Warehouse",
-    description: "Manage export warehouse transactions",
-    href: "/export-homepage",
-    color: "bg-purple-500",
-  },
-  {
-    title: "Online Warehouse",
+    title: "E-Commerce / Online Warehouse",
     description: "Manage online warehouse transactions",
     href: "/online-homepage",
     color: "bg-orange-500",

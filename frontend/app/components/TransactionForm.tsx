@@ -22,7 +22,7 @@ type FormState = {
 
 type Selection = {
   domain: Domain;
-  warehouseType: "domestic" | "export" | "online" | "";
+  warehouseType: "domestic" | "online" | "";
   formType: string;
 };
 
@@ -115,7 +115,7 @@ export default function TransactionForm({
     }
 
     // Warehouse rules
-    if (warehouseType === "domestic" || warehouseType === "export") {
+    if (warehouseType === "domestic") {
       if (formType === "dispatch") {
         return {
           showChannel: false,
@@ -141,7 +141,6 @@ export default function TransactionForm({
         return {
           showChannel: true,
           channelOptions: [
-            { value: "export", label: "Export" },
             { value: "domestic", label: "Domestic" },
             { value: "online", label: "Online" },
           ],
@@ -158,7 +157,6 @@ export default function TransactionForm({
           showReceiver: true,
           receiverLabel: "Receiver",
           receiverOptions: [
-            { value: "export", label: "Export" },
             { value: "online", label: "Online" },
           ],
           showSupplier: false,
@@ -177,7 +175,6 @@ export default function TransactionForm({
         return {
           showChannel: true,
           channelOptions: [
-            { value: "export return", label: "Export Return" },
             { value: "domestic return", label: "Domestic Return" },
             { value: "online return", label: "Online Return" },
           ],
@@ -338,20 +335,15 @@ export default function TransactionForm({
       ];
     }
 
-    if (warehouseType === "domestic" || warehouseType === "export") {
-      const buttons = [
+    if (warehouseType === "domestic") {
+      return [
         { value: "dispatch", label: "Dispatch" },
         { value: "production", label: "Production" },
         { value: "purchase", label: "Purchase" },
         { value: "transfer", label: "Transfer" },
+        { value: "return", label: "Return" },
+        { value: "sample", label: "Sample" }
       ];
-      if (warehouseType === "domestic") {
-        buttons.push(
-          { value: "return", label: "Return" },
-          { value: "sample", label: "Sample" }
-        );
-      }
-      return buttons;
     }
 
     if (warehouseType === "online") {

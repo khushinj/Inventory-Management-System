@@ -24,6 +24,14 @@ type Entry = {
   warehouseType?: string;
 };
 
+type SampleRow = {
+  dno: string;
+  color: string;
+  sizes: {
+    [size: string]: number;
+  };
+};
+
 function DomesticDashboard() {
   const searchParams = useSearchParams();
   const formTypeParam = searchParams.get("formType");
@@ -64,12 +72,21 @@ function DomesticDashboard() {
   const dateRef = useRef<HTMLInputElement>(null);
   const additionalFieldRef = useRef<HTMLInputElement>(null);
 
+  // Refs for new format forms
+  const sampleDnoRef = useRef<HTMLInputElement>(null);
+  const sampleColorRef = useRef<HTMLInputElement>(null);
+  const sampleSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const productionDnoRef = useRef<HTMLInputElement>(null);
+  const productionColorRef = useRef<HTMLInputElement>(null);
+  const productionSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const purchaseDnoRef = useRef<HTMLInputElement>(null);
+  const purchaseColorRef = useRef<HTMLInputElement>(null);
+  const purchaseSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+
   const [channelOptions] = useState<string[]>([
-    "export",
     "online",
     "domestic return",
     "online return",
-    "export return",
   ]);
   const [transferOptions] = useState<string[]>([
     "inwards",
@@ -79,21 +96,146 @@ function DomesticDashboard() {
   const [filteredTransferOptions, setFilteredTransferOptions] = useState<string[]>(transferOptions);
   const [showChannelDropdown, setShowChannelDropdown] = useState(false);
   const [showTransferDropdown, setShowTransferDropdown] = useState(false);
+  
+  // State for sample/production/purchase forms' new format
+  const [sampleRows, setSampleRows] = useState<SampleRow[]>([]);
+  const [productionRows, setProductionRows] = useState<SampleRow[]>([]);
+  const [purchaseRows, setPurchaseRows] = useState<SampleRow[]>([]);
+  const [isCreatingSample, setIsCreatingSample] = useState(false);
+  const [isCreatingProduction, setIsCreatingProduction] = useState(false);
+  const [isCreatingPurchase, setIsCreatingPurchase] = useState(false);
+  const [editingSampleRow, setEditingSampleRow] = useState<string | null>(null);
+  const [editingProductionRow, setEditingProductionRow] = useState<string | null>(null);
+  const [editingPurchaseRow, setEditingPurchaseRow] = useState<string | null>(null);
+  const [newSampleRow, setNewSampleRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [newProductionRow, setNewProductionRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [newPurchaseRow, setNewPurchaseRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editSampleForm, setEditSampleForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editProductionForm, setEditProductionForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editPurchaseForm, setEditPurchaseForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+
+  const SAMPLE_SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
   useEffect(() => {
     fetchEntries();
   }, []);
+
+  useEffect(() => {
+    if (selectedFormType === "sample" && entries.length > 0) {
+      groupSampleEntries(entries);
+    } else if (selectedFormType === "production" && entries.length > 0) {
+      groupProductionEntries(entries);
+    } else if (selectedFormType === "purchase" && entries.length > 0) {
+      groupPurchaseEntries(entries);
+    }
+  }, [selectedFormType, entries]);
 
   const fetchEntries = async () => {
     try {
       setLoading(true);
       const domesticRes = await api.get("/warehouse/domestic");
       setEntries(domesticRes.data);
+      
+      // Group entries for sample/production/purchase view
+      if (selectedFormType === "sample") {
+        groupSampleEntries(domesticRes.data);
+      } else if (selectedFormType === "production") {
+        groupProductionEntries(domesticRes.data);
+      } else if (selectedFormType === "purchase") {
+        groupPurchaseEntries(domesticRes.data);
+      }
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const groupSampleEntries = (allEntries: Entry[]) => {
+    const sampleEntries = allEntries.filter(entry => entry.formType === "sample");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    sampleEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        grouped[key].sizes[entry.size] = entry.qty;
+      }
+    });
+    
+    setSampleRows(Object.values(grouped));
+  };
+
+  const groupProductionEntries = (allEntries: Entry[]) => {
+    const productionEntries = allEntries.filter(entry => entry.formType === "production");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    productionEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        grouped[key].sizes[entry.size] = entry.qty;
+      }
+    });
+    
+    setProductionRows(Object.values(grouped));
+  };
+
+  const groupPurchaseEntries = (allEntries: Entry[]) => {
+    const purchaseEntries = allEntries.filter(entry => entry.formType === "purchase");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    purchaseEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        grouped[key].sizes[entry.size] = entry.qty;
+      }
+    });
+    
+    setPurchaseRows(Object.values(grouped));
   };
 
   const filteredEntries = entries
@@ -174,21 +316,427 @@ function DomesticDashboard() {
       setShowWarehouseModal(true);
       return;
     }
-    setEditForm({
+    
+    if (selectedFormType === "sample") {
+      setNewSampleRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      setIsCreatingSample(true);
+      setTimeout(() => sampleDnoRef.current?.focus(), 100);
+    } else if (selectedFormType === "production") {
+      setNewProductionRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      setIsCreatingProduction(true);
+      setTimeout(() => productionDnoRef.current?.focus(), 100);
+    } else if (selectedFormType === "purchase") {
+      setNewPurchaseRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      setIsCreatingPurchase(true);
+      setTimeout(() => purchaseDnoRef.current?.focus(), 100);
+    } else {
+      setEditForm({
+        dno: "",
+        type: "",
+        color: "",
+        size: "",
+        qty: "",
+        mrp: "",
+        date: new Date().toISOString().split("T")[0],
+        formType: selectedFormType,
+        receiver: "",
+        supplier: "",
+        transferType: transferTypeParam || "",
+        channel: selectedWarehouse || "",
+      });
+      setIsCreating(true);
+    }
+  };
+
+  const handleSaveSampleRow = async () => {
+    try {
+      // Create individual entries for each size with quantity
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = newSampleRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: newSampleRow.dno,
+            type: "",
+            color: newSampleRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "sample",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      // Reset form and refocus for next entry
+      setNewSampleRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+      setTimeout(() => sampleDnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error creating sample entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create sample entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleCancelSample = () => {
+    setIsCreatingSample(false);
+    setNewSampleRow({
       dno: "",
-      type: "",
       color: "",
-      size: "",
-      qty: "",
-      mrp: "",
-      date: new Date().toISOString().split("T")[0],
-      formType: selectedFormType,
-      receiver: "",
-      supplier: "",
-      transferType: transferTypeParam || "",
-      channel: selectedWarehouse || "",
+      sizes: {}
     });
-    setIsCreating(true);
+  };
+
+  const handleSaveProductionRow = async () => {
+    try {
+      // Create individual entries for each size with quantity
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = newProductionRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: newProductionRow.dno,
+            type: "",
+            color: newProductionRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "production",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      // Reset form and refocus for next entry
+      setNewProductionRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+      setTimeout(() => productionDnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error creating production entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create production entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleCancelProduction = () => {
+    setIsCreatingProduction(false);
+    setNewProductionRow({
+      dno: "",
+      color: "",
+      sizes: {}
+    });
+  };
+
+  const handleSavePurchaseRow = async () => {
+    try {
+      // Create individual entries for each size with quantity
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = newPurchaseRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: newPurchaseRow.dno,
+            type: "",
+            color: newPurchaseRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "purchase",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      
+      // Reset form and refocus for next entry
+      setNewPurchaseRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+      setTimeout(() => purchaseDnoRef.current?.focus(), 100);
+    } catch (err: unknown) {
+      console.error("Error creating purchase entries:", err);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
+      alert("Failed to create purchase entries: " + (axiosError || errorMsg));
+    }
+  };
+
+  const handleCancelPurchase = () => {
+    setIsCreatingPurchase(false);
+    setNewPurchaseRow({
+      dno: "",
+      color: "",
+      sizes: {}
+    });
+  };
+
+  // Edit handlers for new format
+  const handleEditSampleRow = (row: SampleRow) => {
+    const key = `${row.dno}_${row.color}`;
+    setEditingSampleRow(key);
+    setEditSampleForm({...row});
+  };
+
+  const handleEditProductionRow = (row: SampleRow) => {
+    const key = `${row.dno}_${row.color}`;
+    setEditingProductionRow(key);
+    setEditProductionForm({...row});
+  };
+
+  const handleEditPurchaseRow = (row: SampleRow) => {
+    const key = `${row.dno}_${row.color}`;
+    setEditingPurchaseRow(key);
+    setEditPurchaseForm({...row});
+  };
+
+  // Update handlers for new format
+  const handleUpdateSampleRow = async (originalRow: SampleRow) => {
+    try {
+      // Delete old entries for this dno+color combination
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "sample" && e.dno === originalRow.dno && e.color === originalRow.color
+      );
+      
+      await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+      
+      // Create new entries with updated quantities
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = editSampleForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: editSampleForm.dno,
+            type: "",
+            color: editSampleForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "sample",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      setEditingSampleRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating sample entries:", err);
+      alert("Failed to update sample entries");
+    }
+  };
+
+  const handleUpdateProductionRow = async (originalRow: SampleRow) => {
+    try {
+      // Delete old entries for this dno+color combination
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "production" && e.dno === originalRow.dno && e.color === originalRow.color
+      );
+      
+      await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+      
+      // Create new entries with updated quantities
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = editProductionForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: editProductionForm.dno,
+            type: "",
+            color: editProductionForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "production",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      setEditingProductionRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating production entries:", err);
+      alert("Failed to update production entries");
+    }
+  };
+
+  const handleUpdatePurchaseRow = async (originalRow: SampleRow) => {
+    try {
+      // Delete old entries for this dno+color combination
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "purchase" && e.dno === originalRow.dno && e.color === originalRow.color
+      );
+      
+      await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+      
+      // Create new entries with updated quantities
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = editPurchaseForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: editPurchaseForm.dno,
+            type: "",
+            color: editPurchaseForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "purchase",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      setEditingPurchaseRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating purchase entries:", err);
+      alert("Failed to update purchase entries");
+    }
+  };
+
+  // Delete handlers for new format
+  const handleDeleteSampleRow = async (row: SampleRow) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${row.dno} - ${row.color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "sample" && e.dno === row.dno && e.color === row.color
+        );
+        
+        await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting sample entries:", err);
+        alert("Failed to delete sample entries");
+      }
+    }
+  };
+
+  const handleDeleteProductionRow = async (row: SampleRow) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${row.dno} - ${row.color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "production" && e.dno === row.dno && e.color === row.color
+        );
+        
+        await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting production entries:", err);
+        alert("Failed to delete production entries");
+      }
+    }
+  };
+
+  const handleDeletePurchaseRow = async (row: SampleRow) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${row.dno} - ${row.color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "purchase" && e.dno === row.dno && e.color === row.color
+        );
+        
+        await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting purchase entries:", err);
+        alert("Failed to delete purchase entries");
+      }
+    }
+  };
+
+  // Keyboard navigation for new format forms
+  const handleSampleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        sampleColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        sampleSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SAMPLE_SIZES.indexOf(size);
+        if (currentIndex < SAMPLE_SIZES.length - 1) {
+          const nextSize = SAMPLE_SIZES[currentIndex + 1];
+          sampleSizeRefs.current[nextSize]?.focus();
+        } else {
+          // Last size field, save the entry
+          handleSaveSampleRow();
+        }
+      }
+    }
+  };
+
+  const handleProductionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        productionColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        productionSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SAMPLE_SIZES.indexOf(size);
+        if (currentIndex < SAMPLE_SIZES.length - 1) {
+          const nextSize = SAMPLE_SIZES[currentIndex + 1];
+          productionSizeRefs.current[nextSize]?.focus();
+        } else {
+          // Last size field, save the entry
+          handleSaveProductionRow();
+        }
+      }
+    }
+  };
+
+  const handlePurchaseKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        purchaseColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        purchaseSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SAMPLE_SIZES.indexOf(size);
+        if (currentIndex < SAMPLE_SIZES.length - 1) {
+          const nextSize = SAMPLE_SIZES[currentIndex + 1];
+          purchaseSizeRefs.current[nextSize]?.focus();
+        } else {
+          // Last size field, save the entry
+          handleSavePurchaseRow();
+        }
+      }
+    }
   };
 
   const handleSaveNew = async () => {
@@ -458,45 +1006,6 @@ function DomesticDashboard() {
                     </div>
                   </div>
                 </button>
-
-                {/* Export Warehouse Card */}
-                <button
-                  onClick={() => handleWarehouseSelect("export")}
-                  className="group relative bg-white border-2 border-gray-200 hover:border-purple-400 rounded-lg p-6 transition-all duration-300 hover:shadow-lg"
-                >
-                  <div className="text-center">
-                    <div className="flex justify-center mb-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 015.646 5.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Export Warehouse</h3>
-                    <p className="text-gray-600 text-sm mb-4">Handle international shipments and export logistics</p>
-                    
-                    <ul className="text-left space-y-2 mb-6">
-                      <li className="flex items-start text-sm text-gray-600">
-                        <span className="text-purple-500 font-bold mr-2">•</span>
-                        <span>International shipping support</span>
-                      </li>
-                      <li className="flex items-start text-sm text-gray-600">
-                        <span className="text-purple-500 font-bold mr-2">•</span>
-                        <span>Customs documentation</span>
-                      </li>
-                      <li className="flex items-start text-sm text-gray-600">
-                        <span className="text-purple-500 font-bold mr-2">•</span>
-                        <span>Multi-country logistics</span>
-                      </li>
-                    </ul>
-                    
-                    <div className="pt-4 border-t border-gray-200">
-                      <span className="inline-block text-purple-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
-                        Select Export Warehouse →
-                      </span>
-                    </div>
-                  </div>
-                </button>
               </div>
 
               {!pendingFormType && (
@@ -561,7 +1070,7 @@ function DomesticDashboard() {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-gray-600">Selected Warehouse:</p>
-                  <p className="text-lg font-semibold text-gray-900 capitalize">{selectedWarehouse === "export" ? "Export Warehouse" : "Online Warehouse"}</p>
+                  <p className="text-lg font-semibold text-gray-900 capitalize">Online Warehouse</p>
                 </div>
                 <button
                   onClick={handleChangeWarehouse}
@@ -642,6 +1151,371 @@ function DomesticDashboard() {
         ) : (
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
+              {selectedFormType === "sample" ? (
+                // Sample Form - New Format with Size Columns
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                      {SAMPLE_SIZES.map(size => (
+                        <th key={size} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">{size}</th>
+                      ))}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {isCreatingSample && (
+                      <tr className="bg-green-50">
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={sampleDnoRef}
+                            type="text" 
+                            value={newSampleRow.dno} 
+                            onChange={(e) => setNewSampleRow({...newSampleRow, dno: e.target.value})} 
+                            onKeyDown={(e) => handleSampleKeyDown(e, 'dno')}
+                            placeholder="Design Number" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={sampleColorRef}
+                            type="text" 
+                            value={newSampleRow.color} 
+                            onChange={(e) => setNewSampleRow({...newSampleRow, color: e.target.value})} 
+                            onKeyDown={(e) => handleSampleKeyDown(e, 'color')}
+                            placeholder="Color" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        {SAMPLE_SIZES.map(size => (
+                          <td key={size} className="px-2 py-4">
+                            <input 
+                              ref={(el) => { if (el) sampleSizeRefs.current[size] = el; }}
+                              type="number" 
+                              value={newSampleRow.sizes[size] || ""} 
+                              onChange={(e) => setNewSampleRow({
+                                ...newSampleRow, 
+                                sizes: {...newSampleRow.sizes, [size]: Number(e.target.value) || 0}
+                              })} 
+                              onKeyDown={(e) => handleSampleKeyDown(e, `size-${size}`)}
+                              placeholder="" 
+                              className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                            />
+                          </td>
+                        ))}
+                        <td className="px-6 py-4">
+                          <button onClick={handleSaveSampleRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                          <button onClick={handleCancelSample} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                        </td>
+                      </tr>
+                    )}
+                    {sampleRows.map((row, idx) => {
+                      const rowKey = `${row.dno}_${row.color}`;
+                      const isEditing = editingSampleRow === rowKey;
+                      return (
+                      <tr key={idx}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editSampleForm.dno} 
+                                onChange={(e) => setEditSampleForm({...editSampleForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editSampleForm.color} 
+                                onChange={(e) => setEditSampleForm({...editSampleForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editSampleForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditSampleForm({
+                                    ...editSampleForm, 
+                                    sizes: {...editSampleForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleUpdateSampleRow(row)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingSampleRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">
+                                {row.sizes[size] || "-"}
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditSampleRow(row)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteSampleRow(row)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : selectedFormType === "production" ? (
+                // Production Form - New Format with Size Columns
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                      {SAMPLE_SIZES.map(size => (
+                        <th key={size} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">{size}</th>
+                      ))}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {isCreatingProduction && (
+                      <tr className="bg-green-50">
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={productionDnoRef}
+                            type="text" 
+                            value={newProductionRow.dno} 
+                            onChange={(e) => setNewProductionRow({...newProductionRow, dno: e.target.value})} 
+                            onKeyDown={(e) => handleProductionKeyDown(e, 'dno')}
+                            placeholder="Design Number" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={productionColorRef}
+                            type="text" 
+                            value={newProductionRow.color} 
+                            onChange={(e) => setNewProductionRow({...newProductionRow, color: e.target.value})} 
+                            onKeyDown={(e) => handleProductionKeyDown(e, 'color')}
+                            placeholder="Color" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        {SAMPLE_SIZES.map(size => (
+                          <td key={size} className="px-2 py-4">
+                            <input 
+                              ref={(el) => { if (el) productionSizeRefs.current[size] = el; }}
+                              type="number" 
+                              value={newProductionRow.sizes[size] || ""} 
+                              onChange={(e) => setNewProductionRow({
+                                ...newProductionRow, 
+                                sizes: {...newProductionRow.sizes, [size]: Number(e.target.value) || 0}
+                              })} 
+                              onKeyDown={(e) => handleProductionKeyDown(e, `size-${size}`)}
+                              placeholder="" 
+                              className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                            />
+                          </td>
+                        ))}
+                        <td className="px-6 py-4">
+                          <button onClick={handleSaveProductionRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                          <button onClick={handleCancelProduction} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                        </td>
+                      </tr>
+                    )}
+                    {productionRows.map((row, idx) => {
+                      const rowKey = `${row.dno}_${row.color}`;
+                      const isEditing = editingProductionRow === rowKey;
+                      return (
+                      <tr key={idx}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editProductionForm.dno} 
+                                onChange={(e) => setEditProductionForm({...editProductionForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editProductionForm.color} 
+                                onChange={(e) => setEditProductionForm({...editProductionForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editProductionForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditProductionForm({
+                                    ...editProductionForm, 
+                                    sizes: {...editProductionForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleUpdateProductionRow(row)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingProductionRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">
+                                {row.sizes[size] || "-"}
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditProductionRow(row)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteProductionRow(row)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : selectedFormType === "purchase" ? (
+                // Purchase Form - New Format with Size Columns
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                      {SAMPLE_SIZES.map(size => (
+                        <th key={size} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">{size}</th>
+                      ))}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {isCreatingPurchase && (
+                      <tr className="bg-green-50">
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={purchaseDnoRef}
+                            type="text" 
+                            value={newPurchaseRow.dno} 
+                            onChange={(e) => setNewPurchaseRow({...newPurchaseRow, dno: e.target.value})} 
+                            onKeyDown={(e) => handlePurchaseKeyDown(e, 'dno')}
+                            placeholder="Design Number" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={purchaseColorRef}
+                            type="text" 
+                            value={newPurchaseRow.color} 
+                            onChange={(e) => setNewPurchaseRow({...newPurchaseRow, color: e.target.value})} 
+                            onKeyDown={(e) => handlePurchaseKeyDown(e, 'color')}
+                            placeholder="Color" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        {SAMPLE_SIZES.map(size => (
+                          <td key={size} className="px-2 py-4">
+                            <input 
+                              ref={(el) => { if (el) purchaseSizeRefs.current[size] = el; }}
+                              type="number" 
+                              value={newPurchaseRow.sizes[size] || ""} 
+                              onChange={(e) => setNewPurchaseRow({
+                                ...newPurchaseRow, 
+                                sizes: {...newPurchaseRow.sizes, [size]: Number(e.target.value) || 0}
+                              })} 
+                              onKeyDown={(e) => handlePurchaseKeyDown(e, `size-${size}`)}
+                              placeholder="" 
+                              className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                            />
+                          </td>
+                        ))}
+                        <td className="px-6 py-4">
+                          <button onClick={handleSavePurchaseRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                          <button onClick={handleCancelPurchase} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                        </td>
+                      </tr>
+                    )}
+                    {purchaseRows.map((row, idx) => {
+                      const rowKey = `${row.dno}_${row.color}`;
+                      const isEditing = editingPurchaseRow === rowKey;
+                      return (
+                      <tr key={idx}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editPurchaseForm.dno} 
+                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editPurchaseForm.color} 
+                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editPurchaseForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditPurchaseForm({
+                                    ...editPurchaseForm, 
+                                    sizes: {...editPurchaseForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleUpdatePurchaseRow(row)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingPurchaseRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">
+                                {row.sizes[size] || "-"}
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditPurchaseRow(row)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeletePurchaseRow(row)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                // Regular Form - Original Format
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -650,11 +1524,11 @@ function DomesticDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                    {(selectedFormType === "dispatch" || selectedFormType === "sample") && (
+                    {(selectedFormType === "dispatch") && (
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MRP</th>
                     )}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    {(selectedFormType === "dispatch" || selectedFormType === "sample") && (
+                    {(selectedFormType === "dispatch") && (
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receiver</th>
                     )}
                     {selectedFormType === "purchase" && (
@@ -870,7 +1744,23 @@ function DomesticDashboard() {
                   ))}
                 </tbody>
               </table>
-              {filteredEntries.length === 0 && (
+              )}
+              {selectedFormType === "sample" && sampleRows.length === 0 && !isCreatingSample && (
+                <div className="text-center py-12 text-gray-500">
+                  No sample transactions found. Click "+ New Transaction" to create your first sample entry.
+                </div>
+              )}
+              {selectedFormType === "production" && productionRows.length === 0 && !isCreatingProduction && (
+                <div className="text-center py-12 text-gray-500">
+                  No production transactions found. Click "+ New Transaction" to create your first production entry.
+                </div>
+              )}
+              {selectedFormType === "purchase" && purchaseRows.length === 0 && !isCreatingPurchase && (
+                <div className="text-center py-12 text-gray-500">
+                  No purchase transactions found. Click "+ New Transaction" to create your first purchase entry.
+                </div>
+              )}
+              {selectedFormType !== "sample" && selectedFormType !== "production" && selectedFormType !== "purchase" && filteredEntries.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
                   No transactions found. <Link href="/domestic/form" className="text-green-600 hover:underline">Create your first transaction</Link>
                 </div>

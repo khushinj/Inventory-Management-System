@@ -2,7 +2,7 @@ import { type Dispatch, type SetStateAction } from "react";
 
 type Selection = {
   domain: "shop" | "warehouse";
-  warehouseType: "domestic" | "export" | "online" | "";
+  warehouseType: "domestic" | "online" | "";
   formType: string;
 };
 
@@ -14,12 +14,6 @@ const warehouseFormOptions: Record<string, { value: string; label: string }[]> =
     { value: "transfer", label: "Transfer" },
     { value: "return", label: "Return" },
     { value: "sample", label: "Sample" },
-  ],
-  export: [
-    { value: "dispatch", label: "Dispatch" },
-    { value: "production", label: "Production" },
-    { value: "purchase", label: "Purchase" },
-    { value: "transfer", label: "Transfer" },
   ],
   online: [
     { value: "return", label: "Return" },
@@ -105,7 +99,6 @@ export default function FormSelector({
               onChange={(e) => handleWarehouseTypeChange(e.target.value as Selection["warehouseType"])}
             >
               <option value="domestic">Domestic</option>
-              <option value="export">Export</option>
               <option value="online">Online</option>
             </select>
           </div>

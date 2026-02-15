@@ -645,7 +645,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -755,7 +755,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 4,
+    "sales": 5,
     "net": 0,
     "type": "sales"
   },
@@ -835,7 +835,7 @@
     "size": "L",
     "import": 0,
     "return": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -875,8 +875,8 @@
     "size": "M",
     "import": 11,
     "return": 0,
-    "sales": 4,
-    "net": 7,
+    "sales": 5,
+    "net": 6,
     "type": "import"
   },
   {
@@ -945,7 +945,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 6,
+    "sales": 7,
     "net": 0,
     "type": "sales"
   },
@@ -1015,7 +1015,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 2,
+    "sales": 3,
     "net": 0,
     "type": "sales"
   },
@@ -1055,7 +1055,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 11,
+    "sales": 13,
     "net": 0,
     "type": "sales"
   },
@@ -1075,7 +1075,7 @@
     "size": "XL",
     "import": 0,
     "return": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -1165,7 +1165,7 @@
     "size": "XXL",
     "import": 0,
     "return": 0,
-    "sales": 7,
+    "sales": 8,
     "net": 0,
     "type": "sales"
   },
@@ -1295,7 +1295,7 @@
     "size": "M",
     "import": 8,
     "return": 0,
-    "sales": 12,
+    "sales": 13,
     "net": 0,
     "type": "import"
   },
@@ -1351,12 +1351,22 @@
   },
   {
     "designNumber": "aw-95506",
+    "color": "M",
+    "size": "M",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "aw-95506",
     "color": "MIX",
     "size": "M",
     "import": 16,
     "return": 0,
-    "sales": 9,
-    "net": 7,
+    "sales": 11,
+    "net": 5,
     "type": "import"
   },
   {
@@ -1485,7 +1495,7 @@
     "size": "L",
     "import": 0,
     "return": 0,
-    "sales": 9,
+    "sales": 10,
     "net": 0,
     "type": "sales"
   },
@@ -1778,6 +1788,26 @@
     "sales": 1,
     "net": 0,
     "type": "import"
+  },
+  {
+    "designNumber": "ct-106",
+    "color": "COPPER",
+    "size": "5XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ct-106 a",
+    "color": "COPPER",
+    "size": "5XL",
+    "import": 0,
+    "return": 0,
+    "sales": 2,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "md-003",
@@ -3302,6 +3332,16 @@
   {
     "designNumber": "ng-19322",
     "color": "MAROON/ECRUMEL",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ng-19322",
+    "color": "MAROON/ECRUMEL",
     "size": "XL",
     "import": 0,
     "return": 0,
@@ -4258,6 +4298,16 @@
     "sales": 0,
     "net": 1,
     "type": "return"
+  },
+  {
+    "designNumber": "ng-19349",
+    "color": "ECRUMEL/TEAL",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "ng-19349",
@@ -8760,6 +8810,16 @@
     "type": "sales"
   },
   {
+    "designNumber": "ng-2101",
+    "color": "GREY",
+    "size": "42",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
     "designNumber": "ng-250553",
     "color": "E. GREEN",
     "size": "S",
@@ -9058,6 +9118,16 @@
     "sales": 0,
     "net": 1,
     "type": "return"
+  },
+  {
+    "designNumber": "ng-250554",
+    "color": "LILACK",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "ng-3001",
@@ -13150,6 +13220,16 @@
     "type": "sales"
   },
   {
+    "designNumber": "pkd-1514",
+    "color": "PISTA-52",
+    "size": "5XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
     "designNumber": "ra-2230",
     "color": "L.PISTA",
     "size": "XL",
@@ -14415,8 +14495,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14475,7 +14555,7 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "return"
   },
@@ -14955,7 +15035,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -14975,7 +15055,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 3,
+    "sales": 4,
     "net": 0,
     "type": "sales"
   },
@@ -15005,8 +15085,8 @@
     "size": "M",
     "import": 0,
     "return": 36,
-    "sales": 5,
-    "net": 31,
+    "sales": 6,
+    "net": 30,
     "type": "return"
   },
   {
@@ -15168,6 +15248,16 @@
     "sales": 0,
     "net": 2,
     "type": "import"
+  },
+  {
+    "designNumber": "smix-2805",
+    "color": "MIX",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 2,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "smix-351136",
@@ -15645,8 +15735,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {

@@ -82,6 +82,9 @@ function DomesticDashboard() {
   const purchaseDnoRef = useRef<HTMLInputElement>(null);
   const purchaseColorRef = useRef<HTMLInputElement>(null);
   const purchaseSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const dispatchDnoRef = useRef<HTMLInputElement>(null);
+  const dispatchColorRef = useRef<HTMLInputElement>(null);
+  const dispatchSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
 
   const [channelOptions] = useState<string[]>([
     "online",
@@ -138,6 +141,21 @@ function DomesticDashboard() {
     sizes: {}
   });
 
+  // State for dispatch form's new format
+  const [dispatchRows, setDispatchRows] = useState<SampleRow[]>([]);
+  const [isCreatingDispatch, setIsCreatingDispatch] = useState(false);
+  const [editingDispatchRow, setEditingDispatchRow] = useState<string | null>(null);
+  const [newDispatchRow, setNewDispatchRow] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+  const [editDispatchForm, setEditDispatchForm] = useState<SampleRow>({
+    dno: "",
+    color: "",
+    sizes: {}
+  });
+
   const SAMPLE_SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
   useEffect(() => {
@@ -151,6 +169,8 @@ function DomesticDashboard() {
       groupProductionEntries(entries);
     } else if (selectedFormType === "purchase" && entries.length > 0) {
       groupPurchaseEntries(entries);
+    } else if (selectedFormType === "dispatch" && entries.length > 0) {
+      groupDispatchEntries(entries);
     }
   }, [selectedFormType, entries]);
 
@@ -160,13 +180,15 @@ function DomesticDashboard() {
       const domesticRes = await api.get("/warehouse/domestic");
       setEntries(domesticRes.data);
       
-      // Group entries for sample/production/purchase view
+      // Group entries for sample/production/purchase/dispatch view
       if (selectedFormType === "sample") {
         groupSampleEntries(domesticRes.data);
       } else if (selectedFormType === "production") {
         groupProductionEntries(domesticRes.data);
       } else if (selectedFormType === "purchase") {
         groupPurchaseEntries(domesticRes.data);
+      } else if (selectedFormType === "dispatch") {
+        groupDispatchEntries(domesticRes.data);
       }
     } catch (err: unknown) {
       console.error("Error fetching entries:", err);
@@ -189,7 +211,9 @@ function DomesticDashboard() {
             sizes: {}
           };
         }
-        grouped[key].sizes[entry.size] = entry.qty;
+        // Normalize 2xl to XXL
+        const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
+        grouped[key].sizes[normalizedSize] = entry.qty;
       }
     });
     
@@ -210,7 +234,9 @@ function DomesticDashboard() {
             sizes: {}
           };
         }
-        grouped[key].sizes[entry.size] = entry.qty;
+        // Normalize 2xl to XXL
+        const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
+        grouped[key].sizes[normalizedSize] = entry.qty;
       }
     });
     
@@ -231,11 +257,36 @@ function DomesticDashboard() {
             sizes: {}
           };
         }
-        grouped[key].sizes[entry.size] = entry.qty;
+        // Normalize 2xl to XXL
+        const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
+        grouped[key].sizes[normalizedSize] = entry.qty;
       }
     });
     
     setPurchaseRows(Object.values(grouped));
+  };
+
+  const groupDispatchEntries = (allEntries: Entry[]) => {
+    const dispatchEntries = allEntries.filter(entry => entry.formType === "dispatch");
+    const grouped: { [key: string]: SampleRow } = {};
+    
+    dispatchEntries.forEach(entry => {
+      if (entry.dno && entry.color && entry.size) {
+        const key = `${entry.dno}_${entry.color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno: entry.dno,
+            color: entry.color,
+            sizes: {}
+          };
+        }
+        // Normalize 2xl to XXL
+        const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
+        grouped[key].sizes[normalizedSize] = entry.qty;
+      }
+    });
+    
+    setDispatchRows(Object.values(grouped));
   };
 
   const filteredEntries = entries
@@ -341,6 +392,14 @@ function DomesticDashboard() {
       });
       setIsCreatingPurchase(true);
       setTimeout(() => purchaseDnoRef.current?.focus(), 100);
+    } else if (selectedFormType === "dispatch") {
+      setNewDispatchRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      setIsCreatingDispatch(true);
+      setTimeout(() => dispatchDnoRef.current?.focus(), 100);
     } else {
       setEditForm({
         dno: "",
@@ -672,6 +731,105 @@ function DomesticDashboard() {
     }
   };
 
+  // Dispatch Row Handlers
+  const handleSaveDispatchRow = async () => {
+    try {
+      // Create individual entries for each size with quantity
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = newDispatchRow.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: newDispatchRow.dno,
+            type: "",
+            color: newDispatchRow.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "dispatch",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      setIsCreatingDispatch(false);
+      setNewDispatchRow({
+        dno: "",
+        color: "",
+        sizes: {}
+      });
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error saving dispatch entries:", err);
+      alert("Failed to save dispatch entries");
+    }
+  };
+
+  const handleEditDispatchRow = (row: SampleRow) => {
+    setEditingDispatchRow(`${row.dno}_${row.color}`);
+    setEditDispatchForm(row);
+  };
+
+  const handleUpdateDispatchRow = async (originalRow: SampleRow) => {
+    try {
+      // Delete old entries for this dno+color combination
+      const entriesToDelete = entries.filter(e => 
+        e.formType === "dispatch" && e.dno === originalRow.dno && e.color === originalRow.color
+      );
+      
+      await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+      
+      // Create new entries with updated quantities
+      const promises = SAMPLE_SIZES.map(size => {
+        const qty = editDispatchForm.sizes[size] || 0;
+        if (qty > 0) {
+          return api.post("/warehouse/domestic", {
+            dno: editDispatchForm.dno,
+            type: "",
+            color: editDispatchForm.color,
+            size: size,
+            qty: qty,
+            date: new Date().toISOString().split("T")[0],
+            formType: "dispatch",
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+      
+      await Promise.all(promises);
+      setEditingDispatchRow(null);
+      fetchEntries();
+    } catch (err: unknown) {
+      console.error("Error updating dispatch entries:", err);
+      alert("Failed to update dispatch entries");
+    }
+  };
+
+  const handleDeleteDispatchRow = async (row: SampleRow) => {
+    if (window.confirm(`Are you sure you want to delete all entries for ${row.dno} - ${row.color}?`)) {
+      try {
+        const entriesToDelete = entries.filter(e => 
+          e.formType === "dispatch" && e.dno === row.dno && e.color === row.color
+        );
+        
+        await Promise.all(entriesToDelete.map(e => api.delete(`/warehouse/domestic/${e._id}`)));
+        fetchEntries();
+      } catch (err: unknown) {
+        console.error("Error deleting dispatch entries:", err);
+        alert("Failed to delete dispatch entries");
+      }
+    }
+  };
+
+  const handleCancelDispatch = () => {
+    setIsCreatingDispatch(false);
+    setNewDispatchRow({
+      dno: "",
+      color: "",
+      sizes: {}
+    });
+  };
+
   // Keyboard navigation for new format forms
   const handleSampleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
     if (e.key === 'Enter') {
@@ -734,6 +892,28 @@ function DomesticDashboard() {
         } else {
           // Last size field, save the entry
           handleSavePurchaseRow();
+        }
+      }
+    }
+  };
+
+  const handleDispatchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (currentField === 'dno') {
+        dispatchColorRef.current?.focus();
+      } else if (currentField === 'color') {
+        dispatchSizeRefs.current['S']?.focus();
+      } else if (currentField.startsWith('size-')) {
+        const size = currentField.replace('size-', '');
+        const currentIndex = SAMPLE_SIZES.indexOf(size);
+        if (currentIndex < SAMPLE_SIZES.length - 1) {
+          const nextSize = SAMPLE_SIZES[currentIndex + 1];
+          dispatchSizeRefs.current[nextSize]?.focus();
+        } else {
+          // Last size field, save the entry
+          handleSaveDispatchRow();
         }
       }
     }
@@ -1514,8 +1694,129 @@ function DomesticDashboard() {
                     })}
                   </tbody>
                 </table>
+              ) : selectedFormType === "dispatch" ? (
+                // Dispatch Form - New Format with Size Columns
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                      {SAMPLE_SIZES.map(size => (
+                        <th key={size} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">{size}</th>
+                      ))}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {isCreatingDispatch && (
+                      <tr className="bg-green-50">
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={dispatchDnoRef}
+                            type="text" 
+                            value={newDispatchRow.dno} 
+                            onChange={(e) => setNewDispatchRow({...newDispatchRow, dno: e.target.value})} 
+                            onKeyDown={(e) => handleDispatchKeyDown(e, 'dno')}
+                            placeholder="Design Number" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <input 
+                            ref={dispatchColorRef}
+                            type="text" 
+                            value={newDispatchRow.color} 
+                            onChange={(e) => setNewDispatchRow({...newDispatchRow, color: e.target.value})} 
+                            onKeyDown={(e) => handleDispatchKeyDown(e, 'color')}
+                            placeholder="Color" 
+                            className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          />
+                        </td>
+                        {SAMPLE_SIZES.map(size => (
+                          <td key={size} className="px-2 py-4">
+                            <input 
+                              ref={(el) => { if (el) dispatchSizeRefs.current[size] = el; }}
+                              type="number" 
+                              value={newDispatchRow.sizes[size] || ""} 
+                              onChange={(e) => setNewDispatchRow({
+                                ...newDispatchRow, 
+                                sizes: {...newDispatchRow.sizes, [size]: Number(e.target.value) || 0}
+                              })} 
+                              onKeyDown={(e) => handleDispatchKeyDown(e, `size-${size}`)}
+                              placeholder="" 
+                              className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                            />
+                          </td>
+                        ))}
+                        <td className="px-6 py-4">
+                          <button onClick={handleSaveDispatchRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                          <button onClick={handleCancelDispatch} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                        </td>
+                      </tr>
+                    )}
+                    {dispatchRows.map((row, idx) => {
+                      const rowKey = `${row.dno}_${row.color}`;
+                      const isEditing = editingDispatchRow === rowKey;
+                      return (
+                      <tr key={idx}>
+                        {isEditing ? (
+                          <>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editDispatchForm.dno} 
+                                onChange={(e) => setEditDispatchForm({...editDispatchForm, dno: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
+                                value={editDispatchForm.color} 
+                                onChange={(e) => setEditDispatchForm({...editDispatchForm, color: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4">
+                                <input 
+                                  type="number" 
+                                  value={editDispatchForm.sizes[size] || ""} 
+                                  onChange={(e) => setEditDispatchForm({
+                                    ...editDispatchForm, 
+                                    sizes: {...editDispatchForm.sizes, [size]: Number(e.target.value) || 0}
+                                  })} 
+                                  className="w-16 px-2 py-1 border rounded text-black bg-white text-center" 
+                                />
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleUpdateDispatchRow(row)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => setEditingDispatchRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            {SAMPLE_SIZES.map(size => (
+                              <td key={size} className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900">
+                                {row.sizes[size] || "-"}
+                              </td>
+                            ))}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button onClick={() => handleEditDispatchRow(row)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteDispatchRow(row)} className="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               ) : (
-                // Regular Form - Original Format
+                // Regular Form - Original Format for transfer and return
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -1524,16 +1825,7 @@ function DomesticDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                    {(selectedFormType === "dispatch") && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">MRP</th>
-                    )}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    {(selectedFormType === "dispatch") && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receiver</th>
-                    )}
-                    {selectedFormType === "purchase" && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                    )}
                     {(selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") && (
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warehouse</th>
                     )}
@@ -1550,31 +1842,14 @@ function DomesticDashboard() {
                       <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => {
-                        if (selectedFormType === "dispatch" || selectedFormType === "sample") {
-                          handleKeyDown(e, mrpRef);
-                        } else {
-                          handleKeyDown(e, dateRef);
-                        }
-                      }} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      {(selectedFormType === "dispatch" || selectedFormType === "sample") && (
-                        <td className="px-6 py-4"><input ref={mrpRef} type="number" value={editForm.mrp} onChange={(e) => setEditForm({...editForm, mrp: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="MRP" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      )}
+                      <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
-                        if (selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") {
-                          handleKeyDown(e, undefined, true);
-                        } else if (selectedFormType === "dispatch" || selectedFormType === "sample" || selectedFormType === "purchase" || selectedFormType === "return") {
+                        if (selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards" || selectedFormType === "return") {
                           handleKeyDown(e, additionalFieldRef);
                         } else {
                           handleKeyDown(e, undefined, true);
                         }
                       }} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      {(selectedFormType === "dispatch" || selectedFormType === "sample") && (
-                        <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true)} placeholder="Receiver" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      )}
-                      {selectedFormType === "purchase" && (
-                        <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true)} placeholder="Supplier" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      )}
                       {(selectedFormType === "transfer inwards" || selectedFormType === "transfer outwards") && (
                         <td className="px-6 py-4">
                           <div className="relative">
@@ -1636,31 +1911,15 @@ function DomesticDashboard() {
                           <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded" /></td>
-                          <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => {
-                            const formType = editForm.formType || "dispatch";
-                            if (formType === "dispatch" || formType === "sample") {
-                              handleKeyDown(e, mrpRef);
-                            } else {
-                              handleKeyDown(e, dateRef);
-                            }
-                          }} className="w-full px-2 py-1 border rounded" /></td>
-                          {(editForm.formType === "dispatch" || editForm.formType === "sample") && (
-                            <td className="px-6 py-4"><input ref={mrpRef} type="number" value={editForm.mrp} onChange={(e) => setEditForm({...editForm, mrp: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="MRP" className="w-full px-2 py-1 border rounded" /></td>
-                          )}
+                          <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {
-                            const formType = editForm.formType || "dispatch";
-                            if (formType === "dispatch" || formType === "sample" || formType === "purchase" || formType === "transfer inwards" || formType === "transfer outwards" || formType === "return") {
+                            const formType = editForm.formType || "";
+                            if (formType === "transfer inwards" || formType === "transfer outwards" || formType === "return") {
                               handleKeyDown(e, additionalFieldRef);
                             } else {
                               handleKeyDown(e, undefined, true, entry._id);
                             }
                           }} className="w-full px-2 py-1 border rounded" /></td>
-                          {(editForm.formType === "dispatch" || editForm.formType === "sample") && (
-                            <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.receiver} onChange={(e) => setEditForm({...editForm, receiver: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)} placeholder="Receiver" className="w-full px-2 py-1 border rounded" /></td>
-                          )}
-                          {editForm.formType === "purchase" && (
-                            <td className="px-6 py-4"><input ref={additionalFieldRef} type="text" value={editForm.supplier} onChange={(e) => setEditForm({...editForm, supplier: e.target.value})} onKeyDown={(e) => handleKeyDown(e, undefined, true, entry._id)} placeholder="Supplier" className="w-full px-2 py-1 border rounded" /></td>
-                          )}
                           {(editForm.formType === "transfer inwards" || editForm.formType === "transfer outwards") && (
                             <td className="px-6 py-4">
                               <input 
@@ -1718,16 +1977,7 @@ function DomesticDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.color}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.size}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.qty}</td>
-                          {(entry.formType === "dispatch" || entry.formType === "sample") && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.mrp || "-"}</td>
-                          )}
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.date?.split("T")[0]}</td>
-                          {(entry.formType === "dispatch" || entry.formType === "sample") && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.receiver}</td>
-                          )}
-                          {entry.formType === "purchase" && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.supplier}</td>
-                          )}
                           {(entry.formType === "transfer inwards" || entry.formType === "transfer outwards") && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.channel}</td>
                           )}
@@ -1760,7 +2010,12 @@ function DomesticDashboard() {
                   No purchase transactions found. Click "+ New Transaction" to create your first purchase entry.
                 </div>
               )}
-              {selectedFormType !== "sample" && selectedFormType !== "production" && selectedFormType !== "purchase" && filteredEntries.length === 0 && (
+              {selectedFormType === "dispatch" && dispatchRows.length === 0 && !isCreatingDispatch && (
+                <div className="text-center py-12 text-gray-500">
+                  No dispatch transactions found. Click "+ New Transaction" to create your first dispatch entry.
+                </div>
+              )}
+              {selectedFormType !== "sample" && selectedFormType !== "production" && selectedFormType !== "purchase" && selectedFormType !== "dispatch" && filteredEntries.length === 0 && (
                 <div className="text-center py-12 text-gray-500">
                   No transactions found. <Link href="/domestic/form" className="text-green-600 hover:underline">Create your first transaction</Link>
                 </div>

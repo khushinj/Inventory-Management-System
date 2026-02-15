@@ -163,7 +163,9 @@ function OnlineDashboard() {
             sizes: {}
           };
         }
-        grouped[key].sizes[entry.size] = entry.qty;
+        // Normalize 2xl to XXL
+        const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
+        grouped[key].sizes[normalizedSize] = entry.qty;
       }
     });
     
@@ -184,7 +186,9 @@ function OnlineDashboard() {
             sizes: {}
           };
         }
-        grouped[key].sizes[entry.size] = entry.qty;
+        // Normalize 2xl to XXL
+        const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
+        grouped[key].sizes[normalizedSize] = entry.qty;
       }
     });
     

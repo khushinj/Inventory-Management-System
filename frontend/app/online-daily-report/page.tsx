@@ -7,47 +7,61 @@ import * as XLSX from "xlsx";
 interface OnlineDailyReport {
   _id: string;
   date: string;
-  openingBalance: number;
-  cashSale: number;
-  upi: number;
-  creditCard: number;
-  creditNote: number;
-  deposited: number;
-  qty: number;
-  note: string;
+  // Platform Quantities
+  myntraQty: number;
+  ajioQty: number;
+  amazonQty: number;
+  flipkartQty: number;
+  snapdealQty: number;
+  websiteQty: number;
+  totalQuantity: number;
+  // Platform Prices
+  myntraPrice: number;
+  ajioPrice: number;
+  amazonPrice: number;
+  flipkartPrice: number;
+  snapdealPrice: number;
+  websitePrice: number;
+  // Financial Details
   totalSale: number;
-  expense: number;
-  closingBalance: number;
-  net: number;
+  totalReturns: number;
+  amountReceived: number;
 }
 
 export default function OnlineDailyReportPage() {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
-    openingBalance: 0,
-    cashSale: 0,
-    upi: 0,
-    creditCard: 0,
-    creditNote: 0,
-    deposited: 0,
-    qty: 0,
-    note: "",
-    expense: 0,
+    // Platform Quantities
+    myntraQty: 0,
+    ajioQty: 0,
+    amazonQty: 0,
+    flipkartQty: 0,
+    snapdealQty: 0,
+    websiteQty: 0,
+    // Platform Prices
+    myntraPrice: 0,
+    ajioPrice: 0,
+    amazonPrice: 0,
+    flipkartPrice: 0,
+    snapdealPrice: 0,
+    websitePrice: 0,
+    // Financial Details
+    totalReturns: 0,
+    amountReceived: 0,
   });
 
   const [reports, setReports] = useState<OnlineDailyReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Calculate total sale
-  const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
-  // Opening balance is the most recent report's closing balance (reports are sorted newest first)
-  // For the first entry ever, it should be editable
-  const openingBalance = reports.length > 0 ? (reports[0].closingBalance || 0) : formData.openingBalance;
-  const isFirstEntry = reports.length === 0;
-  const closingBalance = openingBalance + formData.cashSale - formData.expense - formData.deposited;
-  const net = openingBalance + totalSale - formData.expense - formData.deposited;
-
+  // Calculate total quantity from all platforms
+  const totalQuantity = formData.myntraQty + formData.ajioQty + formData.amazonQty + 
+                        formData.flipkartQty + formData.snapdealQty + formData.websiteQty;
+  
+  // Calculate total sale from all platform prices
+  const totalSale = formData.myntraPrice + formData.ajioPrice + formData.amazonPrice + 
+                    formData.flipkartPrice + formData.snapdealPrice + formData.websitePrice;
+  
   // Fetch all reports
   const fetchReports = async () => {
     try {
@@ -72,10 +86,32 @@ export default function OnlineDailyReportPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "date" || name === "note" ? value : parseFloat(value) || 0,
-    }));
+    if (name === "date") {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    } else {
+      const numValue = value === "" ? 0 : parseFloat(value);
+      const finalValue = isNaN(numValue) ? 0 : numValue;
+      console.log(`📝 ${name}: "${value}" → ${finalValue}`);
+      setFormData((prev) => ({ ...prev, [name]: finalValue }));
+    }
+  };
+
+  // Handle Enter key to move to next input field
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const form = e.currentTarget.form;
+      if (form) {
+        const inputs = Array.from(form.querySelectorAll('input:not([readonly]):not([type="submit"])')).filter(
+          (input) => (input as HTMLInputElement).type !== 'submit'
+        ) as HTMLInputElement[];
+        const currentIndex = inputs.indexOf(e.currentTarget);
+        if (currentIndex > -1 && currentIndex < inputs.length - 1) {
+          inputs[currentIndex + 1].focus();
+          inputs[currentIndex + 1].select();
+        }
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,26 +119,39 @@ export default function OnlineDailyReportPage() {
     setIsLoading(true);
     setMessage(null);
 
+    console.log("📤 Submitting form data:", formData);
+
     try {
-      const response = await api.post("/online-daily-report", {
-        ...formData,
-        openingBalance,
-      });
+      const response = await api.post("/online-daily-report", formData);
       
+      console.log("✅ Server response:", response.data);
       setMessage({ type: "success", text: response.data.message });
       
-      // Reset form
+      // Calculate next date (advance by 1 day)
+      const currentDate = new Date(formData.date);
+      currentDate.setDate(currentDate.getDate() + 1);
+      const nextDate = currentDate.toISOString().split("T")[0];
+      
+      // Reset form with next date
       setFormData({
-        date: new Date().toISOString().split("T")[0],
-        openingBalance: 0,
-        cashSale: 0,
-        upi: 0,
-        creditCard: 0,
-        creditNote: 0,
-        deposited: 0,
-        qty: 0,
-        note: "",
-        expense: 0,
+        date: nextDate,
+        // Platform Quantities
+        myntraQty: 0,
+        ajioQty: 0,
+        amazonQty: 0,
+        flipkartQty: 0,
+        snapdealQty: 0,
+        websiteQty: 0,
+        // Platform Prices
+        myntraPrice: 0,
+        ajioPrice: 0,
+        amazonPrice: 0,
+        flipkartPrice: 0,
+        snapdealPrice: 0,
+        websitePrice: 0,
+        // Financial Details
+        totalReturns: 0,
+        amountReceived: 0,
       });
       
       // Refresh reports to show new data
@@ -122,15 +171,20 @@ export default function OnlineDailyReportPage() {
   };
 
   const hasDraftData =
-    formData.cashSale !== 0 ||
-    formData.upi !== 0 ||
-    formData.creditCard !== 0 ||
-    formData.creditNote !== 0 ||
-    formData.deposited !== 0 ||
-    formData.qty !== 0 ||
-    formData.expense !== 0 ||
-    formData.note.trim() !== "" ||
-    (isFirstEntry && formData.openingBalance !== 0);
+    formData.myntraQty !== 0 ||
+    formData.ajioQty !== 0 ||
+    formData.amazonQty !== 0 ||
+    formData.flipkartQty !== 0 ||
+    formData.snapdealQty !== 0 ||
+    formData.websiteQty !== 0 ||
+    formData.myntraPrice !== 0 ||
+    formData.ajioPrice !== 0 ||
+    formData.amazonPrice !== 0 ||
+    formData.flipkartPrice !== 0 ||
+    formData.snapdealPrice !== 0 ||
+    formData.websitePrice !== 0 ||
+    formData.totalReturns !== 0 ||
+    formData.amountReceived !== 0;
 
   // Calculate totals for balance sheet (include current form values as a live preview)
   const calculateTotals = () => {
@@ -138,47 +192,62 @@ export default function OnlineDailyReportPage() {
 
     const baseTotals = reports.reduce(
       (acc, report) => ({
-        openingBalance: acc.openingBalance + (report.openingBalance || 0),
-        cashSale: acc.cashSale + (report.cashSale || 0),
-        upi: acc.upi + (report.upi || 0),
-        creditCard: acc.creditCard + (report.creditCard || 0),
-        creditNote: acc.creditNote + (report.creditNote || 0),
-        deposited: acc.deposited + (report.deposited || 0),
-        qty: acc.qty + (report.qty || 0),
+        totalQuantity: acc.totalQuantity + (report.totalQuantity || 0),
+        myntraQty: acc.myntraQty + (report.myntraQty || 0),
+        ajioQty: acc.ajioQty + (report.ajioQty || 0),
+        amazonQty: acc.amazonQty + (report.amazonQty || 0),
+        flipkartQty: acc.flipkartQty + (report.flipkartQty || 0),
+        snapdealQty: acc.snapdealQty + (report.snapdealQty || 0),
+        websiteQty: acc.websiteQty + (report.websiteQty || 0),
+        myntraPrice: acc.myntraPrice + (report.myntraPrice || 0),
+        ajioPrice: acc.ajioPrice + (report.ajioPrice || 0),
+        amazonPrice: acc.amazonPrice + (report.amazonPrice || 0),
+        flipkartPrice: acc.flipkartPrice + (report.flipkartPrice || 0),
+        snapdealPrice: acc.snapdealPrice + (report.snapdealPrice || 0),
+        websitePrice: acc.websitePrice + (report.websitePrice || 0),
         totalSale: acc.totalSale + (report.totalSale || 0),
-        expense: acc.expense + (report.expense || 0),
-        closingBalance: acc.closingBalance + (report.closingBalance || 0),
-        net: acc.net + (report.net || 0),
+        totalReturns: acc.totalReturns + (report.totalReturns || 0),
+        amountReceived: acc.amountReceived + (report.amountReceived || 0),
       }),
       {
-        openingBalance: 0,
-        cashSale: 0,
-        upi: 0,
-        creditCard: 0,
-        creditNote: 0,
-        deposited: 0,
-        qty: 0,
+        totalQuantity: 0,
+        myntraQty: 0,
+        ajioQty: 0,
+        amazonQty: 0,
+        flipkartQty: 0,
+        snapdealQty: 0,
+        websiteQty: 0,
+        myntraPrice: 0,
+        ajioPrice: 0,
+        amazonPrice: 0,
+        flipkartPrice: 0,
+        snapdealPrice: 0,
+        websitePrice: 0,
         totalSale: 0,
-        expense: 0,
-        closingBalance: 0,
-        net: 0,
+        totalReturns: 0,
+        amountReceived: 0,
       }
     );
 
     if (!hasDraftData) return baseTotals;
 
     return {
-      openingBalance: baseTotals.openingBalance + openingBalance,
-      cashSale: baseTotals.cashSale + formData.cashSale,
-      upi: baseTotals.upi + formData.upi,
-      creditCard: baseTotals.creditCard + formData.creditCard,
-      creditNote: baseTotals.creditNote + formData.creditNote,
-      deposited: baseTotals.deposited + formData.deposited,
-      qty: baseTotals.qty + formData.qty,
+      totalQuantity: baseTotals.totalQuantity + totalQuantity,
+      myntraQty: baseTotals.myntraQty + formData.myntraQty,
+      ajioQty: baseTotals.ajioQty + formData.ajioQty,
+      amazonQty: baseTotals.amazonQty + formData.amazonQty,
+      flipkartQty: baseTotals.flipkartQty + formData.flipkartQty,
+      snapdealQty: baseTotals.snapdealQty + formData.snapdealQty,
+      websiteQty: baseTotals.websiteQty + formData.websiteQty,
+      myntraPrice: baseTotals.myntraPrice + formData.myntraPrice,
+      ajioPrice: baseTotals.ajioPrice + formData.ajioPrice,
+      amazonPrice: baseTotals.amazonPrice + formData.amazonPrice,
+      flipkartPrice: baseTotals.flipkartPrice + formData.flipkartPrice,
+      snapdealPrice: baseTotals.snapdealPrice + formData.snapdealPrice,
+      websitePrice: baseTotals.websitePrice + formData.websitePrice,
       totalSale: baseTotals.totalSale + totalSale,
-      expense: baseTotals.expense + formData.expense,
-      closingBalance: baseTotals.closingBalance + closingBalance,
-      net: baseTotals.net + net,
+      totalReturns: baseTotals.totalReturns + formData.totalReturns,
+      amountReceived: baseTotals.amountReceived + formData.amountReceived,
     };
   };
 
@@ -188,36 +257,44 @@ export default function OnlineDailyReportPage() {
     // Prepare data for Excel
     const excelData = reports.map((report) => ({
       Date: new Date(report.date).toLocaleDateString("en-GB"),
-      "Opening Balance": (report.openingBalance || 0).toFixed(2),
-      "Cash Sale": (report.cashSale || 0).toFixed(2),
-      UPI: (report.upi || 0).toFixed(2),
-      "Credit Card": (report.creditCard || 0).toFixed(2),
-      "Credit Note": (report.creditNote || 0).toFixed(2),
-      Deposited: (report.deposited || 0).toFixed(2),
-      Qty: report.qty || 0,
-      Note: report.note || "-",
+      "Myntra Qty": report.myntraQty || 0,
+      "Ajio Qty": report.ajioQty || 0,
+      "Amazon Qty": report.amazonQty || 0,
+      "Flipkart Qty": report.flipkartQty || 0,
+      "Snapdeal Qty": report.snapdealQty || 0,
+      "Website Qty": report.websiteQty || 0,
+      "Total Quantity": report.totalQuantity || 0,
+      "Myntra Price": (report.myntraPrice || 0).toFixed(2),
+      "Ajio Price": (report.ajioPrice || 0).toFixed(2),
+      "Amazon Price": (report.amazonPrice || 0).toFixed(2),
+      "Flipkart Price": (report.flipkartPrice || 0).toFixed(2),
+      "Snapdeal Price": (report.snapdealPrice || 0).toFixed(2),
+      "Website Price": (report.websitePrice || 0).toFixed(2),
       "Total Sale": (report.totalSale || 0).toFixed(2),
-      Expense: (report.expense || 0).toFixed(2),
-      "Closing Balance": (report.closingBalance || 0).toFixed(2),
-      Net: (report.net || 0).toFixed(2),
+      "Total Returns": (report.totalReturns || 0).toFixed(2),
+      "Amount Received": (report.amountReceived || 0).toFixed(2),
     }));
 
     // Add totals row if available
     if (totals && !hasDraftData) {
       excelData.push({
         Date: "Total",
-        "Opening Balance": totals.openingBalance.toFixed(2),
-        "Cash Sale": totals.cashSale.toFixed(2),
-        UPI: totals.upi.toFixed(2),
-        "Credit Card": totals.creditCard.toFixed(2),
-        "Credit Note": totals.creditNote.toFixed(2),
-        Deposited: totals.deposited.toFixed(2),
-        Qty: totals.qty,
-        Note: "-",
+        "Myntra Qty": totals.myntraQty,
+        "Ajio Qty": totals.ajioQty,
+        "Amazon Qty": totals.amazonQty,
+        "Flipkart Qty": totals.flipkartQty,
+        "Snapdeal Qty": totals.snapdealQty,
+        "Website Qty": totals.websiteQty,
+        "Total Quantity": totals.totalQuantity,
+        "Myntra Price": totals.myntraPrice.toFixed(2),
+        "Ajio Price": totals.ajioPrice.toFixed(2),
+        "Amazon Price": totals.amazonPrice.toFixed(2),
+        "Flipkart Price": totals.flipkartPrice.toFixed(2),
+        "Snapdeal Price": totals.snapdealPrice.toFixed(2),
+        "Website Price": totals.websitePrice.toFixed(2),
         "Total Sale": totals.totalSale.toFixed(2),
-        Expense: totals.expense.toFixed(2),
-        "Closing Balance": totals.closingBalance.toFixed(2),
-        Net: totals.net.toFixed(2),
+        "Total Returns": totals.totalReturns.toFixed(2),
+        "Amount Received": totals.amountReceived.toFixed(2),
       });
     }
 
@@ -227,18 +304,22 @@ export default function OnlineDailyReportPage() {
     // Set column widths
     worksheet["!cols"] = [
       { wch: 12 }, // Date
-      { wch: 15 }, // Opening Balance
-      { wch: 12 }, // Cash Sale
-      { wch: 12 }, // UPI
-      { wch: 12 }, // Credit Card
-      { wch: 12 }, // Credit Note
-      { wch: 12 }, // Deposited
-      { wch: 8 },  // Qty
-      { wch: 25 }, // Note
+      { wch: 12 }, // Myntra Qty
+      { wch: 10 }, // Ajio Qty
+      { wch: 12 }, // Amazon Qty
+      { wch: 12 }, // Flipkart Qty
+      { wch: 12 }, // Snapdeal Qty
+      { wch: 12 }, // Website Qty
+      { wch: 14 }, // Total Quantity
+      { wch: 13 }, // Myntra Price
+      { wch: 11 }, // Ajio Price
+      { wch: 13 }, // Amazon Price
+      { wch: 13 }, // Flipkart Price
+      { wch: 14 }, // Snapdeal Price
+      { wch: 13 }, // Website Price
       { wch: 12 }, // Total Sale
-      { wch: 12 }, // Expense
-      { wch: 15 }, // Closing Balance
-      { wch: 12 }, // Net
+      { wch: 13 }, // Total Returns
+      { wch: 15 }, // Amount Received
     ];
 
     // Create workbook
@@ -277,214 +358,351 @@ export default function OnlineDailyReportPage() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              {/* Date */}
-              <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 text-black focus:border-transparent"
-                  required
-                />
+            {/* Report Details Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
+                Report Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Date */}
+                <div>
+                  <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                    Date <span className="text-orange-600">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    value={formData.date}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    className="w-full px-4 py-2.5 bg-orange-50 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-black font-semibold focus:border-transparent"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    One report per date. Changes date will update existing report.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Platform Quantities Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
+                Platform Quantities
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                {/* Myntra Qty */}
+                <div>
+                  <label htmlFor="myntraQty" className="block text-sm font-medium text-gray-700 mb-2">
+                    Myntra (Qty)
+                  </label>
+                  <input
+                    type="number"
+                    id="myntraQty"
+                    name="myntraQty"
+                    value={formData.myntraQty}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="1"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Ajio Qty */}
+                <div>
+                  <label htmlFor="ajioQty" className="block text-sm font-medium text-gray-700 mb-2">
+                    Ajio (Qty)
+                  </label>
+                  <input
+                    type="number"
+                    id="ajioQty"
+                    name="ajioQty"
+                    value={formData.ajioQty}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="1"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Amazon Qty */}
+                <div>
+                  <label htmlFor="amazonQty" className="block text-sm font-medium text-gray-700 mb-2">
+                    Amazon (Qty)
+                  </label>
+                  <input
+                    type="number"
+                    id="amazonQty"
+                    name="amazonQty"
+                    value={formData.amazonQty}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="1"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Flipkart Qty */}
+                <div>
+                  <label htmlFor="flipkartQty" className="block text-sm font-medium text-gray-700 mb-2">
+                    Flipkart (Qty)
+                  </label>
+                  <input
+                    type="number"
+                    id="flipkartQty"
+                    name="flipkartQty"
+                    value={formData.flipkartQty}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="1"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Snapdeal Qty */}
+                <div>
+                  <label htmlFor="snapdealQty" className="block text-sm font-medium text-gray-700 mb-2">
+                    Snapdeal (Qty)
+                  </label>
+                  <input
+                    type="number"
+                    id="snapdealQty"
+                    name="snapdealQty"
+                    value={formData.snapdealQty}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="1"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Website Qty */}
+                <div>
+                  <label htmlFor="websiteQty" className="block text-sm font-medium text-gray-700 mb-2">
+                    Website (Qty)
+                  </label>
+                  <input
+                    type="number"
+                    id="websiteQty"
+                    name="websiteQty"
+                    value={formData.websiteQty}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="1"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
               </div>
 
-              {/* Opening Balance */}
-              <div>
-                <label htmlFor="openingBalance" className="block text-sm font-medium text-gray-700 mb-2">
-                  Opening Balance {isFirstEntry && <span className="text-orange-600">(Editable - First Entry)</span>}
-                </label>
-                <input
-                  type="number"
-                  id="openingBalance"
-                  name="openingBalance"
-                  value={isFirstEntry ? formData.openingBalance : openingBalance.toFixed(2)}
-                  onChange={handleInputChange}
-                  onFocus={(e) => isFirstEntry && e.target.select()}
-                  readOnly={!isFirstEntry}
-                  step="0.01"
-                  className={`w-full px-4 py-2.5 text-black border border-gray-200 rounded-lg ${
-                    isFirstEntry 
-                      ? 'bg-gray-50 focus:ring-2 focus:ring-orange-500 focus:border-transparent' 
-                      : 'bg-gray-100 text-gray-600 cursor-not-allowed'
-                  }`}
-                  placeholder="0.00"
-                />
+              {/* Total Quantity (Auto-calculated) */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Total Quantity (Auto-calculated)
+                  </label>
+                  <input
+                    type="number"
+                    value={totalQuantity}
+                    readOnly
+                    className="w-full px-4 py-2.5 bg-orange-50 text-black border-2 border-orange-300 rounded-lg font-semibold cursor-not-allowed"
+                    placeholder="0"
+                  />
+                </div>
               </div>
+            </div>
 
-              {/* Cash Sale */}
-              <div>
-                <label htmlFor="cashSale" className="block text-sm font-medium text-gray-700 mb-2">
-                  Cash Sale
-                </label>
-                <input
-                  type="number"
-                  id="cashSale"
-                  name="cashSale"
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="0.00"
-                />
+            {/* Platform Prices Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
+                Platform Prices
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Myntra Price */}
+                <div>
+                  <label htmlFor="myntraPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Myntra (Price)
+                  </label>
+                  <input
+                    type="number"
+                    id="myntraPrice"
+                    name="myntraPrice"
+                    value={formData.myntraPrice}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Ajio Price */}
+                <div>
+                  <label htmlFor="ajioPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Ajio (Price)
+                  </label>
+                  <input
+                    type="number"
+                    id="ajioPrice"
+                    name="ajioPrice"
+                    value={formData.ajioPrice}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Amazon Price */}
+                <div>
+                  <label htmlFor="amazonPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Amazon (Price)
+                  </label>
+                  <input
+                    type="number"
+                    id="amazonPrice"
+                    name="amazonPrice"
+                    value={formData.amazonPrice}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Flipkart Price */}
+                <div>
+                  <label htmlFor="flipkartPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Flipkart (Price)
+                  </label>
+                  <input
+                    type="number"
+                    id="flipkartPrice"
+                    name="flipkartPrice"
+                    value={formData.flipkartPrice}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Snapdeal Price */}
+                <div>
+                  <label htmlFor="snapdealPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Snapdeal (Price)
+                  </label>
+                  <input
+                    type="number"
+                    id="snapdealPrice"
+                    name="snapdealPrice"
+                    value={formData.snapdealPrice}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Website Price */}
+                <div>
+                  <label htmlFor="websitePrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Website (Price)
+                  </label>
+                  <input
+                    type="number"
+                    id="websitePrice"
+                    name="websitePrice"
+                    value={formData.websitePrice}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
+            </div>
 
-              {/* UPI */}
-              <div>
-                <label htmlFor="upi" className="block text-sm font-medium text-gray-700 mb-2">
-                  UPI
-                </label>
-                <input
-                  type="number"
-                  id="upi"
-                  name="upi"
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="0.00"
-                />
-              </div>
+            {/* Financial Details Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
+                Financial Details
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Total Sale (Auto-calculated) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Total Sale (Auto-calculated)
+                  </label>
+                  <input
+                    type="number"
+                    value={totalSale.toFixed(2)}
+                    readOnly
+                    className="w-full px-4 py-2.5 bg-green-50 text-black border-2 border-green-300 rounded-lg font-semibold cursor-not-allowed"
+                    placeholder="0.00"
+                  />
+                </div>
 
-              {/* Credit Card */}
-              <div>
-                <label htmlFor="creditCard" className="block text-sm font-medium text-gray-700 mb-2">
-                  Credit Card
-                </label>
-                <input
-                  type="number"
-                  id="creditCard"
-                  name="creditCard"
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="0.00"
-                />
-              </div>
+                {/* Total Returns */}
+                <div>
+                  <label htmlFor="totalReturns" className="block text-sm font-medium text-gray-700 mb-2">
+                    Total Returns
+                  </label>
+                  <input
+                    type="number"
+                    id="totalReturns"
+                    name="totalReturns"
+                    value={formData.totalReturns}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
 
-              {/* Credit Note */}
-              <div>
-                <label htmlFor="creditNote" className="block text-sm font-medium text-gray-700 mb-2">
-                  Credit Note
-                </label>
-                <input
-                  type="number"
-                  id="creditNote"
-                  name="creditNote"
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Deposited */}
-              <div>
-                <label htmlFor="deposited" className="block text-sm font-medium text-gray-700 mb-2">
-                  Deposited
-                </label>
-                <input
-                  type="number"
-                  id="deposited"
-                  name="deposited"
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Qty */}
-              <div>
-                <label htmlFor="qty" className="block text-sm font-medium text-gray-700 mb-2">
-                  Qty
-                </label>
-                <input
-                  type="number"
-                  id="qty"
-                  name="qty"
-                  onChange={handleInputChange}
-                  step="1"
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="0"
-                />
-              </div>
-
-              {/* Note */}
-              <div>
-                <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-2">
-                  Note
-                </label>
-                <input
-                  type="text"
-                  id="note"
-                  name="note"
-                  value={formData.note}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Add a note"
-                />
-              </div>
-
-              {/* Total Sale (Auto-calculated) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Total Sale (Auto-calculated)
-                </label>
-                <input
-                  type="number"
-                  value={totalSale.toFixed(2)}
-                  readOnly
-                  className="w-full px-4 py-2.5 bg-gray-100 text-black border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Closing Balance */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Closing Balance (Auto-calculated)
-                </label>
-                <input
-                  type="number"
-                  value={closingBalance.toFixed(2)}
-                  readOnly
-                  className="w-full px-4 py-2.5 bg-gray-100 text-black border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Expense */}
-              <div>
-                <label htmlFor="expense" className="block text-sm font-medium text-gray-700 mb-2">
-                  Expense
-                </label>
-                <input
-                  type="number"
-                  id="expense"
-                  name="expense"
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Net (Auto-calculated) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Net (Auto-calculated)
-                </label>
-                <input
-                  type="number"
-                  value={net.toFixed(2)}
-                  readOnly
-                  className="w-full px-4 py-2.5 bg-gray-100 text-black border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
-                  placeholder="0.00"
-                />
+                {/* Amount Received */}
+                <div>
+                  <label htmlFor="amountReceived" className="block text-sm font-medium text-gray-700 mb-2">
+                    Amount Received
+                  </label>
+                  <input
+                    type="number"
+                    id="amountReceived"
+                    name="amountReceived"
+                    value={formData.amountReceived}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
             </div>
 
@@ -538,17 +756,16 @@ export default function OnlineDailyReportPage() {
               <thead>
                 <tr className="border-b-2 border-gray-200">
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Opening Balance</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Cash Sale</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">UPI</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Credit Card</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Credit Note</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Deposited</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Qty</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Note</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total Qty</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Myntra</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Ajio</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Amazon</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Flipkart</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Snapdeal</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Website</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total Sale</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Expense</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Closing Balance</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Returns</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Received</th>
                 </tr>
               </thead>
               <tbody>
@@ -557,38 +774,35 @@ export default function OnlineDailyReportPage() {
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {new Date(report.date).toLocaleDateString("en-GB")}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.openingBalance || 0).toFixed(2)}
+                    <td className="px-4 py-3 text-sm font-semibold text-orange-600 text-right">
+                      {report.totalQuantity || 0}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.cashSale || 0).toFixed(2)}
+                      ₹{(report.myntraPrice || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.upi || 0).toFixed(2)}
+                      ₹{(report.ajioPrice || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.creditCard || 0).toFixed(2)}
+                      ₹{(report.amazonPrice || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.creditNote || 0).toFixed(2)}
+                      ₹{(report.flipkartPrice || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.deposited || 0).toFixed(2)}
+                      ₹{(report.snapdealPrice || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      {report.qty || 0}
+                      ₹{(report.websitePrice || 0).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {report.note || "-"}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
+                    <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
                       ₹{(report.totalSale || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-red-600 text-right">
-                      ₹{(report.expense || 0).toFixed(2)}
+                      ₹{(report.totalReturns || 0).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
-                      ₹{(report.closingBalance || 0).toFixed(2)}
+                    <td className="px-4 py-3 text-sm text-blue-600 text-right">
+                      ₹{(report.amountReceived || 0).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -597,38 +811,35 @@ export default function OnlineDailyReportPage() {
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {hasDraftData ? "Total (incl. draft)" : "Total"}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      {/* ₹{totals.openingBalance.toFixed(2)} */}
+                    <td className="px-4 py-3 text-sm text-orange-600 text-right">
+                      {totals.totalQuantity}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.cashSale.toFixed(2)}
+                      ₹{totals.myntraPrice.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.upi.toFixed(2)}
+                      ₹{totals.ajioPrice.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.creditCard.toFixed(2)}
+                      ₹{totals.amazonPrice.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.creditNote.toFixed(2)}
+                      ₹{totals.flipkartPrice.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.deposited.toFixed(2)}
+                      ₹{totals.snapdealPrice.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      {totals.qty}
+                      ₹{totals.websitePrice.toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      -
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                    <td className="px-4 py-3 text-sm text-green-600 text-right">
                       ₹{totals.totalSale.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-red-600 text-right">
-                      ₹{totals.expense.toFixed(2)}
+                      ₹{totals.totalReturns.toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      {/* ₹{totals.closingBalance.toFixed(2)} */}
+                    <td className="px-4 py-3 text-sm text-blue-600 text-right">
+                      ₹{totals.amountReceived.toFixed(2)}
                     </td>
                   </tr>
                 )}

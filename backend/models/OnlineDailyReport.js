@@ -6,62 +6,85 @@ const onlineDailyReportSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  openingBalance: {
+  // Platform Quantities
+  myntraQty: {
     type: Number,
     required: true,
     default: 0,
   },
-  cashSale: {
+  ajioQty: {
     type: Number,
     required: true,
     default: 0,
   },
-  upi: {
+  amazonQty: {
     type: Number,
     required: true,
     default: 0,
   },
-  creditCard: {
+  flipkartQty: {
     type: Number,
     required: true,
     default: 0,
   },
-  creditNote: {
+  snapdealQty: {
     type: Number,
     required: true,
     default: 0,
   },
-  deposited: {
+  websiteQty: {
     type: Number,
     required: true,
     default: 0,
   },
-  qty: {
+  totalQuantity: {
     type: Number,
     required: true,
     default: 0,
   },
-  note: {
-    type: String,
-    default: "",
-    trim: true,
+  // Platform Prices
+  myntraPrice: {
+    type: Number,
+    required: true,
+    default: 0,
   },
+  ajioPrice: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  amazonPrice: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  flipkartPrice: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  snapdealPrice: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  websitePrice: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  // Financial Details
   totalSale: {
     type: Number,
     required: true,
     default: 0,
   },
-  expense: {
+  totalReturns: {
     type: Number,
     required: true,
     default: 0,
   },
-  closingBalance: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  net: {
+  amountReceived: {
     type: Number,
     required: true,
     default: 0,
@@ -70,11 +93,15 @@ const onlineDailyReportSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Calculate total sale before saving
+// Calculate totals before saving
 onlineDailyReportSchema.pre('save', function() {
-  this.totalSale = this.cashSale + this.upi + this.creditCard + this.creditNote;
-  this.closingBalance = this.openingBalance + this.cashSale - this.expense - this.deposited;
-  this.net = this.openingBalance + this.totalSale - this.expense - this.deposited;
+  // Calculate total quantity from all platforms
+  this.totalQuantity = this.myntraQty + this.ajioQty + this.amazonQty + 
+                       this.flipkartQty + this.snapdealQty + this.websiteQty;
+  
+  // Calculate total sale from all platform prices
+  this.totalSale = this.myntraPrice + this.ajioPrice + this.amazonPrice + 
+                   this.flipkartPrice + this.snapdealPrice + this.websitePrice;
 });
 
 const OnlineDailyReport = mongoose.model('OnlineDailyReport', onlineDailyReportSchema);

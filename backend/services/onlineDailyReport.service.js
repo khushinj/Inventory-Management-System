@@ -8,74 +8,67 @@ class OnlineDailyReportService {
     return normalized;
   }
 
-  // Calculate total sale
-  calculateTotalSale(cashSale, upi, creditCard, creditNote) {
-    return (cashSale || 0) + (upi || 0) + (creditCard || 0) + (creditNote || 0);
-  }
-
-  // Calculate net amount
-  calculateNet(totalSale, expense) {
-    return (totalSale || 0) - (expense || 0);
-  }
-
   // Create or update daily report
   async saveReport(reportData) {
-    const { date, cashSale, upi, creditCard, creditNote, expense, qty, note, deposited, openingBalance: customOpeningBalance } = reportData;
+    const { 
+      date, 
+      myntraQty, ajioQty, amazonQty, flipkartQty, snapdealQty, websiteQty,
+      myntraPrice, ajioPrice, amazonPrice, flipkartPrice, snapdealPrice, websitePrice,
+      totalReturns, amountReceived 
+    } = reportData;
+
+    console.log('📥 Service received data:', reportData);
 
     // Normalize date
     const reportDate = this.normalizeDate(date);
-
-    // Calculate totals
-    const totalSale = this.calculateTotalSale(cashSale, upi, creditCard, creditNote);
-    
-    const previousReport = await OnlineDailyReport.findOne({ date: { $lt: reportDate } })
-      .sort({ date: -1 })
-      .select('closingBalance');
-    // Use custom opening balance only if this is the first report (no previous reports)
-    const openingBalance = previousReport ? previousReport.closingBalance : (customOpeningBalance || 0);
-    
-    const closingBalance = openingBalance + (cashSale || 0) - (expense || 0) - (deposited || 0);
-    const net = openingBalance + totalSale - (expense || 0) - (deposited || 0);
 
     // Check if report exists for this date
     const existingReport = await OnlineDailyReport.findOne({ date: reportDate });
 
     if (existingReport) {
       // Update existing report
-      existingReport.openingBalance = openingBalance;
-      existingReport.cashSale = cashSale || 0;
-      existingReport.upi = upi || 0;
-      existingReport.creditCard = creditCard || 0;
-      existingReport.creditNote = creditNote || 0;
-      existingReport.qty = qty || 0;
-      existingReport.note = note || '';
-      existingReport.deposited = deposited || 0;
-      existingReport.expense = expense || 0;
-      existingReport.totalSale = totalSale;
-      existingReport.closingBalance = closingBalance;
-      existingReport.net = net;
+      existingReport.myntraQty = myntraQty || 0;
+      existingReport.ajioQty = ajioQty || 0;
+      existingReport.amazonQty = amazonQty || 0;
+      existingReport.flipkartQty = flipkartQty || 0;
+      existingReport.snapdealQty = snapdealQty || 0;
+      existingReport.websiteQty = websiteQty || 0;
+      existingReport.myntraPrice = myntraPrice || 0;
+      existingReport.ajioPrice = ajioPrice || 0;
+      existingReport.amazonPrice = amazonPrice || 0;
+      existingReport.flipkartPrice = flipkartPrice || 0;
+      existingReport.snapdealPrice = snapdealPrice || 0;
+      existingReport.websitePrice = websitePrice || 0;
+      existingReport.totalReturns = totalReturns || 0;
+      existingReport.amountReceived = amountReceived || 0;
 
-      return await existingReport.save();
+      const savedReport = await existingReport.save();
+      console.log('✅ Report updated:', savedReport);
+      return savedReport;
     }
 
     // Create new report
     const newReport = new OnlineDailyReport({
       date: reportDate,
-      openingBalance,
-      cashSale: cashSale || 0,
-      upi: upi || 0,
-      creditCard: creditCard || 0,
-      creditNote: creditNote || 0,
-      qty: qty || 0,
-      note: note || '',
-      deposited: deposited || 0,
-      expense: expense || 0,
-      totalSale,
-      closingBalance,
-      net,
+      myntraQty: myntraQty || 0,
+      ajioQty: ajioQty || 0,
+      amazonQty: amazonQty || 0,
+      flipkartQty: flipkartQty || 0,
+      snapdealQty: snapdealQty || 0,
+      websiteQty: websiteQty || 0,
+      myntraPrice: myntraPrice || 0,
+      ajioPrice: ajioPrice || 0,
+      amazonPrice: amazonPrice || 0,
+      flipkartPrice: flipkartPrice || 0,
+      snapdealPrice: snapdealPrice || 0,
+      websitePrice: websitePrice || 0,
+      totalReturns: totalReturns || 0,
+      amountReceived: amountReceived || 0,
     });
 
-    return await newReport.save();
+    const savedReport = await newReport.save();
+    console.log('✅ Report created:', savedReport);
+    return savedReport;
   }
 
   // Get all reports sorted by date (newest first)

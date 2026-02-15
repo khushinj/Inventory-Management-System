@@ -5,6 +5,7 @@ import {
   PackageX,
   FileText,
   Warehouse,
+  Undo2,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -35,7 +36,14 @@ const cards: ActionCard[] = [
   },
   {
     title: "Stock Returned",
-    description: "Process returned items across channels",
+    description: "Return stock to warehouse or supplier",
+    icon: Undo2,
+    gradient: "amber-600",
+    href: "/domestic?formType=return&locked=true",
+  },
+  {
+    title: "Customer Returns",
+    description: "Process returned items from customers",
     icon: PackageX,
     gradient: "orange-600",
     href: "/shop?formType=return",

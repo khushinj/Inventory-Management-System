@@ -9,6 +9,7 @@ import onlineRoutes from "./routes/online.route.js";
 import jobCardRoutes from "./routes/jobCard.route.js";
 import shopInventoryRoutes from "./routes/shopInventory.route.js";
 import dailyReportRoutes from "./routes/dailyReport.route.js";
+import onlineDailyReportRoutes from "./routes/onlineDailyReport.route.js";
 import inventoryRoutes from "./routes/inventory.route.js";
 
 
@@ -29,6 +30,7 @@ app.use("/api/warehouse/online", onlineRoutes);
 app.use("/api/jobcard", jobCardRoutes);
 app.use("/api/shop-inventory", shopInventoryRoutes);
 app.use("/api/daily-report", dailyReportRoutes);
+app.use("/api/online-daily-report", onlineDailyReportRoutes);
 app.use("/api/inventory", inventoryRoutes);
 
 // test route

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Undo2, ShoppingCart, ArrowRightLeft, ShoppingBag } from "lucide-react";
+import { Eye, Undo2, ShoppingCart, ArrowRightLeft, ShoppingBag, FileText } from "lucide-react";
 
 const operations = [
   {
@@ -43,6 +43,14 @@ const operations = [
     href: "/online?formType=purchase",
     color: "bg-purple-500",
     hoverColor: "hover:bg-purple-600",
+  },
+  {
+    title: "Daily Report",
+    description: "Track daily sales and expenses",
+    icon: FileText,
+    href: "/online-daily-report",
+    color: "bg-teal-500",
+    hoverColor: "hover:bg-teal-600",
   },
 ];
 

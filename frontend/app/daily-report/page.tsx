@@ -554,7 +554,7 @@ export default function DailyReportPage() {
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Total Sale</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Expense</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Closing Balance</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Net</th>
+                  {/* <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Net</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -597,7 +597,7 @@ export default function DailyReportPage() {
                       ₹{(report.closingBalance || 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
-                      ₹{(report.net || 0).toFixed(2)}
+                      {/* ₹{(report.net || 0).toFixed(2)} */}
                     </td>
                   </tr>
                 ))}
@@ -607,7 +607,7 @@ export default function DailyReportPage() {
                       {hasDraftData ? "Total (incl. draft)" : "Total"}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{totals.openingBalance.toFixed(2)}
+                      {/* ₹{totals.openingBalance.toFixed(2)} */}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
                       ₹{totals.cashSale.toFixed(2)}
@@ -637,10 +637,10 @@ export default function DailyReportPage() {
                       ₹{totals.expense.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
-                      ₹{totals.closingBalance.toFixed(2)}
+                      {/* ₹{totals.closingBalance.toFixed(2)} */}
                     </td>
                     <td className="px-4 py-3 text-sm text-green-600 text-right">
-                      ₹{totals.net.toFixed(2)}
+                      {/* ₹{totals.net.toFixed(2)} */}
                     </td>
                   </tr>
                 )}

@@ -22,6 +22,7 @@ type Entry = {
 type SampleRow = {
   dno: string;
   color: string;
+  date?: string;
   sizes: {
     [size: string]: number;
   };
@@ -117,44 +118,41 @@ function ShopDashboard() {
 
   const groupImportEntries = (allEntries: Entry[]) => {
     const importEntries = allEntries.filter(entry => entry.formType === "import");
-    const grouped: { [key: string]: SampleRow } = {};
-    
-    importEntries.forEach(entry => {
-      if (entry.dno && entry.color && entry.size) {
-        const key = `${entry.dno}_${entry.color}`;
-        if (!grouped[key]) {
-          grouped[key] = {
-            dno: entry.dno,
-            color: entry.color,
-            sizes: {}
-          };
-        }
-        grouped[key].sizes[entry.size] = entry.qty;
-      }
-    });
-    
-    setImportRows(Object.values(grouped));
+    setImportRows(buildGroupedRows(importEntries));
   };
 
   const groupReturnEntries = (allEntries: Entry[]) => {
     const returnEntries = allEntries.filter(entry => entry.formType === "return");
+    setReturnRows(buildGroupedRows(returnEntries));
+  };
+
+  const buildGroupedRows = (items: Entry[]) => {
     const grouped: { [key: string]: SampleRow } = {};
-    
-    returnEntries.forEach(entry => {
+
+    items.forEach((entry) => {
       if (entry.dno && entry.color && entry.size) {
         const key = `${entry.dno}_${entry.color}`;
         if (!grouped[key]) {
           grouped[key] = {
             dno: entry.dno,
             color: entry.color,
-            sizes: {}
+            date: entry.date,
+            sizes: {},
           };
         }
+
         grouped[key].sizes[entry.size] = entry.qty;
+
+        if (entry.date) {
+          const currentDate = grouped[key].date;
+          if (!currentDate || new Date(entry.date).getTime() > new Date(currentDate).getTime()) {
+            grouped[key].date = entry.date;
+          }
+        }
       }
     });
-    
-    setReturnRows(Object.values(grouped));
+
+    return Object.values(grouped);
   };
 
   const filteredEntries = entries
@@ -171,8 +169,10 @@ function ShopDashboard() {
         entry.formType === selectedFormType;
 
       return matchesSearch && matchesChannel && matchesFormType;
-    })
-    .slice(0, 30);
+    });
+
+  const limitedEntries = filteredEntries.slice(0, 30);
+  const filteredGroupedRows = buildGroupedRows(filteredEntries);
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
@@ -740,6 +740,7 @@ function ShopDashboard() {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                     {SIZES.map(size => (
                       <th key={size} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{size}</th>
                     ))}
@@ -770,6 +771,9 @@ function ShopDashboard() {
                           placeholder="Color" 
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date().toISOString().split("T")[0]}
                       </td>
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
@@ -819,6 +823,9 @@ function ShopDashboard() {
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date().toISOString().split("T")[0]}
+                      </td>
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
                           <input 
@@ -843,7 +850,7 @@ function ShopDashboard() {
                       </td>
                     </tr>
                   )}
-                  {selectedFormType === "import" && importRows.map((row, idx) => {
+                  {selectedFormType === "import" && filteredGroupedRows.map((row, idx) => {
                     const rowKey = `${row.dno}_${row.color}`;
                     const isEditing = editingImportRow === rowKey;
                     
@@ -867,6 +874,9 @@ function ShopDashboard() {
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {row.date ? row.date.split("T")[0] : "-"}
+                            </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4">
                                 <input 
@@ -889,6 +899,9 @@ function ShopDashboard() {
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {row.date ? row.date.split("T")[0] : "-"}
+                            </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
                             ))}
@@ -901,7 +914,7 @@ function ShopDashboard() {
                       </tr>
                     );
                   })}
-                  {selectedFormType === "return" && returnRows.map((row, idx) => {
+                  {selectedFormType === "return" && filteredGroupedRows.map((row, idx) => {
                     const rowKey = `${row.dno}_${row.color}`;
                     const isEditing = editingReturnRow === rowKey;
                     
@@ -925,6 +938,9 @@ function ShopDashboard() {
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {row.date ? row.date.split("T")[0] : "-"}
+                            </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4">
                                 <input 
@@ -947,6 +963,9 @@ function ShopDashboard() {
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {row.date ? row.date.split("T")[0] : "-"}
+                            </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
                             ))}
@@ -961,12 +980,12 @@ function ShopDashboard() {
                   })}
                 </tbody>
               </table>
-              {selectedFormType === "import" && importRows.length === 0 && !isCreatingImport && (
+              {selectedFormType === "import" && filteredGroupedRows.length === 0 && !isCreatingImport && (
                 <div className="text-center py-12 text-gray-500">
                   No import transactions found.
                 </div>
               )}
-              {selectedFormType === "return" && returnRows.length === 0 && !isCreatingReturn && (
+              {selectedFormType === "return" && filteredGroupedRows.length === 0 && !isCreatingReturn && (
                 <div className="text-center py-12 text-gray-500">
                   No return transactions found.
                 </div>
@@ -1010,7 +1029,7 @@ function ShopDashboard() {
                       </td>
                     </tr>
                   )}
-                  {filteredEntries.map((entry) => (
+                  {limitedEntries.map((entry) => (
                     <tr key={entry._id}>
                       {editingEntry === entry._id ? (
                         <>

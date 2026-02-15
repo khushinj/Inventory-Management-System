@@ -12,6 +12,7 @@ import dailyReportRoutes from "./routes/dailyReport.route.js";
 import onlineDailyReportRoutes from "./routes/onlineDailyReport.route.js";
 import inventoryRoutes from "./routes/inventory.route.js";
 import purchaseOrderRoutes from "./routes/purchaseOrder.route.js";
+import stockReturnedRoutes from "./routes/stockReturned.route.js";
 
 
 dotenv.config();
@@ -34,6 +35,7 @@ app.use("/api/daily-report", dailyReportRoutes);
 app.use("/api/online-daily-report", onlineDailyReportRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/purchase-order", purchaseOrderRoutes);
+app.use("/api/stock-returned", stockReturnedRoutes);
 
 // test route
 app.get("/", (req, res) => {

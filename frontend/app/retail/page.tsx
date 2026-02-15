@@ -39,7 +39,7 @@ const cards: ActionCard[] = [
     description: "Return stock to warehouse or supplier",
     icon: Undo2,
     gradient: "amber-600",
-    href: "/domestic?formType=return&locked=true",
+    href: "/shop-stock-returned",
   },
   {
     title: "Customer Returns",

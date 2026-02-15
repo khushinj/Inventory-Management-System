@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { api } from "../../../lib/api";
 
 type PurchaseOrderItem = {
   id: number;
@@ -217,39 +218,90 @@ export default function PurchaseOrderEntryForm() {
     ]);
   };
 
-  const handleSaveData = () => {
+  const handleSaveData = async () => {
+    try {
+      // Prepare data for backend
+      const purchaseOrderData = {
+        dealerName: headerInfo.dealerName,
+        buyerName: headerInfo.buyerName,
+        date: headerInfo.date,
+        city: headerInfo.city,
+        items: items.map(({ id, ...item }) => item), // Remove the temporary id field
+        totalQuantity: summary.totalQuantity,
+        grossTotal: summary.grossTotal,
+        gstOutput: summary.gstOutput,
+        grandTotal: summary.grandTotal,
+        termsCondition: summary.termsCondition,
+      };
+
+      // Save to backend
+      const response = await api.post("/purchase-order", purchaseOrderData);
+      
+      if (response.data.success) {
+        alert("Purchase order saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving purchase order:", error);
+      alert("Failed to save purchase order. Still generating PDF and Excel...");
+    }
+
+    // Generate PDF
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     
-    // Title
-    doc.setFontSize(20);
-    doc.text("PURCHASE ORDER", 105, 20, { align: "center" });
+    // Title - PURCHASE ORDER
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("PURCHASE ORDER", pageWidth / 2, 20, { align: "center" });
     
-    // Header Information
+    // Header Information Box
     doc.setFontSize(10);
-    doc.text(`Dealer Name: ${headerInfo.dealerName}`, 20, 35);
-    doc.text(`Buyer Name: ${headerInfo.buyerName}`, 20, 42);
-    doc.text(`Date: ${headerInfo.date}`, 20, 49);
-    doc.text(`City: ${headerInfo.city}`, 20, 56);
+    doc.setFont("helvetica", "normal");
+    
+    // Left side - Consignee (Ship to)
+    doc.setFont("helvetica", "bold");
+    doc.text("Consignee (Ship to)", 14, 35);
+    doc.setFont("helvetica", "normal");
+    doc.text(headerInfo.dealerName || "Name of Dealer", 14, 42);
+    doc.text(headerInfo.city || "City", 14, 49);
+    
+    // Right side - Dated, Mode/Terms of Payment
+    doc.setFont("helvetica", "bold");
+    doc.text("Voucher No.", pageWidth - 65, 35);
+    doc.setFont("helvetica", "normal");
+    doc.text(headerInfo.date ? `PO-${headerInfo.date.replace(/-/g, "")}` : "PO-", pageWidth - 65, 42);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Dated", pageWidth - 65, 49);
+    doc.setFont("helvetica", "normal");
+    doc.text(headerInfo.date || new Date().toLocaleDateString("en-GB"), pageWidth - 65, 56);
+    
+    // Buyer Info
+    doc.setFont("helvetica", "bold");
+    doc.text("Name of Buyer:", 14, 56);
+    doc.setFont("helvetica", "normal");
+    doc.text(headerInfo.buyerName || "-", 50, 56);
+    
+    // Divider line
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 62, pageWidth - 14, 62);
     
     // Items Table
     const tableData = items.map((item, index) => [
       index + 1,
+      `${item.itemName}\\n${item.designNumber}`,
       item.category,
-      item.itemName,
-      item.designNumber,
       item.color,
-      item.s,
-      item.m,
-      item.l,
-      item.xl,
-      item.xxl,
-      item.xxxl,
-      item.xxxxl,
-      item.xxxxxl,
-      item.xxxxxxl,
+      item.s || "-",
+      item.m || "-",
+      item.l || "-",
+      item.xl || "-",
+      item.xxl || "-",
+      `${item.xxxl || "-"}`,
       item.qty,
       item.mrp.toFixed(2),
-      item.dis,
+      `${item.dis}%`,
       item.rate.toFixed(2),
       item.amount.toFixed(2),
       `${item.tgst}%`,
@@ -258,23 +310,121 @@ export default function PurchaseOrderEntryForm() {
     ]);
     
     autoTable(doc, {
-      startY: 70,
+      startY: 68,
       head: [[
-        'SL', 'Category', 'Item', 'Design No.', 'Color', 'S', 'M', 'L', 'XL', 'XXL', 
-        '3XL', '4XL', '5XL', '6XL', 'QTY', 'MRP', 'DIS%', 'Rate', 'Amt', 'TGST%', 'Tax', 'Total'
+        'SL\\nNo.', 'Description of Goods\\n& HSN/SAC', 'Category', 'Color', 'S', 'M', 'L', 'XL', 
+        'XXL', '3XL', 'Quantity', 'Rate\\nper PC', 'Disc\\n%', 'Net\\nRate', 'Amount', 
+        'GST\\n%', 'Tax', 'Amount\\n(₹)'
       ]],
       body: tableData,
       theme: 'grid',
-      headStyles: { fillColor: [71, 85, 105], fontSize: 7 },
-      bodyStyles: { fontSize: 7 },
-      columnStyles: {
-        0: { cellWidth: 8 },
-        1: { cellWidth: 15 },
-        2: { cellWidth: 15 },
-        3: { cellWidth: 18 },
-        4: { cellWidth: 12 },
+      headStyles: { 
+        fillColor: [71, 85, 105], // Slate color
+        textColor: [255, 255, 255],
+        fontSize: 7,
+        fontStyle: 'bold',
+        halign: 'center',
+        valign: 'middle',
+        lineWidth: 0.1,
+        lineColor: [0, 0, 0],
       },
+      bodyStyles: { 
+        fontSize: 7,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [200, 200, 200],
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 25, fontSize: 6 },
+        2: { cellWidth: 15 },
+        3: { cellWidth: 15 },
+        4: { cellWidth: 8, halign: 'center' },
+        5: { cellWidth: 8, halign: 'center' },
+        6: { cellWidth: 8, halign: 'center' },
+        7: { cellWidth: 8, halign: 'center' },
+        8: { cellWidth: 8, halign: 'center' },
+        9: { cellWidth: 8, halign: 'center' },
+        10: { cellWidth: 12, halign: 'center', fontStyle: 'bold' },
+        11: { cellWidth: 13, halign: 'right' },
+        12: { cellWidth: 10, halign: 'center' },
+        13: { cellWidth: 13, halign: 'right' },
+        14: { cellWidth: 15, halign: 'right' },
+        15: { cellWidth: 10, halign: 'center' },
+        16: { cellWidth: 12, halign: 'right' },
+        17: { cellWidth: 16, halign: 'right', fontStyle: 'bold' },
+      },
+      margin: { left: 14, right: 14 },
     });
+
+    let finalY = (doc as any).lastAutoTable?.finalY + 5 || 150;
+
+    // Summary section
+    const summaryStartX = pageWidth - 70;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    
+    doc.text("Gross Total:", summaryStartX, finalY);
+    doc.text(`₹${summary.grossTotal.toFixed(2)}`, pageWidth - 16, finalY, { align: 'right' });
+    
+    finalY += 7;
+    doc.text("GST Output:", summaryStartX, finalY);
+    doc.text(`₹${summary.gstOutput.toFixed(2)}`, pageWidth - 16, finalY, { align: 'right' });
+    
+    finalY += 7;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Grand Total:", summaryStartX, finalY);
+    doc.text(`₹${summary.grandTotal.toFixed(2)}`, pageWidth - 16, finalY, { align: 'right' });
+    
+    // Total Quantity on left side
+    finalY += 7;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`Total Quantity: ${summary.totalQuantity} pcs`, 14, finalY);
+    
+    // Amount in words
+    finalY += 10;
+    doc.setFont("helvetica", "bold");
+    doc.text("Amount in Words:", 14, finalY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    const amountWords = doc.splitTextToSize(summary.purchaseOrderValueWords, pageWidth - 28);
+    doc.text(amountWords, 14, finalY + 5);
+    
+    finalY += 5 + (amountWords.length * 5);
+    
+    // Terms and Conditions
+    if (finalY + 30 > pageHeight - 20) {
+      doc.addPage();
+      finalY = 20;
+    }
+    
+    finalY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Terms & Conditions:", 14, finalY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    const termsLines = doc.splitTextToSize(summary.termsCondition, pageWidth - 28);
+    doc.text(termsLines, 14, finalY + 6);
+    
+    finalY += 6 + (termsLines.length * 4);
+    
+    // Footer
+    if (finalY > pageHeight - 15) {
+      doc.addPage();
+      finalY = pageHeight - 15;
+    } else {
+      finalY = pageHeight - 15;
+    }
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.text("This is a Computer Generated Document", pageWidth / 2, finalY, { align: "center" });
+
+    // Download PDF
+    doc.save(`purchase_order_${headerInfo.date || new Date().toISOString().split('T')[0]}.pdf`);
 
     // Excel export with item details
     const excelData = items.map((item, index) => ({
@@ -306,17 +456,6 @@ export default function PurchaseOrderEntryForm() {
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Items");
     XLSX.writeFile(workbook, `purchase_order_${headerInfo.date || "document"}.xlsx`);
-    
-    // Terms and Conditions
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.setFontSize(9);
-    doc.text('Terms & Conditions:', 20, finalY);
-    doc.setFontSize(8);
-    const termsLines = doc.splitTextToSize(summary.termsCondition, 170);
-    doc.text(termsLines, 20, finalY + 7);
-    
-    // Download PDF
-    doc.save(`purchase_order_${headerInfo.date || 'document'}.pdf`);
   };
 
   return (
@@ -342,7 +481,7 @@ export default function PurchaseOrderEntryForm() {
                 d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
               />
             </svg>
-            Save Data
+            Download Excel & PDF
           </button>
         </div>
 

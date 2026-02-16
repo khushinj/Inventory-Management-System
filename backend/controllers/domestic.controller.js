@@ -9,6 +9,7 @@ const allowedDomesticForms = [
   "transfer outwards",
   "return",
   "sample",
+  "sales",
 ];
 
 export const createDomesticEntry = async (req, res) => {
@@ -17,10 +18,14 @@ export const createDomesticEntry = async (req, res) => {
       return res.status(400).json({ error: "Invalid domestic form type" });
     }
 
+    // Auto-set channel to "online" for sales form type
+    const channel = req.body.formType === "sales" ? "online" : req.body.channel;
+
     const Model = getTransactionModel("warehouse", "domestic", req.body.formType);
 
     const data = await Model.create({
       ...req.body,
+      channel,
       domain: "warehouse",
       warehouseType: "domestic",
     });
@@ -31,17 +36,29 @@ export const createDomesticEntry = async (req, res) => {
 };
 
 export const getDomesticEntries = async (req, res) => {
-  const collections = await Promise.all(
-    allowedDomesticForms.map((form) =>
-      getTransactionModel("warehouse", "domestic", form)
-        .find()
-        .sort({ date: -1 })
-        .lean()
-    )
-  );
+  try {
+    const { formType, channel } = req.query;
+    let formsToFetch = allowedDomesticForms;
 
-  const combined = collections.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(combined);
+    // If specific formType is requested, only fetch that
+    if (formType && allowedDomesticForms.includes(formType)) {
+      formsToFetch = [formType];
+    }
+
+    const collections = await Promise.all(
+      formsToFetch.map((form) =>
+        getTransactionModel("warehouse", "domestic", form)
+          .find(channel ? { channel } : {})
+          .sort({ date: -1 })
+          .lean()
+      )
+    );
+
+    const combined = collections.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(combined);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 };
 
 export const updateDomesticEntry = async (req, res) => {
@@ -60,11 +77,15 @@ export const updateDomesticEntry = async (req, res) => {
         return res.status(400).json({ error: "Invalid domestic form type" });
       }
 
+      // Auto-set channel to "online" for sales form type
+      const channel = newFormType === "sales" ? "online" : req.body.channel;
+
       if (newFormType === existing.formType) {
         updated = await CurrentModel.findByIdAndUpdate(
           id,
           {
             ...req.body,
+            channel,
             formType: existing.formType,
             domain: existing.domain,
             warehouseType: existing.warehouseType,
@@ -79,6 +100,7 @@ export const updateDomesticEntry = async (req, res) => {
         const payload = {
           ...existing.toObject(),
           ...req.body,
+          channel,
           formType: newFormType,
           domain: existing.domain,
           warehouseType: existing.warehouseType,
@@ -112,8 +134,9 @@ export const deleteDomesticEntry = async (req, res) => {
     }
 
     if (!deleted) return res.status(404).json({ error: "Entry not found" });
-    res.json({ message: "Entry deleted successfully" });
+    res.json({ message: "Entry deleted successfully", success: true });
   } catch (err) {
+    console.error("Delete error:", err);
     res.status(400).json({ error: err.message });
   }
 };

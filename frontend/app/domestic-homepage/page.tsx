@@ -86,7 +86,7 @@ const operations: OperationCard[] = [
     description: "Process online sales orders",
     icon: Store,
     bgColor: "bg-teal-500",
-    href: "/online?formType=sales",
+    href: "/domestic-online-sales",
   },
   {
     title: "Return",

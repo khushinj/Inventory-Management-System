@@ -85,8 +85,8 @@
     "size": "XL",
     "import": 1,
     "return": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -2845,7 +2845,7 @@
     "size": "L",
     "import": 0,
     "return": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -2975,7 +2975,7 @@
     "size": "XL",
     "import": 0,
     "return": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -3016,6 +3016,16 @@
     "import": 0,
     "return": 0,
     "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "GREY",
+    "size": "XXL",
+    "import": 0,
+    "return": 0,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -9405,8 +9415,8 @@
     "size": "XXL",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -12615,8 +12625,8 @@
     "size": "XXL",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {

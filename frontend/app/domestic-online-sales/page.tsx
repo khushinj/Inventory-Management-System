@@ -58,7 +58,7 @@ export default function DomesticOnlineSalesPage() {
 
   const handleKeyDown = (
     e: React.KeyboardEvent,
-    nextRef?: React.RefObject<HTMLInputElement>,
+    nextRef?: React.RefObject<HTMLInputElement | null>,
     isLastField?: boolean
   ) => {
     if (e.key === "Enter") {

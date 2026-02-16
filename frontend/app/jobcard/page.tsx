@@ -209,6 +209,9 @@ export default function JobCardPage() {
               <p className="mt-1 text-indigo-100">
                 Add product details with images and variants
               </p>
+              <p className="mt-2 text-sm text-indigo-200 bg-indigo-500 bg-opacity-30 px-3 py-2 rounded inline-block">
+                💡 These JobCard entries will be reflected in <strong>Domestic Inventory</strong> with aggregated warehouse stock
+              </p>
             </div>
             <Link
               href="/forms"

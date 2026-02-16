@@ -72,7 +72,10 @@ export default function DomesticInventoryPage() {
   const fetchInventory = async () => {
     try {
       const response = await api.get("/inventory/warehouse/domestic");
-      setInventory(response.data.items || []);
+      console.log("Domestic inventory response:", response.data);
+      const inventoryData = response.data.inventory || response.data.items || [];
+      console.log("Processed inventory:", inventoryData);
+      setInventory(inventoryData);
     } catch (err) {
       console.error("Error fetching inventory:", err);
       setInventory([]);
@@ -132,7 +135,10 @@ export default function DomesticInventoryPage() {
               Domestic Inventory
             </h1>
             <p className="text-sm text-gray-500">
-              Stock levels across domestic warehouse
+              View and manage stock levels with JobCard details (includes aggregated inventory from all domestic warehouse pages)
+            </p>
+            <p className="text-xs text-blue-600 mt-1">
+              💡 JobCard data (GSM, MRP, Fabric, etc.) is displayed along with aggregated stock from Production, Dispatch, Sample, Purchase, Online Sales, Return, Transfer Inwards, and Transfer Outwards pages
             </p>
           </div>
         </div>
@@ -144,7 +150,7 @@ export default function DomesticInventoryPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search by Design Number (e.g., DN-2025-001)"
+              placeholder="Search by Design Number (e.g., DN-2025-001 or NGW - 351100)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-gray-800 text-lg bg-gray-50"
@@ -163,6 +169,7 @@ export default function DomesticInventoryPage() {
               />
             </svg>
           </div>
+          <p className="mt-2 text-xs text-gray-500">💡 Tip: Search for a specific design number to quickly find its available stock table</p>
         </div>
       </div>
 
@@ -248,7 +255,9 @@ export default function DomesticInventoryPage() {
                   No products found
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Try adjusting your filters or search term
+                  {inventory.length === 0 
+                    ? "No data available. Add entries to production, dispatch, sample, purchase, online sales, return, or transfer pages in domestic warehouse."
+                    : "Try adjusting your filters or search term"}
                 </p>
               </div>
             ) : (
@@ -258,9 +267,17 @@ export default function DomesticInventoryPage() {
             )}
 
             {!loading && filteredDesigns.length > 0 && (
-              <div className="text-center text-gray-600">
+              <div className="text-center text-gray-600 text-sm">
                 Showing {filteredDesigns.length} of{" "}
                 {Object.keys(groupedByDesign).length} products
+                {Object.keys(groupedByDesign).includes("NGW - 351100") && (
+                  <p className="mt-2 text-green-600 font-semibold">✅ NGW - 351100 is loaded (scroll to find it)</p>
+                )}
+              </div>
+            )}
+            {!loading && inventory.length === 0 && (
+              <div className="text-center text-gray-500 text-sm mt-4">
+                Total items in database: {inventory.length}
               </div>
             )}
           </div>
@@ -288,28 +305,43 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
   const fetchProductDetails = async () => {
     try {
       setLoadingDetails(true);
-      // Use search endpoint to fetch specific job card details
-      const response = await api.get("/jobcard/search", {
-        params: { query: designNumber }
-      });
-      const jobCards = response.data;
-      const matchingCard = jobCards.find(
-        (card: any) =>
-          card.designNumber.toLowerCase() === designNumber.toLowerCase()
-      );
+      // Try to fetch job card details, but don't break if it fails
+      try {
+        const response = await api.get("/jobcard/search", {
+          params: { query: designNumber },
+          timeout: 5000, // 5 second timeout
+        });
+        
+        const jobCards = response.data;
+        if (Array.isArray(jobCards) && jobCards.length > 0) {
+          const matchingCard = jobCards.find(
+            (card: any) =>
+              card.designNumber.toLowerCase() === designNumber.toLowerCase()
+          );
 
-      if (matchingCard) {
-        setProductDetails({
-          designNumber: matchingCard.designNumber,
-          image: matchingCard.image,
-        });
-      } else {
-        setProductDetails({
-          designNumber: designNumber.toUpperCase(),
-        });
+          if (matchingCard) {
+            setProductDetails({
+              designNumber: matchingCard.designNumber,
+              image: matchingCard.image,
+              brand: matchingCard.brand,
+              fabric: matchingCard.fabric,
+              fabricComposition: matchingCard.fabricComposition,
+              gsm: matchingCard.gsm,
+              mrp: matchingCard.mrp,
+            });
+            return;
+          }
+        }
+      } catch (jobCardErr) {
+        // Silently fail if job card endpoint has issues - we'll just use the design number
       }
+      
+      // Fallback: just use the design number
+      setProductDetails({
+        designNumber: designNumber.toUpperCase(),
+      });
     } catch (err) {
-      console.error("Error fetching product details:", err);
+      // Final fallback
       setProductDetails({
         designNumber: designNumber.toUpperCase(),
       });
@@ -333,7 +365,7 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
         {/* Product Image */}
         <div className="md:w-1/2 w-full">
           <div className="relative w-full h-[520px] bg-gray-100 rounded-lg overflow-hidden">
-            {productDetails?.image ? (
+            {!loadingDetails && productDetails?.image ? (
               <Image
                 src={productDetails.image}
                 alt={designNumber}
@@ -342,7 +374,7 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                No Image
+                {loadingDetails ? "Loading..." : "No Image"}
               </div>
             )}
           </div>
@@ -350,46 +382,92 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
 
         {/* Product Details */}
         <div className="md:w-1/2 w-full mt-6 md:mt-0 space-y-6">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-4">
             <DetailBlock label="Design Number" value={productDetails?.designNumber || designNumber.toUpperCase()} />
-            <Link
-              href={`/domestic-inventory/edit/${encodeURIComponent(designNumber)}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-              Edit
-            </Link>
+            <div className="flex gap-2">
+              {productDetails?.brand ? (
+                <Link
+                  href={`/domestic-inventory/edit/${encodeURIComponent(designNumber)}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Edit
+                </Link>
+              ) : (
+                <Link
+                  href={`/jobcard`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  title="Create a JobCard for this design number to fill in GSM, MRP, Fabric details"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Create JobCard
+                </Link>
+              )}
+            </div>
           </div>
+
+          {/* Product Details Grid */}
+          {(productDetails?.brand || productDetails?.fabric || productDetails?.gsm || productDetails?.mrp) && (
+            <div className="grid grid-cols-2 gap-4">
+              {productDetails?.brand && (
+                <DetailBlock label="Brand" value={productDetails.brand} />
+              )}
+              {productDetails?.fabric && (
+                <DetailBlock label="Fabric" value={productDetails.fabric} />
+              )}
+              {productDetails?.fabricComposition && (
+                <DetailBlock label="Composition" value={productDetails.fabricComposition} />
+              )}
+              {productDetails?.gsm && (
+                <DetailBlock label="GSM" value={productDetails.gsm} />
+              )}
+              {productDetails?.mrp && (
+                <DetailBlock label="MRP" value={`₹${productDetails.mrp}`} />
+              )}
+            </div>
+          )}
 
           {/* Stock Summary */}
           <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {items.reduce((sum, item) => sum + item.inbound, 0)}
+                {items?.reduce((sum, item) => sum + item.inbound, 0) || 0}
               </div>
               <div className="text-xs font-medium text-gray-600">Inbound</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">
-                {items.reduce((sum, item) => sum + item.outbound, 0)}
+                {items?.reduce((sum, item) => sum + item.outbound, 0) || 0}
               </div>
               <div className="text-xs font-medium text-gray-600">Outbound</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {items.reduce((sum, item) => sum + item.stock, 0)}
+                {items?.reduce((sum, item) => sum + item.stock, 0) || 0}
               </div>
               <div className="text-xs font-medium text-gray-600">Total Stock</div>
             </div>
@@ -410,28 +488,16 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
                     <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                       Size
                     </th>
-                    <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                      Inbound
-                    </th>
-                    <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                      Outbound
-                    </th>
-                    <th className="px-3 py-2 text-right text-xs font-semibold text-gray-900">
-                      Stock
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                      Quantity
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {Object.entries(groupedByColor).map(([color, colorItems]) =>
                     colorItems
-                      .filter((item) => item.stock > 0 || item.outbound > 0)
                       .map((item, idx) => (
-                        <tr
-                          key={`${color}-${item.size}-${idx}`}
-                          className={`hover:bg-gray-50 ${
-                            item.outbound > 0 ? "bg-red-50" : ""
-                          }`}
-                        >
+                        <tr key={`${color}-${item.size}-${idx}`} className="hover:bg-gray-50">
                           <td className="px-3 py-2 text-xs">
                             <div className="flex items-center gap-2">
                               <div
@@ -444,29 +510,10 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
                               </span>
                             </div>
                           </td>
+                          <td className="px-3 py-2 text-xs text-gray-900 font-medium">
+                            {item.size}
+                          </td>
                           <td className="px-3 py-2 text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-900 font-medium">{item.size}</span>
-                              {item.outbound > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                                  ⚠ Dispatched
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-3 py-2 text-xs text-right text-green-600 font-semibold">
-                            {item.inbound}
-                          </td>
-                          <td
-                            className={`px-3 py-2 text-xs text-right font-semibold ${
-                              item.outbound > 0
-                                ? "text-red-700 bg-red-100"
-                                : "text-red-600"
-                            }`}
-                          >
-                            {item.outbound}
-                          </td>
-                          <td className="px-3 py-2 text-xs text-right">
                             <span
                               className={`inline-flex items-center justify-center min-w-[32px] h-8 px-2 rounded-full text-white text-xs font-semibold ${
                                 item.stock < 10

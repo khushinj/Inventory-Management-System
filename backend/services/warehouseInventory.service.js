@@ -65,16 +65,30 @@ export const calculateWarehouseInventory = async (warehouseType) => {
         };
       }
 
-      // Categorize as inbound or outbound
-      const inboundTypes = ["production", "purchase", "transfer inwards"];
-      const outboundTypes = ["dispatch", "sales", "transfer outwards", "return"];
+      // Categorize as inbound or outbound based on warehouse type and form type
+      let isInbound = false;
+      let domesticInboundTypes = [];
+      let exportInboundTypes = [];
+      
+      if (warehouseType === "domestic") {
+        // Domestic warehouse rules
+        // ADD (Inbound): production, purchase, return, transfer inwards
+        // SUBTRACT (Outbound): dispatch, sample, sales (online sale), transfer outwards
+        domesticInboundTypes = ["production", "purchase", "return", "transfer inwards"];
+        isInbound = domesticInboundTypes.includes(txn.formType);
+      } else {
+        // Online and Export warehouse rules (original logic)
+        exportInboundTypes = ["production", "purchase", "transfer inwards"];
+        isInbound = exportInboundTypes.includes(txn.formType);
+      }
 
-      if (inboundTypes.includes(txn.formType)) {
+      if (isInbound) {
         inventory[key].inbound += txn.qty || 0;
-      } else if (outboundTypes.includes(txn.formType)) {
+      } else {
         inventory[key].outbound += txn.qty || 0;
       }
 
+      const inboundTypes = warehouseType === "domestic" ? domesticInboundTypes : exportInboundTypes;
       inventory[key].transactions.push({
         id: txn._id,
         formType: txn.formType,

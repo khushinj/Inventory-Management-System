@@ -75,7 +75,7 @@ class ShopInventoryService {
         const size = this.normalizeSize(txn.size);
         const qty = Number(txn.qty) || 0;
         
-        if (!dno || !size || qty <= 0) return;
+        if (!dno || !size || qty === 0) return;
         
         const key = `${dno}|${color}`;
         if (!grouped[key]) {
@@ -88,6 +88,7 @@ class ShopInventoryService {
           };
         }
         
+        // Preserve sign for proper deduction of stock returns
         grouped[key].sizes[size] = (grouped[key].sizes[size] || 0) + qty;
         grouped[key].totalQty += qty;
       });
@@ -178,6 +179,7 @@ class ShopInventoryService {
             }
             
             const record = inventoryMap.get(key);
+            // Preserve sign: negative quantities (stock returns) subtract, positive add
             record.return += Number(qty) || 0;
           }
         }

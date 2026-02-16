@@ -14,6 +14,7 @@ class OnlineDailyReportService {
       date, 
       myntraQty, ajioQty, amazonQty, flipkartQty, snapdealQty, websiteQty,
       myntraPrice, ajioPrice, amazonPrice, flipkartPrice, snapdealPrice, websitePrice,
+      myntraAmountReceived, ajioAmountReceived, amazonAmountReceived, flipkartAmountReceived, snapdealAmountReceived, websiteAmountReceived,
       totalReturns, amountReceived 
     } = reportData;
 
@@ -39,6 +40,12 @@ class OnlineDailyReportService {
       existingReport.flipkartPrice = flipkartPrice || 0;
       existingReport.snapdealPrice = snapdealPrice || 0;
       existingReport.websitePrice = websitePrice || 0;
+      existingReport.myntraAmountReceived = myntraAmountReceived || 0;
+      existingReport.ajioAmountReceived = ajioAmountReceived || 0;
+      existingReport.amazonAmountReceived = amazonAmountReceived || 0;
+      existingReport.flipkartAmountReceived = flipkartAmountReceived || 0;
+      existingReport.snapdealAmountReceived = snapdealAmountReceived || 0;
+      existingReport.websiteAmountReceived = websiteAmountReceived || 0;
       existingReport.totalReturns = totalReturns || 0;
       existingReport.amountReceived = amountReceived || 0;
 
@@ -62,6 +69,12 @@ class OnlineDailyReportService {
       flipkartPrice: flipkartPrice || 0,
       snapdealPrice: snapdealPrice || 0,
       websitePrice: websitePrice || 0,
+      myntraAmountReceived: myntraAmountReceived || 0,
+      ajioAmountReceived: ajioAmountReceived || 0,
+      amazonAmountReceived: amazonAmountReceived || 0,
+      flipkartAmountReceived: flipkartAmountReceived || 0,
+      snapdealAmountReceived: snapdealAmountReceived || 0,
+      websiteAmountReceived: websiteAmountReceived || 0,
       totalReturns: totalReturns || 0,
       amountReceived: amountReceived || 0,
     });

@@ -42,7 +42,7 @@ const onlineDailyReportSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
-  // Platform Prices
+  // Platform Returns
   myntraPrice: {
     type: Number,
     required: true,
@@ -73,7 +73,38 @@ const onlineDailyReportSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
-  // Financial Details
+  // Amount Received per Platform
+  myntraAmountReceived: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  ajioAmountReceived: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  amazonAmountReceived: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  flipkartAmountReceived: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  snapdealAmountReceived: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  websiteAmountReceived: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  // Legacy Financial Details (kept for backwards compatibility)
   totalSale: {
     type: Number,
     required: true,
@@ -99,9 +130,16 @@ onlineDailyReportSchema.pre('save', function() {
   this.totalQuantity = this.myntraQty + this.ajioQty + this.amazonQty + 
                        this.flipkartQty + this.snapdealQty + this.websiteQty;
   
-  // Calculate total sale from all platform prices
-  this.totalSale = this.myntraPrice + this.ajioPrice + this.amazonPrice + 
-                   this.flipkartPrice + this.snapdealPrice + this.websitePrice;
+  // Calculate total sale from all platform amounts received
+  this.totalSale = this.myntraAmountReceived + this.ajioAmountReceived + this.amazonAmountReceived + 
+                   this.flipkartAmountReceived + this.snapdealAmountReceived + this.websiteAmountReceived;
+  
+  // Calculate total returns
+  this.totalReturns = this.myntraPrice + this.ajioPrice + this.amazonPrice + 
+                      this.flipkartPrice + this.snapdealPrice + this.websitePrice;
+  
+  // Calculate amount received (total sale - total returns)
+  this.amountReceived = this.totalSale - this.totalReturns;
 });
 
 const OnlineDailyReport = mongoose.model('OnlineDailyReport', onlineDailyReportSchema);

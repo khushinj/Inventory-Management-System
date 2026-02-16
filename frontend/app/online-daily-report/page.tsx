@@ -15,17 +15,20 @@ interface OnlineDailyReport {
   snapdealQty: number;
   websiteQty: number;
   totalQuantity: number;
-  // Platform Prices
+  // Platform Returns
   myntraPrice: number;
   ajioPrice: number;
   amazonPrice: number;
   flipkartPrice: number;
   snapdealPrice: number;
   websitePrice: number;
-  // Financial Details
-  totalSale: number;
-  totalReturns: number;
-  amountReceived: number;
+  // Amount Received per Platform
+  myntraAmountReceived: number;
+  ajioAmountReceived: number;
+  amazonAmountReceived: number;
+  flipkartAmountReceived: number;
+  snapdealAmountReceived: number;
+  websiteAmountReceived: number;
 }
 
 export default function OnlineDailyReportPage() {
@@ -38,16 +41,20 @@ export default function OnlineDailyReportPage() {
     flipkartQty: 0,
     snapdealQty: 0,
     websiteQty: 0,
-    // Platform Prices
+    // Platform Returns
     myntraPrice: 0,
     ajioPrice: 0,
     amazonPrice: 0,
     flipkartPrice: 0,
     snapdealPrice: 0,
     websitePrice: 0,
-    // Financial Details
-    totalReturns: 0,
-    amountReceived: 0,
+    // Amount Received per Platform
+    myntraAmountReceived: 0,
+    ajioAmountReceived: 0,
+    amazonAmountReceived: 0,
+    flipkartAmountReceived: 0,
+    snapdealAmountReceived: 0,
+    websiteAmountReceived: 0,
   });
 
   const [reports, setReports] = useState<OnlineDailyReport[]>([]);
@@ -58,9 +65,13 @@ export default function OnlineDailyReportPage() {
   const totalQuantity = formData.myntraQty + formData.ajioQty + formData.amazonQty + 
                         formData.flipkartQty + formData.snapdealQty + formData.websiteQty;
   
-  // Calculate total sale from all platform prices
-  const totalSale = formData.myntraPrice + formData.ajioPrice + formData.amazonPrice + 
-                    formData.flipkartPrice + formData.snapdealPrice + formData.websitePrice;
+  // Calculate total amount received from all platform amounts
+  const totalAmountReceived = formData.myntraAmountReceived + formData.ajioAmountReceived + formData.amazonAmountReceived + 
+                              formData.flipkartAmountReceived + formData.snapdealAmountReceived + formData.websiteAmountReceived;
+  
+  // Calculate total returns from all platform returns
+  const totalReturns = formData.myntraPrice + formData.ajioPrice + formData.amazonPrice + 
+                       formData.flipkartPrice + formData.snapdealPrice + formData.websitePrice;
   
   // Fetch all reports
   const fetchReports = async () => {
@@ -69,6 +80,7 @@ export default function OnlineDailyReportPage() {
       if (response.data.data && Array.isArray(response.data.data)) {
         setReports(response.data.data);
         console.log("✅ Online Reports fetched:", response.data.data.length, "records");
+        console.log("📊 First record data:", response.data.data[0]);
       } else {
         console.warn("⚠️ Unexpected response format:", response.data);
         setReports([]);
@@ -142,16 +154,20 @@ export default function OnlineDailyReportPage() {
         flipkartQty: 0,
         snapdealQty: 0,
         websiteQty: 0,
-        // Platform Prices
+        // Platform Returns
         myntraPrice: 0,
         ajioPrice: 0,
         amazonPrice: 0,
         flipkartPrice: 0,
         snapdealPrice: 0,
         websitePrice: 0,
-        // Financial Details
-        totalReturns: 0,
-        amountReceived: 0,
+        // Amount Received per Platform
+        myntraAmountReceived: 0,
+        ajioAmountReceived: 0,
+        amazonAmountReceived: 0,
+        flipkartAmountReceived: 0,
+        snapdealAmountReceived: 0,
+        websiteAmountReceived: 0,
       });
       
       // Refresh reports to show new data
@@ -183,8 +199,12 @@ export default function OnlineDailyReportPage() {
     formData.flipkartPrice !== 0 ||
     formData.snapdealPrice !== 0 ||
     formData.websitePrice !== 0 ||
-    formData.totalReturns !== 0 ||
-    formData.amountReceived !== 0;
+    formData.myntraAmountReceived !== 0 ||
+    formData.ajioAmountReceived !== 0 ||
+    formData.amazonAmountReceived !== 0 ||
+    formData.flipkartAmountReceived !== 0 ||
+    formData.snapdealAmountReceived !== 0 ||
+    formData.websiteAmountReceived !== 0;
 
   // Calculate totals for balance sheet (include current form values as a live preview)
   const calculateTotals = () => {
@@ -205,9 +225,12 @@ export default function OnlineDailyReportPage() {
         flipkartPrice: acc.flipkartPrice + (report.flipkartPrice || 0),
         snapdealPrice: acc.snapdealPrice + (report.snapdealPrice || 0),
         websitePrice: acc.websitePrice + (report.websitePrice || 0),
-        totalSale: acc.totalSale + (report.totalSale || 0),
-        totalReturns: acc.totalReturns + (report.totalReturns || 0),
-        amountReceived: acc.amountReceived + (report.amountReceived || 0),
+        myntraAmountReceived: acc.myntraAmountReceived + (report.myntraAmountReceived || 0),
+        ajioAmountReceived: acc.ajioAmountReceived + (report.ajioAmountReceived || 0),
+        amazonAmountReceived: acc.amazonAmountReceived + (report.amazonAmountReceived || 0),
+        flipkartAmountReceived: acc.flipkartAmountReceived + (report.flipkartAmountReceived || 0),
+        snapdealAmountReceived: acc.snapdealAmountReceived + (report.snapdealAmountReceived || 0),
+        websiteAmountReceived: acc.websiteAmountReceived + (report.websiteAmountReceived || 0),
       }),
       {
         totalQuantity: 0,
@@ -223,9 +246,12 @@ export default function OnlineDailyReportPage() {
         flipkartPrice: 0,
         snapdealPrice: 0,
         websitePrice: 0,
-        totalSale: 0,
-        totalReturns: 0,
-        amountReceived: 0,
+        myntraAmountReceived: 0,
+        ajioAmountReceived: 0,
+        amazonAmountReceived: 0,
+        flipkartAmountReceived: 0,
+        snapdealAmountReceived: 0,
+        websiteAmountReceived: 0,
       }
     );
 
@@ -245,56 +271,47 @@ export default function OnlineDailyReportPage() {
       flipkartPrice: baseTotals.flipkartPrice + formData.flipkartPrice,
       snapdealPrice: baseTotals.snapdealPrice + formData.snapdealPrice,
       websitePrice: baseTotals.websitePrice + formData.websitePrice,
-      totalSale: baseTotals.totalSale + totalSale,
-      totalReturns: baseTotals.totalReturns + formData.totalReturns,
-      amountReceived: baseTotals.amountReceived + formData.amountReceived,
+      myntraAmountReceived: baseTotals.myntraAmountReceived + formData.myntraAmountReceived,
+      ajioAmountReceived: baseTotals.ajioAmountReceived + formData.ajioAmountReceived,
+      amazonAmountReceived: baseTotals.amazonAmountReceived + formData.amazonAmountReceived,
+      flipkartAmountReceived: baseTotals.flipkartAmountReceived + formData.flipkartAmountReceived,
+      snapdealAmountReceived: baseTotals.snapdealAmountReceived + formData.snapdealAmountReceived,
+      websiteAmountReceived: baseTotals.websiteAmountReceived + formData.websiteAmountReceived,
     };
   };
 
   const totals = calculateTotals();
 
   const downloadExcel = () => {
-    // Prepare data for Excel
-    const excelData = reports.map((report) => ({
-      Date: new Date(report.date).toLocaleDateString("en-GB"),
-      "Myntra Qty": report.myntraQty || 0,
-      "Ajio Qty": report.ajioQty || 0,
-      "Amazon Qty": report.amazonQty || 0,
-      "Flipkart Qty": report.flipkartQty || 0,
-      "Snapdeal Qty": report.snapdealQty || 0,
-      "Website Qty": report.websiteQty || 0,
-      "Total Quantity": report.totalQuantity || 0,
-      "Myntra Price": (report.myntraPrice || 0).toFixed(2),
-      "Ajio Price": (report.ajioPrice || 0).toFixed(2),
-      "Amazon Price": (report.amazonPrice || 0).toFixed(2),
-      "Flipkart Price": (report.flipkartPrice || 0).toFixed(2),
-      "Snapdeal Price": (report.snapdealPrice || 0).toFixed(2),
-      "Website Price": (report.websitePrice || 0).toFixed(2),
-      "Total Sale": (report.totalSale || 0).toFixed(2),
-      "Total Returns": (report.totalReturns || 0).toFixed(2),
-      "Amount Received": (report.amountReceived || 0).toFixed(2),
-    }));
+    // Prepare data for Excel - show summary view
+    const excelData = reports.map((report) => {
+      const totalQty = (report.myntraQty || 0) + (report.ajioQty || 0) + (report.amazonQty || 0) + 
+                       (report.flipkartQty || 0) + (report.snapdealQty || 0) + (report.websiteQty || 0);
+      const totalAmt = (report.myntraAmountReceived || 0) + (report.ajioAmountReceived || 0) + (report.amazonAmountReceived || 0) + 
+                       (report.flipkartAmountReceived || 0) + (report.snapdealAmountReceived || 0) + (report.websiteAmountReceived || 0);
+      const totalRet = (report.myntraPrice || 0) + (report.ajioPrice || 0) + (report.amazonPrice || 0) + 
+                       (report.flipkartPrice || 0) + (report.snapdealPrice || 0) + (report.websitePrice || 0);
+      return {
+        Date: new Date(report.date).toLocaleDateString("en-GB"),
+        "Total Qty": totalQty,
+        "Total Amount Received": totalAmt.toFixed(2),
+        "Total Returns": totalRet.toFixed(2),
+      };
+    });
 
     // Add totals row if available
     if (totals && !hasDraftData) {
+      const totalQty = totals.myntraQty + totals.ajioQty + totals.amazonQty + 
+                       totals.flipkartQty + totals.snapdealQty + totals.websiteQty;
+      const totalAmt = totals.myntraAmountReceived + totals.ajioAmountReceived + totals.amazonAmountReceived + 
+                       totals.flipkartAmountReceived + totals.snapdealAmountReceived + totals.websiteAmountReceived;
+      const totalRet = totals.myntraPrice + totals.ajioPrice + totals.amazonPrice + 
+                       totals.flipkartPrice + totals.snapdealPrice + totals.websitePrice;
       excelData.push({
         Date: "Total",
-        "Myntra Qty": totals.myntraQty,
-        "Ajio Qty": totals.ajioQty,
-        "Amazon Qty": totals.amazonQty,
-        "Flipkart Qty": totals.flipkartQty,
-        "Snapdeal Qty": totals.snapdealQty,
-        "Website Qty": totals.websiteQty,
-        "Total Quantity": totals.totalQuantity,
-        "Myntra Price": totals.myntraPrice.toFixed(2),
-        "Ajio Price": totals.ajioPrice.toFixed(2),
-        "Amazon Price": totals.amazonPrice.toFixed(2),
-        "Flipkart Price": totals.flipkartPrice.toFixed(2),
-        "Snapdeal Price": totals.snapdealPrice.toFixed(2),
-        "Website Price": totals.websitePrice.toFixed(2),
-        "Total Sale": totals.totalSale.toFixed(2),
-        "Total Returns": totals.totalReturns.toFixed(2),
-        "Amount Received": totals.amountReceived.toFixed(2),
+        "Total Qty": totalQty,
+        "Total Amount Received": totalAmt.toFixed(2),
+        "Total Returns": totalRet.toFixed(2),
       });
     }
 
@@ -389,7 +406,7 @@ export default function OnlineDailyReportPage() {
             {/* Platform Quantities Section */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
-                Platform Quantities
+                Platform Sales
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                 {/* Myntra Qty */}
@@ -524,16 +541,16 @@ export default function OnlineDailyReportPage() {
               </div>
             </div>
 
-            {/* Platform Prices Section */}
+            {/* Platform Returns Section */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
-                Platform Prices
+                Platform Returns
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Myntra Price */}
+                {/* Myntra Returns */}
                 <div>
                   <label htmlFor="myntraPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Myntra (Price)
+                    Myntra (Returns)
                   </label>
                   <input
                     type="number"
@@ -549,10 +566,10 @@ export default function OnlineDailyReportPage() {
                   />
                 </div>
 
-                {/* Ajio Price */}
+                {/* Ajio Returns */}
                 <div>
                   <label htmlFor="ajioPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Ajio (Price)
+                    Ajio (Returns)
                   </label>
                   <input
                     type="number"
@@ -568,10 +585,10 @@ export default function OnlineDailyReportPage() {
                   />
                 </div>
 
-                {/* Amazon Price */}
+                {/* Amazon Returns */}
                 <div>
                   <label htmlFor="amazonPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Amazon (Price)
+                    Amazon (Returns)
                   </label>
                   <input
                     type="number"
@@ -587,10 +604,10 @@ export default function OnlineDailyReportPage() {
                   />
                 </div>
 
-                {/* Flipkart Price */}
+                {/* Flipkart Returns */}
                 <div>
                   <label htmlFor="flipkartPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Flipkart (Price)
+                    Flipkart (Returns)
                   </label>
                   <input
                     type="number"
@@ -606,10 +623,10 @@ export default function OnlineDailyReportPage() {
                   />
                 </div>
 
-                {/* Snapdeal Price */}
+                {/* Snapdeal Returns */}
                 <div>
                   <label htmlFor="snapdealPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Snapdeal (Price)
+                    Snapdeal (Returns)
                   </label>
                   <input
                     type="number"
@@ -625,10 +642,10 @@ export default function OnlineDailyReportPage() {
                   />
                 </div>
 
-                {/* Website Price */}
+                {/* Website Returns */}
                 <div>
                   <label htmlFor="websitePrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Website (Price)
+                    Website (Returns)
                   </label>
                   <input
                     type="number"
@@ -646,36 +663,22 @@ export default function OnlineDailyReportPage() {
               </div>
             </div>
 
-            {/* Financial Details Section */}
+            {/* Amount Received Section */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b-2 border-orange-200 pb-2">
-                Financial Details
+                Amount Received
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Total Sale (Auto-calculated) */}
+                {/* Myntra Amount */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Total Sale (Auto-calculated)
+                  <label htmlFor="myntraAmountReceived" className="block text-sm font-medium text-gray-700 mb-2">
+                    Myntra (Amount)
                   </label>
                   <input
                     type="number"
-                    value={totalSale.toFixed(2)}
-                    readOnly
-                    className="w-full px-4 py-2.5 bg-green-50 text-black border-2 border-green-300 rounded-lg font-semibold cursor-not-allowed"
-                    placeholder="0.00"
-                  />
-                </div>
-
-                {/* Total Returns */}
-                <div>
-                  <label htmlFor="totalReturns" className="block text-sm font-medium text-gray-700 mb-2">
-                    Total Returns
-                  </label>
-                  <input
-                    type="number"
-                    id="totalReturns"
-                    name="totalReturns"
-                    value={formData.totalReturns}
+                    id="myntraAmountReceived"
+                    name="myntraAmountReceived"
+                    value={formData.myntraAmountReceived}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
@@ -685,16 +688,92 @@ export default function OnlineDailyReportPage() {
                   />
                 </div>
 
-                {/* Amount Received */}
+                {/* Ajio Amount */}
                 <div>
-                  <label htmlFor="amountReceived" className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount Received
+                  <label htmlFor="ajioAmountReceived" className="block text-sm font-medium text-gray-700 mb-2">
+                    Ajio (Amount)
                   </label>
                   <input
                     type="number"
-                    id="amountReceived"
-                    name="amountReceived"
-                    value={formData.amountReceived}
+                    id="ajioAmountReceived"
+                    name="ajioAmountReceived"
+                    value={formData.ajioAmountReceived}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Amazon Amount */}
+                <div>
+                  <label htmlFor="amazonAmountReceived" className="block text-sm font-medium text-gray-700 mb-2">
+                    Amazon (Amount)
+                  </label>
+                  <input
+                    type="number"
+                    id="amazonAmountReceived"
+                    name="amazonAmountReceived"
+                    value={formData.amazonAmountReceived}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Flipkart Amount */}
+                <div>
+                  <label htmlFor="flipkartAmountReceived" className="block text-sm font-medium text-gray-700 mb-2">
+                    Flipkart (Amount)
+                  </label>
+                  <input
+                    type="number"
+                    id="flipkartAmountReceived"
+                    name="flipkartAmountReceived"
+                    value={formData.flipkartAmountReceived}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Snapdeal Amount */}
+                <div>
+                  <label htmlFor="snapdealAmountReceived" className="block text-sm font-medium text-gray-700 mb-2">
+                    Snapdeal (Amount)
+                  </label>
+                  <input
+                    type="number"
+                    id="snapdealAmountReceived"
+                    name="snapdealAmountReceived"
+                    value={formData.snapdealAmountReceived}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={(e) => e.target.select()}
+                    step="0.01"
+                    className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Website Amount */}
+                <div>
+                  <label htmlFor="websiteAmountReceived" className="block text-sm font-medium text-gray-700 mb-2">
+                    Website (Amount)
+                  </label>
+                  <input
+                    type="number"
+                    id="websiteAmountReceived"
+                    name="websiteAmountReceived"
+                    value={formData.websiteAmountReceived}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
@@ -705,6 +784,8 @@ export default function OnlineDailyReportPage() {
                 </div>
               </div>
             </div>
+
+
 
             <div className="flex justify-end">
               <button
@@ -757,89 +838,48 @@ export default function OnlineDailyReportPage() {
                 <tr className="border-b-2 border-gray-200">
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total Qty</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Myntra</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Ajio</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Amazon</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Flipkart</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Snapdeal</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Website</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total Sale</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Returns</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Received</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total Amount Received</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">Total Returns</th>
                 </tr>
               </thead>
               <tbody>
-                {reports.map((report) => (
-                  <tr key={report._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {new Date(report.date).toLocaleDateString("en-GB")}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-orange-600 text-right">
-                      {report.totalQuantity || 0}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.myntraPrice || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.ajioPrice || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.amazonPrice || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.flipkartPrice || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.snapdealPrice || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(report.websitePrice || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
-                      ₹{(report.totalSale || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-red-600 text-right">
-                      ₹{(report.totalReturns || 0).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-blue-600 text-right">
-                      ₹{(report.amountReceived || 0).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
+                {reports.map((report) => {
+                  const totalQty = (report.myntraQty || 0) + (report.ajioQty || 0) + (report.amazonQty || 0) + 
+                                   (report.flipkartQty || 0) + (report.snapdealQty || 0) + (report.websiteQty || 0);
+                  const totalAmount = (report.myntraAmountReceived || 0) + (report.ajioAmountReceived || 0) + (report.amazonAmountReceived || 0) + 
+                                      (report.flipkartAmountReceived || 0) + (report.snapdealAmountReceived || 0) + (report.websiteAmountReceived || 0);
+                  const totalReturns = (report.myntraPrice || 0) + (report.ajioPrice || 0) + (report.amazonPrice || 0) + 
+                                       (report.flipkartPrice || 0) + (report.snapdealPrice || 0) + (report.websitePrice || 0);
+                  return (
+                    <tr key={report._id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {new Date(report.date).toLocaleDateString("en-GB")}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-orange-600 text-right">
+                        {totalQty}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                        ₹{totalAmount.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                        ₹{totalReturns.toFixed(2)}
+                      </td>
+                    </tr>
+                  );
+                })}
                 {totals && (
                   <tr className="bg-gray-100 font-semibold border-t-2 border-gray-300">
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {hasDraftData ? "Total (incl. draft)" : "Total"}
                     </td>
                     <td className="px-4 py-3 text-sm text-orange-600 text-right">
-                      {totals.totalQuantity}
+                      {totals.myntraQty + totals.ajioQty + totals.amazonQty + totals.flipkartQty + totals.snapdealQty + totals.websiteQty}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.myntraPrice.toFixed(2)}
+                      ₹{(totals.myntraAmountReceived + totals.ajioAmountReceived + totals.amazonAmountReceived + totals.flipkartAmountReceived + totals.snapdealAmountReceived + totals.websiteAmountReceived).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.ajioPrice.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.amazonPrice.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.flipkartPrice.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.snapdealPrice.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{totals.websitePrice.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-green-600 text-right">
-                      ₹{totals.totalSale.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-red-600 text-right">
-                      ₹{totals.totalReturns.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-blue-600 text-right">
-                      ₹{totals.amountReceived.toFixed(2)}
+                      ₹{(totals.myntraPrice + totals.ajioPrice + totals.amazonPrice + totals.flipkartPrice + totals.snapdealPrice + totals.websitePrice).toFixed(2)}
                     </td>
                   </tr>
                 )}

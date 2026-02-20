@@ -3021,13 +3021,143 @@
   },
   {
     "designNumber": "ng-19219",
+    "color": "BEIGE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BEIGE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BEIGE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BEIGE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "BLACK",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "GREY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "GREY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "GREY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
     "color": "GREY",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "return": 0,
     "sales": 2,
     "net": 0,
-    "type": "sales"
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19219",
+    "color": "GREY",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "ng-19315",
@@ -5563,21 +5693,51 @@
     "designNumber": "ng-19722a",
     "color": "SILVER GREY",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19722a",
     "color": "SILVER GREY",
     "size": "L",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19722a",
+    "color": "SILVER GREY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
     "net": 1,
-    "type": "return"
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19722a",
+    "color": "SILVER GREY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19722a",
+    "color": "SILVER GREY",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "ng-19725a",
@@ -5650,104 +5810,154 @@
     "type": "return"
   },
   {
+    "designNumber": "ng-19726",
+    "color": "NAVY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19726",
+    "color": "NAVY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19726",
+    "color": "NAVY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19726",
+    "color": "NAVY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19726",
+    "color": "NAVY",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
     "designNumber": "ng-19727",
     "color": "BLACK",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19727",
     "color": "BLACK",
     "size": "L",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19727",
     "color": "BLACK",
     "size": "XL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19727",
     "color": "BLACK",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19727",
     "color": "BLACK",
     "size": "3XL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19728",
     "color": "GREY MELANGE",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19728",
     "color": "GREY MELANGE",
     "size": "L",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19728",
     "color": "GREY MELANGE",
     "size": "XL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19728",
     "color": "GREY MELANGE",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19728",
     "color": "GREY MELANGE",
     "size": "3XL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19802",
@@ -6265,8 +6475,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -6325,8 +6535,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -7560,84 +7770,484 @@
     "type": "return"
   },
   {
+    "designNumber": "ng-19953",
+    "color": "MUSTARD",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "MUSTARD",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "MUSTARD",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "MUSTARD",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WHITE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WHITE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WINE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WINE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WINE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19953",
+    "color": "WINE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "D.OLIVE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "D.OLIVE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "D.OLIVE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "D.OLIVE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "MUSTARD",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "MUSTARD",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "MUSTARD",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "MUSTARD",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "RED",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "RED",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "RED",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "RED",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WHITE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WHITE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WINE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WINE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WINE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19954",
+    "color": "WINE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
     "designNumber": "ng-19957",
     "color": "BLACK",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19957",
     "color": "BLACK",
     "size": "L",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19957",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
     "net": 1,
-    "type": "return"
+    "type": "import"
   },
   {
     "designNumber": "ng-19957",
     "color": "BLACK",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19957",
     "color": "DARK OLIVE",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19957",
     "color": "DARK OLIVE",
     "size": "L",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19957",
+    "color": "DARK OLIVE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
     "net": 1,
-    "type": "return"
+    "type": "import"
   },
   {
     "designNumber": "ng-19957",
     "color": "DARK OLIVE",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19957",
     "color": "WINE",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19957",
+    "color": "WINE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
     "net": 1,
-    "type": "return"
+    "type": "import"
   },
   {
     "designNumber": "ng-19957",
     "color": "WINE",
     "size": "XL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19957",
+    "color": "WINE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
     "net": 1,
-    "type": "return"
+    "type": "import"
   },
   {
     "designNumber": "ng-19968",
@@ -7803,31 +8413,41 @@
     "designNumber": "ng-19980",
     "color": "BLACK",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19980",
     "color": "BLACK",
     "size": "L",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19980",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
     "net": 1,
-    "type": "return"
+    "type": "import"
   },
   {
     "designNumber": "ng-19980",
     "color": "BLACK",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19980",
@@ -7863,41 +8483,161 @@
     "designNumber": "ng-19980",
     "color": "WHITE",
     "size": "M",
-    "import": 0,
+    "import": 2,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 3,
+    "type": "import"
   },
   {
     "designNumber": "ng-19980",
     "color": "WHITE",
     "size": "L",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19980",
     "color": "WHITE",
     "size": "XL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
-    "net": 1,
-    "type": "return"
+    "net": 2,
+    "type": "import"
   },
   {
     "designNumber": "ng-19980",
     "color": "WHITE",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "return": 1,
     "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19996",
+    "color": "MIDNIGHT BLUE",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
     "net": 1,
-    "type": "return"
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19996",
+    "color": "MIDNIGHT BLUE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19996",
+    "color": "MIDNIGHT BLUE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19996",
+    "color": "MIDNIGHT BLUE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-19996",
+    "color": "MIDNIGHT BLUE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20003",
+    "color": "ECRUMEL",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20003",
+    "color": "ECRUMEL",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20003",
+    "color": "ECRUMEL",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20005",
+    "color": "DK.GREY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20005",
+    "color": "DK.GREY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20005",
+    "color": "DK.GREY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20005",
+    "color": "DK.GREY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "ng-2001",
@@ -8810,6 +9550,196 @@
     "type": "return"
   },
   {
+    "designNumber": "ng-20058",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BLACK",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BROWN",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BROWN",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BROWN",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BROWN",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "BROWN",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "PINK",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "PINK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "PINK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "PINK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "PINK",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "SKY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "SKY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "SKY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "SKY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-20058",
+    "color": "SKY",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
     "designNumber": "ng-2101",
     "color": "BLACK",
     "size": "XL",
@@ -8828,6 +9758,206 @@
     "sales": 1,
     "net": 0,
     "type": "sales"
+  },
+  {
+    "designNumber": "ng-250548",
+    "color": "BLUE",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250548",
+    "color": "BLUE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250548",
+    "color": "BLUE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250548",
+    "color": "BLUE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250548",
+    "color": "BLUE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "E.GREEN",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "E.GREEN",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "E.GREEN",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "E.GREEN",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "E.GREEN",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "MAROON",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "MAROON",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "MAROON",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "MAROON",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "MAROON",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "NAVY",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "NAVY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "NAVY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "NAVY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250552",
+    "color": "NAVY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "ng-250553",
@@ -9138,6 +10268,126 @@
     "sales": 1,
     "net": 0,
     "type": "sales"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "INDIGO",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "INDIGO",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "INDIGO",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "WHITE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "WHITE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-250568",
+    "color": "WHITE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "ng-3001",
@@ -9710,6 +10960,316 @@
     "type": "return"
   },
   {
+    "designNumber": "ng-91407",
+    "color": "GREEN",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91407",
+    "color": "GREEN",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91407",
+    "color": "GREEN",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91407",
+    "color": "GREEN",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91407",
+    "color": "GREEN",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "PEACH",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "PEACH",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "PEACH",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "PEACH",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91409",
+    "color": "PEACH",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "BLACK",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "PEACH",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "PEACH",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "PEACH",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "PEACH",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91410",
+    "color": "PEACH",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "INDIGO",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "INDIGO",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "INDIGO",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "WHITE",
+    "size": "M",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "WHITE",
+    "size": "L",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ng-91411",
+    "color": "WHITE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
     "designNumber": "ng-91438",
     "color": "L-BROWN",
     "size": "S",
@@ -9795,8 +11355,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -9922,6 +11482,16 @@
   {
     "designNumber": "ng-91502",
     "color": "GREY MELANGE",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ng-91502",
+    "color": "GREY MELANGE",
     "size": "XL",
     "import": 0,
     "return": 1,
@@ -9955,8 +11525,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -10033,6 +11603,136 @@
     "designNumber": "ng-w-351144/d",
     "color": "WHITE NAVY",
     "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451100",
+    "color": "GREY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451100",
+    "color": "GREY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451100",
+    "color": "GREY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451100",
+    "color": "GREY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451101",
+    "color": "BLUE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451101",
+    "color": "BLUE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451101",
+    "color": "BLUE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451101",
+    "color": "BLUE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451101",
+    "color": "BLUE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451237",
+    "color": "NAVY/SKY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451237",
+    "color": "NAVY/SKY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451237",
+    "color": "NAVY/SKY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "ngs-451237",
+    "color": "NAVY/SKY",
+    "size": "XXL",
     "import": 1,
     "return": 0,
     "sales": 0,
@@ -15470,6 +17170,36 @@
     "type": "import"
   },
   {
+    "designNumber": "ssg-21818",
+    "color": "ASSORTED",
+    "size": "M",
+    "import": 15,
+    "return": 0,
+    "sales": 0,
+    "net": 15,
+    "type": "import"
+  },
+  {
+    "designNumber": "ssg-21818",
+    "color": "ASSORTED",
+    "size": "L",
+    "import": 15,
+    "return": 0,
+    "sales": 0,
+    "net": 15,
+    "type": "import"
+  },
+  {
+    "designNumber": "ssg-21818",
+    "color": "ASSORTED",
+    "size": "XL",
+    "import": 15,
+    "return": 0,
+    "sales": 0,
+    "net": 15,
+    "type": "import"
+  },
+  {
     "designNumber": "ssg-90436",
     "color": "BLACK",
     "size": "M",
@@ -16000,6 +17730,216 @@
     "type": "import"
   },
   {
+    "designNumber": "tb-002",
+    "color": "E.GREEN",
+    "size": "L",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "E.GREEN",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "E.GREEN",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "MEGA ROSE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "MEGA ROSE",
+    "size": "XXL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "NAVY",
+    "size": "XL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "NAVY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "ONION PINK",
+    "size": "L",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "ONION PINK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "RED",
+    "size": "M",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "RED",
+    "size": "L",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "RED",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "RED",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "SILVER GREY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "SILVER GREY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "SILVER GREY",
+    "size": "XL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "SILVER GREY",
+    "size": "XXL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "WHITE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "WHITE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-002",
+    "color": "WOOD",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
     "designNumber": "tb-002/10",
     "color": "SILVER GREY",
     "size": "M",
@@ -16128,6 +18068,196 @@
     "sales": 0,
     "net": 1,
     "type": "return"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "BEIGE",
+    "size": "L",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "BEIGE",
+    "size": "XL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "BEIGE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "E.GREEN",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "E.GREEN",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "LILAC",
+    "size": "M",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "LILAC",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "LILAC",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "MEHROON",
+    "size": "M",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "MEHROON",
+    "size": "L",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "MEHROON",
+    "size": "XL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "MEHROON",
+    "size": "XXL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "SILVER GREY",
+    "size": "M",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "SILVER GREY",
+    "size": "L",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "SILVER GREY",
+    "size": "XL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "SILVER GREY",
+    "size": "XXL",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "WHITE",
+    "size": "M",
+    "import": 2,
+    "return": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-007",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "tb-011",
@@ -16138,6 +18268,346 @@
     "sales": 0,
     "net": 1,
     "type": "return"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "BEIGE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "BEIGE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "BEIGE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "BEIGE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "BEIGE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "MIDNIGHT BLUE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "MIDNIGHT BLUE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "MIDNIGHT BLUE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "MOSE ROSS",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "MOSE ROSS",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "MOSE ROSS",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "MOSE ROSS",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "OLIVE",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "OLIVE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "OLIVE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "OLIVE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "OLIVE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "OLIVE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "TEAL",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "TEAL",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "TEAL",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "TEAL",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "TEAL",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "WINE",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "WINE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "WINE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "WINE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "WINE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011(250053)",
+    "color": "WINE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011/12",
+    "color": "NAVY",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011/12",
+    "color": "NAVY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011/12",
+    "color": "NAVY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011/12",
+    "color": "NAVY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-011/12",
+    "color": "NAVY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "tb-014/351149",
@@ -16568,5 +19038,525 @@
     "sales": 0,
     "net": 1,
     "type": "return"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BEIGE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BEIGE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BEIGE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BEIGE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BEIGE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "BLACK",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "D.GREY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "D.GREY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "D.GREY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "D.GREY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "NAVY",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "NAVY",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "NAVY",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "NAVY",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "NAVY",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "OLIVE",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "OLIVE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "OLIVE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "OLIVE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "OLIVE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "OLIVE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "TEAL",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "TEAL",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "TEAL",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "TEAL",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "TEAL",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "WHITE",
+    "size": "S",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "WHITE",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "WHITE",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "tb-14/351149",
+    "color": "WHITE",
+    "size": "3XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55117",
+    "color": "AOP",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55117",
+    "color": "AOP",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55117",
+    "color": "AOP",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55117",
+    "color": "AOP",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55120",
+    "color": "AOP",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55120",
+    "color": "AOP",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55120",
+    "color": "AOP",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55120",
+    "color": "AOP",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55121",
+    "color": "",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55121",
+    "color": "",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55121",
+    "color": "",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w-55121",
+    "color": "",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w55130",
+    "color": "AOP",
+    "size": "M",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w55130",
+    "color": "AOP",
+    "size": "L",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w55130",
+    "color": "AOP",
+    "size": "XL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "w55130",
+    "color": "AOP",
+    "size": "XXL",
+    "import": 1,
+    "return": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   }
 ]

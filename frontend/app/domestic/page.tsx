@@ -304,6 +304,20 @@ function DomesticDashboard() {
     })
     .slice(0,30);
 
+  // Filter grouped rows (sample, production, purchase, dispatch) by search term
+  const filterGroupedRows = (rows: SampleRow[]) => {
+    if (!searchTerm) return rows;
+    return rows.filter((row) => 
+      row.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.color?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  const filteredSampleRows = filterGroupedRows(sampleRows);
+  const filteredProductionRows = filterGroupedRows(productionRows);
+  const filteredPurchaseRows = filterGroupedRows(purchaseRows);
+  const filteredDispatchRows = filterGroupedRows(dispatchRows);
+
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
     setEditForm({
@@ -1391,7 +1405,7 @@ function DomesticDashboard() {
                         </td>
                       </tr>
                     )}
-                    {sampleRows.map((row, idx) => {
+                    {filteredSampleRows.map((row, idx) => {
                       const rowKey = `${row.dno}_${row.color}`;
                       const isEditing = editingSampleRow === rowKey;
                       return (
@@ -1512,7 +1526,7 @@ function DomesticDashboard() {
                         </td>
                       </tr>
                     )}
-                    {productionRows.map((row, idx) => {
+                    {filteredProductionRows.map((row, idx) => {
                       const rowKey = `${row.dno}_${row.color}`;
                       const isEditing = editingProductionRow === rowKey;
                       return (
@@ -1633,7 +1647,7 @@ function DomesticDashboard() {
                         </td>
                       </tr>
                     )}
-                    {purchaseRows.map((row, idx) => {
+                    {filteredPurchaseRows.map((row, idx) => {
                       const rowKey = `${row.dno}_${row.color}`;
                       const isEditing = editingPurchaseRow === rowKey;
                       return (
@@ -1754,7 +1768,7 @@ function DomesticDashboard() {
                         </td>
                       </tr>
                     )}
-                    {dispatchRows.map((row, idx) => {
+                    {filteredDispatchRows.map((row, idx) => {
                       const rowKey = `${row.dno}_${row.color}`;
                       const isEditing = editingDispatchRow === rowKey;
                       return (

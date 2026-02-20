@@ -1,0 +1,32 @@
+import express from "express";
+import {
+  getSummary,
+  getTimeSeries,
+  getDistribution,
+  getTopProductsController,
+  getDashboard,
+} from "../controllers/analytics.controller.js";
+
+const router = express.Router();
+
+/**
+ * Analytics Routes
+ * All routes return data based on specified time period (days query param)
+ */
+
+// GET /api/analytics/dashboard - Get all analytics data in one call
+router.get("/dashboard", getDashboard);
+
+// GET /api/analytics/summary - Get summary metrics
+router.get("/summary", getSummary);
+
+// GET /api/analytics/timeseries - Get time-series chart data
+router.get("/timeseries", getTimeSeries);
+
+// GET /api/analytics/distribution - Get category distribution
+router.get("/distribution", getDistribution);
+
+// GET /api/analytics/top-products - Get top performing products
+router.get("/top-products", getTopProductsController);
+
+export default router;

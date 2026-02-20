@@ -137,14 +137,11 @@ export default function DomesticInventoryPage() {
             <p className="text-sm text-gray-500">
               View and manage stock levels with JobCard details (includes aggregated inventory from all domestic warehouse pages)
             </p>
-            <p className="text-xs text-blue-600 mt-1">
-              💡 JobCard data (GSM, MRP, Fabric, etc.) is displayed along with aggregated stock from Production, Dispatch, Sample, Purchase, Online Sales, Return, Transfer Inwards, and Transfer Outwards pages
-            </p>
           </div>
         </div>
       </div>
 
-      {/* Search Bar */}
+
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="relative">
@@ -169,7 +166,6 @@ export default function DomesticInventoryPage() {
               />
             </svg>
           </div>
-          <p className="mt-2 text-xs text-gray-500">💡 Tip: Search for a specific design number to quickly find its available stock table</p>
         </div>
       </div>
 
@@ -255,7 +251,7 @@ export default function DomesticInventoryPage() {
                   No products found
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {inventory.length === 0 
+                  {inventory.length === 0
                     ? "No data available. Add entries to production, dispatch, sample, purchase, online sales, return, or transfer pages in domestic warehouse."
                     : "Try adjusting your filters or search term"}
                 </p>
@@ -311,7 +307,7 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
           params: { query: designNumber },
           timeout: 5000, // 5 second timeout
         });
-        
+
         const jobCards = response.data;
         if (Array.isArray(jobCards) && jobCards.length > 0) {
           const matchingCard = jobCards.find(
@@ -335,7 +331,7 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
       } catch (jobCardErr) {
         // Silently fail if job card endpoint has issues - we'll just use the design number
       }
-      
+
       // Fallback: just use the design number
       setProductDetails({
         designNumber: designNumber.toUpperCase(),
@@ -515,11 +511,10 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
                           </td>
                           <td className="px-3 py-2 text-xs">
                             <span
-                              className={`inline-flex items-center justify-center min-w-[32px] h-8 px-2 rounded-full text-white text-xs font-semibold ${
-                                item.stock < 10
-                                  ? "bg-red-600"
-                                  : "bg-black"
-                              }`}
+                              className={`inline-flex items-center justify-center min-w-[32px] h-8 px-2 rounded-full text-white text-xs font-semibold ${item.stock < 10
+                                ? "bg-red-600"
+                                : "bg-black"
+                                }`}
                             >
                               {item.stock}
                             </span>

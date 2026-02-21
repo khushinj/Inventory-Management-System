@@ -558,7 +558,7 @@ export default function PurchaseOrderEntryForm() {
               <thead>
                 <tr className="border-b border-gray-300">
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">SL</th>
-                  <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">CATEGORY</th>
+                  {/* <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">CATEGORY</th> */}
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">ITEM NAME</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">DESIGN NUMBER</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">COLOR</th>
@@ -586,7 +586,7 @@ export default function PurchaseOrderEntryForm() {
                 {items.map((item, index) => (
                   <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 text-black">
                     <td className="px-3 py-3 text-sm text-gray-900">{index + 1}</td>
-                    <td className="px-3 py-3">
+                    {/* <td className="px-3 py-3">
                       <input
                         type="text"
                         placeholder="Category"
@@ -594,7 +594,7 @@ export default function PurchaseOrderEntryForm() {
                         onChange={(e) => handleItemChange(item.id, "category", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
-                    </td>
+                    </td> */}
                     <td className="px-3 py-3">
                       <input
                         type="text"

@@ -18,6 +18,7 @@ type Entry = {
 
 type SampleRow = {
   dno: string;
+  type: string;
   color: string;
   date: string;
   sizes: {
@@ -35,6 +36,7 @@ export default function StockReturnedPage() {
   const [loading, setLoading] = useState(true);
   const [newStockReturnedRow, setNewStockReturnedRow] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     date: new Date().toISOString().split("T")[0],
     sizes: {
@@ -53,6 +55,7 @@ export default function StockReturnedPage() {
   const [editingStockReturnRow, setEditingStockReturnRow] = useState<string | null>(null);
   const [editStockReturnForm, setEditStockReturnForm] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     date: new Date().toISOString().split("T")[0],
     sizes: {
@@ -69,6 +72,7 @@ export default function StockReturnedPage() {
   });
 
   const stockReturnDnoRef = useRef<HTMLInputElement>(null);
+  const stockReturnTypeRef = useRef<HTMLInputElement>(null);
   const stockReturnColorRef = useRef<HTMLInputElement>(null);
   const stockReturnDateRef = useRef<HTMLInputElement>(null);
   const stockReturnSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
@@ -104,6 +108,7 @@ export default function StockReturnedPage() {
   const convertToGroupedRows = (allStockReturned: any[]) => {
     const rows: SampleRow[] = allStockReturned.map((entry) => ({
       dno: entry.dno || "",
+      type: entry.type || "",
       color: entry.color || "",
       date: entry.date ? new Date(entry.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
       sizes: {
@@ -144,6 +149,7 @@ export default function StockReturnedPage() {
       // Reset form immediately so user can continue entering
       setNewStockReturnedRow({
         dno: "",
+        type: "",
         color: "",
         date: new Date().toISOString().split("T")[0],
         sizes: {
@@ -167,6 +173,7 @@ export default function StockReturnedPage() {
       
       const dataToSave = {
         dno: newStockReturnedRow.dno,
+        type: newStockReturnedRow.type,
         color: newStockReturnedRow.color,
         date: newStockReturnedRow.date,
         items: Object.entries(newStockReturnedRow.sizes)
@@ -222,6 +229,7 @@ export default function StockReturnedPage() {
 
         const dataToUpdate = {
           dno: editStockReturnForm.dno,
+          type: editStockReturnForm.type,
           color: editStockReturnForm.color,
           date: editStockReturnForm.date,
           items: Object.entries(editStockReturnForm.sizes)
@@ -262,6 +270,8 @@ export default function StockReturnedPage() {
   const handleStockReturnKeyDown = (e: React.KeyboardEvent, field: string, index: number) => {
     if (e.key === "Enter") {
       if (field === "dno") {
+        stockReturnTypeRef.current?.focus();
+      } else if (field === "type") {
         stockReturnColorRef.current?.focus();
       } else if (field === "color") {
         stockReturnDateRef.current?.focus();
@@ -282,6 +292,7 @@ export default function StockReturnedPage() {
     setIsCreatingStockReturn(false);
     setNewStockReturnedRow({
       dno: "",
+      type: "",
       color: "",
       date: new Date().toISOString().split("T")[0],
       sizes: {
@@ -302,6 +313,7 @@ export default function StockReturnedPage() {
     const excelData = stockReturnedRows.flatMap((row) => 
       SIZES.map((size, index) => ({
         "DNO": index === 0 ? row.dno : "",
+        "Type": index === 0 ? row.type : "",
         "Color": index === 0 ? row.color : "",
         "Date": index === 0 ? row.date : "",
         "Size": size,
@@ -314,6 +326,7 @@ export default function StockReturnedPage() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stock Return");
 
     worksheet["!cols"] = [
+      { wch: 15 },
       { wch: 15 },
       { wch: 15 },
       { wch: 12 },
@@ -340,6 +353,7 @@ export default function StockReturnedPage() {
 
       jsonData.forEach((row: any) => {
         const dno = row.DNO?.toString().trim();
+        const type = row.Type?.toString().trim() || "";
         const color = row.Color?.toString().trim();
         const date = row.Date?.toString().trim() || new Date().toISOString().split("T")[0];
         const size = row.Size?.toString().trim().toUpperCase();
@@ -351,6 +365,7 @@ export default function StockReturnedPage() {
           if (!groupedData[key]) {
             groupedData[key] = {
               dno,
+              type,
               color,
               date,
               sizes: {
@@ -491,6 +506,7 @@ export default function StockReturnedPage() {
                 <thead>
                   <tr className="border-b-2 border-gray-200 bg-gray-50">
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">DNO</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Color</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Date</th>
                     {SIZES.map((size) => (
@@ -526,6 +542,24 @@ export default function StockReturnedPage() {
                           placeholder="DNO"
                           className="w-full px-3 py-2 border rounded text-black bg-white"
                           autoFocus
+                        />
+                      </td>
+                      <td className="px-6 py-4 min-w-[180px]">
+                        <input
+                          ref={stockReturnTypeRef}
+                          type="text"
+                          value={newStockReturnedRow.type}
+                          onChange={(e) =>
+                            setNewStockReturnedRow({
+                              ...newStockReturnedRow,
+                              type: e.target.value,
+                            })
+                          }
+                          onKeyDown={(e) =>
+                            handleStockReturnKeyDown(e, "type", 0)
+                          }
+                          placeholder="Type"
+                          className="w-full px-3 py-2 border rounded text-black bg-white"
                         />
                       </td>
                       <td className="px-6 py-4 min-w-[180px]">
@@ -614,7 +648,7 @@ export default function StockReturnedPage() {
                   {stockReturnedRows.length === 0 && !isCreatingStockReturn ? (
                     <tr>
                       <td
-                        colSpan={SIZES.length + 4}
+                        colSpan={SIZES.length + 5}
                         className="px-6 py-12 text-center text-gray-500"
                       >
                         No stock returned entries. Click "Add Entry" to create one.
@@ -637,6 +671,19 @@ export default function StockReturnedPage() {
                                     setEditStockReturnForm({
                                       ...editStockReturnForm,
                                       dno: e.target.value,
+                                    })
+                                  }
+                                  className="w-full px-3 py-2 border rounded text-black bg-white"
+                                />
+                              </td>
+                              <td className="px-6 py-4 min-w-[180px]">
+                                <input
+                                  type="text"
+                                  value={editStockReturnForm.type}
+                                  onChange={(e) =>
+                                    setEditStockReturnForm({
+                                      ...editStockReturnForm,
+                                      type: e.target.value,
                                     })
                                   }
                                   className="w-full px-3 py-2 border rounded text-black bg-white"
@@ -710,6 +757,9 @@ export default function StockReturnedPage() {
                             <>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                 {row.dno}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {row.type}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {row.color}

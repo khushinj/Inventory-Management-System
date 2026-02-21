@@ -26,6 +26,7 @@ type Entry = {
 
 type SampleRow = {
   dno: string;
+  type: string;
   color: string;
   sizes: {
     [size: string]: number;
@@ -76,11 +77,13 @@ function OnlineDashboard() {
 
   // Refs for transfer form with horizontal size columns
   const transferDnoRef = useRef<HTMLInputElement>(null);
+  const transferTypeRef = useRef<HTMLInputElement>(null);
   const transferColorRef = useRef<HTMLInputElement>(null);
   const transferSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
 
   // Refs for purchase form with horizontal size columns
   const purchaseDnoRef = useRef<HTMLInputElement>(null);
+  const purchaseTypeRef = useRef<HTMLInputElement>(null);
   const purchaseColorRef = useRef<HTMLInputElement>(null);
   const purchaseSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
 
@@ -90,11 +93,13 @@ function OnlineDashboard() {
   const [editingTransferRow, setEditingTransferRow] = useState<string | null>(null);
   const [newTransferRow, setNewTransferRow] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
   const [editTransferForm, setEditTransferForm] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
@@ -105,11 +110,13 @@ function OnlineDashboard() {
   const [editingPurchaseRow, setEditingPurchaseRow] = useState<string | null>(null);
   const [newPurchaseRow, setNewPurchaseRow] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
   const [editPurchaseForm, setEditPurchaseForm] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
@@ -159,6 +166,7 @@ function OnlineDashboard() {
         if (!grouped[key]) {
           grouped[key] = {
             dno: entry.dno,
+            type: entry.type || "",
             color: entry.color,
             sizes: {}
           };
@@ -182,6 +190,7 @@ function OnlineDashboard() {
         if (!grouped[key]) {
           grouped[key] = {
             dno: entry.dno,
+            type: entry.type || "",
             color: entry.color,
             sizes: {}
           };
@@ -428,6 +437,8 @@ function OnlineDashboard() {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        transferTypeRef.current?.focus();
+      } else if (currentField === 'type') {
         transferColorRef.current?.focus();
       } else if (currentField === 'color') {
         transferSizeRefs.current['S']?.focus();
@@ -453,7 +464,7 @@ function OnlineDashboard() {
         if (qty > 0) {
           return api.post("/warehouse/online", {
             dno: newTransferRow.dno,
-            type: "",
+            type: newTransferRow.type,
             color: newTransferRow.color,
             size: size,
             qty: qty,
@@ -469,6 +480,7 @@ function OnlineDashboard() {
       // Reset form and refocus for next entry
       setNewTransferRow({
         dno: "",
+        type: "",
         color: "",
         sizes: {}
       });
@@ -510,7 +522,7 @@ function OnlineDashboard() {
         if (qty > 0) {
           return api.post("/warehouse/online", {
             dno: editTransferForm.dno,
-            type: "",
+            type: editTransferForm.type,
             color: editTransferForm.color,
             size: size,
             qty: qty,
@@ -568,6 +580,8 @@ function OnlineDashboard() {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        purchaseTypeRef.current?.focus();
+      } else if (currentField === 'type') {
         purchaseColorRef.current?.focus();
       } else if (currentField === 'color') {
         purchaseSizeRefs.current['S']?.focus();
@@ -591,7 +605,7 @@ function OnlineDashboard() {
         if (qty > 0) {
           return api.post("/warehouse/online", {
             dno: newPurchaseRow.dno,
-            type: "",
+            type: newPurchaseRow.type,
             color: newPurchaseRow.color,
             size: size,
             qty: qty,
@@ -606,6 +620,7 @@ function OnlineDashboard() {
       
       setNewPurchaseRow({
         dno: "",
+        type: "",
         color: "",
         sizes: {}
       });
@@ -645,7 +660,7 @@ function OnlineDashboard() {
         if (qty > 0) {
           return api.post("/warehouse/online", {
             dno: editPurchaseForm.dno,
-            type: "",
+            type: editPurchaseForm.type,
             color: editPurchaseForm.color,
             size: size,
             qty: qty,
@@ -847,6 +862,7 @@ function OnlineDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                     {SIZES.map(size => (
                       <th key={size} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{size}</th>
@@ -865,6 +881,17 @@ function OnlineDashboard() {
                           onChange={(e) => setNewPurchaseRow({...newPurchaseRow, dno: e.target.value})} 
                           onKeyDown={(e) => handlePurchaseKeyDown(e, 'dno')}
                           placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={purchaseTypeRef}
+                          type="text" 
+                          value={newPurchaseRow.type} 
+                          onChange={(e) => setNewPurchaseRow({...newPurchaseRow, type: e.target.value})} 
+                          onKeyDown={(e) => handlePurchaseKeyDown(e, 'type')}
+                          placeholder="Type" 
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
                       </td>
@@ -922,6 +949,14 @@ function OnlineDashboard() {
                             <td className="px-6 py-4">
                               <input 
                                 type="text" 
+                                value={editPurchaseForm.type} 
+                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, type: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
                                 value={editPurchaseForm.color} 
                                 onChange={(e) => setEditPurchaseForm({...editPurchaseForm, color: e.target.value})} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
@@ -948,6 +983,7 @@ function OnlineDashboard() {
                         ) : (
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.type}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
@@ -978,6 +1014,7 @@ function OnlineDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                     {SIZES.map(size => (
                       <th key={size} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{size}</th>
@@ -996,6 +1033,17 @@ function OnlineDashboard() {
                           onChange={(e) => setNewTransferRow({...newTransferRow, dno: e.target.value})} 
                           onKeyDown={(e) => handleTransferKeyDown(e, 'dno')}
                           placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={transferTypeRef}
+                          type="text" 
+                          value={newTransferRow.type} 
+                          onChange={(e) => setNewTransferRow({...newTransferRow, type: e.target.value})} 
+                          onKeyDown={(e) => handleTransferKeyDown(e, 'type')}
+                          placeholder="Type" 
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
                       </td>
@@ -1053,6 +1101,14 @@ function OnlineDashboard() {
                             <td className="px-6 py-4">
                               <input 
                                 type="text" 
+                                value={editTransferForm.type} 
+                                onChange={(e) => setEditTransferForm({...editTransferForm, type: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
                                 value={editTransferForm.color} 
                                 onChange={(e) => setEditTransferForm({...editTransferForm, color: e.target.value})} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
@@ -1079,6 +1135,7 @@ function OnlineDashboard() {
                         ) : (
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.type}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>

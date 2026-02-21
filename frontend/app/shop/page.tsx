@@ -21,6 +21,7 @@ type Entry = {
 
 type SampleRow = {
   dno: string;
+  type: string;
   color: string;
   date?: string;
   sizes: {
@@ -58,9 +59,11 @@ function ShopDashboard() {
 
   // Refs for import and return forms with horizontal size columns
   const importDnoRef = useRef<HTMLInputElement>(null);
+  const importTypeRef = useRef<HTMLInputElement>(null);
   const importColorRef = useRef<HTMLInputElement>(null);
   const importSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
   const returnDnoRef = useRef<HTMLInputElement>(null);
+  const returnTypeRef = useRef<HTMLInputElement>(null);
   const returnColorRef = useRef<HTMLInputElement>(null);
   const returnSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
 
@@ -73,21 +76,25 @@ function ShopDashboard() {
   const [editingReturnRow, setEditingReturnRow] = useState<string | null>(null);
   const [newImportRow, setNewImportRow] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
   const [newReturnRow, setNewReturnRow] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
   const [editImportForm, setEditImportForm] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
   const [editReturnForm, setEditReturnForm] = useState<SampleRow>({
     dno: "",
+    type: "",
     color: "",
     sizes: {}
   });
@@ -135,6 +142,7 @@ function ShopDashboard() {
         if (!grouped[key]) {
           grouped[key] = {
             dno: entry.dno,
+            type: entry.type || "",
             color: entry.color,
             date: entry.date,
             sizes: {},
@@ -313,6 +321,8 @@ function ShopDashboard() {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        importTypeRef.current?.focus();
+      } else if (currentField === 'type') {
         importColorRef.current?.focus();
       } else if (currentField === 'color') {
         importSizeRefs.current['S']?.focus();
@@ -336,7 +346,7 @@ function ShopDashboard() {
         if (qty > 0) {
           return api.post("/shop", {
             dno: newImportRow.dno,
-            type: "",
+            type: newImportRow.type,
             color: newImportRow.color,
             size: size,
             qty: qty,
@@ -391,7 +401,7 @@ function ShopDashboard() {
         if (qty > 0) {
           return api.post("/shop", {
             dno: editImportForm.dno,
-            type: "",
+            type: editImportForm.type,
             color: editImportForm.color,
             size: size,
             qty: qty,
@@ -439,6 +449,7 @@ function ShopDashboard() {
     setIsCreatingImport(false);
     setNewImportRow({
       dno: "",
+      type: "",
       color: "",
       sizes: {}
     });
@@ -450,6 +461,8 @@ function ShopDashboard() {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        returnTypeRef.current?.focus();
+      } else if (currentField === 'type') {
         returnColorRef.current?.focus();
       } else if (currentField === 'color') {
         returnSizeRefs.current['S']?.focus();
@@ -473,7 +486,7 @@ function ShopDashboard() {
         if (qty > 0) {
           return api.post("/shop", {
             dno: newReturnRow.dno,
-            type: "",
+            type: newReturnRow.type,
             color: newReturnRow.color,
             size: size,
             qty: qty,
@@ -489,6 +502,7 @@ function ShopDashboard() {
       
       setNewReturnRow({
         dno: "",
+        type: "",
         color: "",
         sizes: {}
       });
@@ -528,7 +542,7 @@ function ShopDashboard() {
         if (qty > 0) {
           return api.post("/shop", {
             dno: editReturnForm.dno,
-            type: "",
+            type: editReturnForm.type,
             color: editReturnForm.color,
             size: size,
             qty: qty,
@@ -741,6 +755,7 @@ function ShopDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Design Number</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                     {SIZES.map(size => (
@@ -760,6 +775,17 @@ function ShopDashboard() {
                           onChange={(e) => setNewImportRow({...newImportRow, dno: e.target.value})} 
                           onKeyDown={(e) => handleImportKeyDown(e, 'dno')}
                           placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={importTypeRef}
+                          type="text" 
+                          value={newImportRow.type} 
+                          onChange={(e) => setNewImportRow({...newImportRow, type: e.target.value})} 
+                          onKeyDown={(e) => handleImportKeyDown(e, 'type')}
+                          placeholder="Type" 
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
                       </td>
@@ -811,6 +837,17 @@ function ShopDashboard() {
                           onChange={(e) => setNewReturnRow({...newReturnRow, dno: e.target.value})} 
                           onKeyDown={(e) => handleReturnKeyDown(e, 'dno')}
                           placeholder="DNO" 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <input 
+                          ref={returnTypeRef}
+                          type="text" 
+                          value={newReturnRow.type} 
+                          onChange={(e) => setNewReturnRow({...newReturnRow, type: e.target.value})} 
+                          onKeyDown={(e) => handleReturnKeyDown(e, 'type')}
+                          placeholder="Type" 
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
                       </td>
@@ -871,6 +908,14 @@ function ShopDashboard() {
                             <td className="px-6 py-4">
                               <input 
                                 type="text" 
+                                value={editImportForm.type} 
+                                onChange={(e) => setEditImportForm({...editImportForm, type: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
                                 value={editImportForm.color} 
                                 onChange={(e) => setEditImportForm({...editImportForm, color: e.target.value})} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
@@ -900,6 +945,7 @@ function ShopDashboard() {
                         ) : (
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.type}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {row.date ? row.date.split("T")[0] : "-"}
@@ -935,6 +981,14 @@ function ShopDashboard() {
                             <td className="px-6 py-4">
                               <input 
                                 type="text" 
+                                value={editReturnForm.type} 
+                                onChange={(e) => setEditReturnForm({...editReturnForm, type: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
+                            </td>
+                            <td className="px-6 py-4">
+                              <input 
+                                type="text" 
                                 value={editReturnForm.color} 
                                 onChange={(e) => setEditReturnForm({...editReturnForm, color: e.target.value})} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
@@ -964,6 +1018,7 @@ function ShopDashboard() {
                         ) : (
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.dno}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.type}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.color}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {row.date ? row.date.split("T")[0] : "-"}

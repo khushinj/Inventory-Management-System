@@ -12,6 +12,7 @@ type PurchaseOrderItem = {
   category: string;
   itemName: string;
   designNumber: string;
+  type: string;
   color: string;
   s: number;
   m: number;
@@ -93,6 +94,7 @@ export default function PurchaseOrderEntryForm() {
       category: "",
       itemName: "",
       designNumber: "",
+      type: "",
       color: "",
       s: 0,
       m: 0,
@@ -196,6 +198,7 @@ export default function PurchaseOrderEntryForm() {
         category: "",
         itemName: "",
         designNumber: "",
+        type: "",
         color: "",
         s: 0,
         m: 0,
@@ -432,6 +435,7 @@ export default function PurchaseOrderEntryForm() {
       Category: item.category,
       "Item Name": item.itemName,
       "Design Number": item.designNumber,
+      Type: item.type,
       Color: item.color,
       S: item.s,
       M: item.m,
@@ -561,6 +565,7 @@ export default function PurchaseOrderEntryForm() {
                   {/* <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">CATEGORY</th> */}
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">ITEM NAME</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">DESIGN NUMBER</th>
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">TYPE</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">COLOR</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">S</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">M</th>
@@ -610,6 +615,15 @@ export default function PurchaseOrderEntryForm() {
                           placeholder="Design Number"
                           value={item.designNumber}
                           onChange={(e) => handleItemChange(item.id, "designNumber", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                        />
+                      </td>
+                      <td className="px-3 py-3">
+                        <input
+                          type="text"
+                          placeholder="Type"
+                          value={item.type}
+                          onChange={(e) => handleItemChange(item.id, "type", e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                         />
                       </td>

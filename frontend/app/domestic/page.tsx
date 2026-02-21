@@ -301,8 +301,7 @@ function DomesticDashboard() {
         entry.formType === selectedFormType;
 
       return matchesSearch && matchesFormType;
-    })
-    .slice(0,30);
+    });
 
   // Filter grouped rows (sample, production, purchase, dispatch) by search term
   const filterGroupedRows = (rows: SampleRow[]) => {
@@ -1155,8 +1154,7 @@ function DomesticDashboard() {
         const transferTypeIndex = headerIndex(["TRANSFERTYPE", "TRANSFER TYPE"]);
 
         const today = new Date().toISOString().split("T")[0];
-        let successCount = 0;
-        let failureCount = 0;
+        const payloads: Array<Record<string, unknown>> = [];
 
         for (let i = 1; i < rows.length; i += 1) {
           const row = rows[i] as any[];
@@ -1190,17 +1188,11 @@ function DomesticDashboard() {
               const qty = Number(rawQty || 0);
               if (!Number.isFinite(qty) || qty <= 0) continue;
 
-              try {
-                await api.post("/warehouse/domestic", {
-                  ...basePayload,
-                  size,
-                  qty,
-                });
-                successCount += 1;
-              } catch (err) {
-                console.error("Import row failed:", err);
-                failureCount += 1;
-              }
+              payloads.push({
+                ...basePayload,
+                size,
+                qty,
+              });
             }
           } else {
             const sizeValue = sizeIndex >= 0 ? String(row[sizeIndex] || "").trim() : "";
@@ -1208,27 +1200,44 @@ function DomesticDashboard() {
 
             if (!sizeValue || !Number.isFinite(qtyValue) || qtyValue <= 0) continue;
 
-            try {
-              await api.post("/warehouse/domestic", {
-                ...basePayload,
-                size: sizeValue,
-                qty: qtyValue,
-              });
-              successCount += 1;
-            } catch (err) {
-              console.error("Import row failed:", err);
-              failureCount += 1;
-            }
+            payloads.push({
+              ...basePayload,
+              size: sizeValue,
+              qty: qtyValue,
+            });
           }
         }
 
-        if (successCount === 0) {
+        if (payloads.length === 0) {
           alert("No rows were imported. Please verify the Excel columns and data.");
           return;
         }
 
-        const failureNote = failureCount > 0 ? ` (${failureCount} failed)` : "";
-        alert(`Successfully imported ${successCount} entries!${failureNote}`);
+        const chunkSize = 200;
+        let inserted = 0;
+        let rejected = 0;
+        let failed = 0;
+
+        for (let i = 0; i < payloads.length; i += chunkSize) {
+          const chunk = payloads.slice(i, i + chunkSize);
+          try {
+            const response = await api.post("/warehouse/domestic/bulk", { entries: chunk });
+            inserted += response.data?.inserted || 0;
+            rejected += response.data?.rejected?.length || 0;
+            failed += response.data?.errors?.length || 0;
+          } catch (err) {
+            console.error("Bulk import failed:", err);
+            failed += chunk.length;
+          }
+        }
+
+        if (inserted === 0) {
+          alert("No rows were imported. Please verify the Excel columns and data.");
+          return;
+        }
+
+        const failureNote = rejected + failed > 0 ? ` (${rejected + failed} failed)` : "";
+        alert(`Successfully imported ${inserted} entries!${failureNote}`);
         fetchEntries();
       } catch (err) {
         console.error("Error importing Excel:", err);

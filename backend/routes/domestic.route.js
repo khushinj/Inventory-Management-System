@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createDomesticEntry,
+  createDomesticEntriesBulk,
   getDomesticEntries,
   updateDomesticEntry,
   deleteDomesticEntry
@@ -10,6 +11,7 @@ import { autoRecalculateInventory } from "../middleware/autoRecalculateInventory
 const router = express.Router();
 
 router.post("/", autoRecalculateInventory, createDomesticEntry);
+router.post("/bulk", autoRecalculateInventory, createDomesticEntriesBulk);
 router.get("/", getDomesticEntries);
 router.patch("/:id", autoRecalculateInventory, updateDomesticEntry);
 router.delete("/:id", autoRecalculateInventory, deleteDomesticEntry);

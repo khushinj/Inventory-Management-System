@@ -35,6 +35,69 @@ export const createDomesticEntry = async (req, res) => {
   }
 };
 
+export const createDomesticEntriesBulk = async (req, res) => {
+  try {
+    const { entries } = req.body;
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return res.status(400).json({ error: "Entries array is required" });
+    }
+
+    const grouped = new Map();
+    const rejected = [];
+
+    entries.forEach((entry, index) => {
+      const formType = entry?.formType;
+      if (!allowedDomesticForms.includes(formType)) {
+        rejected.push({ index, reason: "Invalid domestic form type" });
+        return;
+      }
+
+      const channel = formType === "sales" ? "online" : entry?.channel;
+      const payload = {
+        ...entry,
+        channel,
+        domain: "warehouse",
+        warehouseType: "domestic",
+      };
+
+      if (!grouped.has(formType)) grouped.set(formType, []);
+      grouped.get(formType).push(payload);
+    });
+
+    let inserted = 0;
+    const errors = [];
+
+    for (const [formType, payloads] of grouped.entries()) {
+      const Model = getTransactionModel("warehouse", "domestic", formType);
+      try {
+        const result = await Model.insertMany(payloads, { ordered: false });
+        inserted += result.length;
+      } catch (err) {
+        const writeErrors = err?.writeErrors || [];
+        const failed = writeErrors.length;
+        inserted += payloads.length - failed;
+
+        writeErrors.forEach((writeError) => {
+          errors.push({
+            formType,
+            index: writeError.index,
+            message: writeError.errmsg || writeError.message,
+          });
+        });
+      }
+    }
+
+    res.status(201).json({
+      inserted,
+      rejected,
+      errors,
+      total: entries.length,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 export const getDomesticEntries = async (req, res) => {
   try {
     const { formType, channel } = req.query;

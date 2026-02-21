@@ -569,6 +569,7 @@ function OnlineDashboard() {
     setIsCreatingTransfer(false);
     setNewTransferRow({
       dno: "",
+      type: "",
       color: "",
       sizes: {}
     });
@@ -707,6 +708,7 @@ function OnlineDashboard() {
     setIsCreatingPurchase(false);
     setNewPurchaseRow({
       dno: "",
+      type: "",
       color: "",
       sizes: {}
     });

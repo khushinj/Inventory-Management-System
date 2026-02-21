@@ -590,6 +590,7 @@ function ShopDashboard() {
     setIsCreatingReturn(false);
     setNewReturnRow({
       dno: "",
+      type: "",
       color: "",
       sizes: {}
     });

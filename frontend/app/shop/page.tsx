@@ -362,6 +362,7 @@ function ShopDashboard() {
       
       setNewImportRow({
         dno: "",
+        type: "",
         color: "",
         sizes: {}
       });

@@ -1119,25 +1119,116 @@ function DomesticDashboard() {
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" }) as any[];
 
-        // Import each row
-        for (const row of jsonData) {
-          await api.post("/warehouse/domestic", {
-            dno: row.DNO || row.dno,
-            type: row.Type || row.type,
-            color: row.Color || row.color,
-            size: row.Size || row.size,
-            qty: Number(row.Quantity || row.qty),
-            date: row.Date || row.date,
-            formType: row.FormType || row.formType || selectedFormType,
-            receiver: row.Receiver || row.receiver,
-            supplier: row.Supplier || row.supplier,
-            transferType: row.TransferType || row.transferType,
-          });
+        if (!rows.length) {
+          alert("No rows found in the Excel sheet.");
+          return;
         }
 
-        alert(`Successfully imported ${jsonData.length} entries!`);
+        const headers = (rows[0] as string[]).map((h) => String(h || "").trim());
+        const headerMap = new Map<string, number>();
+        headers.forEach((h, idx) => headerMap.set(h.toLowerCase(), idx));
+
+        const headerIndex = (names: string[]) => {
+          for (const name of names) {
+            const idx = headerMap.get(name.toLowerCase());
+            if (idx !== undefined) return idx;
+          }
+          return -1;
+        };
+
+        const sizeColumns = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+        const sizeIndices = sizeColumns
+          .map((size) => ({ size, index: headerIndex([size]) }))
+          .filter((entry) => entry.index >= 0);
+
+        const dnoIndex = headerIndex(["DNO", "D NO", "D.NO", "D.NO.", "DESIGN NO", "DESIGN NUMBER"]);
+        const colorIndex = headerIndex(["COLOR", "COLOUR", "COL"]);
+        const sizeIndex = headerIndex(["SIZE"]);
+        const qtyIndex = headerIndex(["QTY", "QUANTITY"]);
+        const dateIndex = headerIndex(["DATE"]);
+        const typeIndex = headerIndex(["TYPE"]);
+        const formTypeIndex = headerIndex(["FORMTYPE", "FORM TYPE"]);
+        const receiverIndex = headerIndex(["RECEIVER"]);
+        const supplierIndex = headerIndex(["SUPPLIER"]);
+        const transferTypeIndex = headerIndex(["TRANSFERTYPE", "TRANSFER TYPE"]);
+
+        const today = new Date().toISOString().split("T")[0];
+        let successCount = 0;
+        let failureCount = 0;
+
+        for (let i = 1; i < rows.length; i += 1) {
+          const row = rows[i] as any[];
+          if (!row || row.length === 0) continue;
+
+          const dno = dnoIndex >= 0 ? String(row[dnoIndex] || "").trim() : "";
+          if (!dno) continue;
+
+          const color = colorIndex >= 0 ? String(row[colorIndex] || "").trim() : "";
+          const type = typeIndex >= 0 ? String(row[typeIndex] || "").trim() : "";
+          const date = dateIndex >= 0 ? String(row[dateIndex] || "").trim() : "";
+          const formType = formTypeIndex >= 0 ? String(row[formTypeIndex] || "").trim() : "";
+          const receiver = receiverIndex >= 0 ? String(row[receiverIndex] || "").trim() : "";
+          const supplier = supplierIndex >= 0 ? String(row[supplierIndex] || "").trim() : "";
+          const transferType = transferTypeIndex >= 0 ? String(row[transferTypeIndex] || "").trim() : "";
+
+          const basePayload = {
+            dno,
+            type,
+            color,
+            date: date || today,
+            formType: formType || selectedFormType,
+            ...(receiver ? { receiver } : {}),
+            ...(supplier ? { supplier } : {}),
+            ...(transferType ? { transferType } : {}),
+          };
+
+          if (sizeIndices.length > 0) {
+            for (const { size, index } of sizeIndices) {
+              const rawQty = row[index];
+              const qty = Number(rawQty || 0);
+              if (!Number.isFinite(qty) || qty <= 0) continue;
+
+              try {
+                await api.post("/warehouse/domestic", {
+                  ...basePayload,
+                  size,
+                  qty,
+                });
+                successCount += 1;
+              } catch (err) {
+                console.error("Import row failed:", err);
+                failureCount += 1;
+              }
+            }
+          } else {
+            const sizeValue = sizeIndex >= 0 ? String(row[sizeIndex] || "").trim() : "";
+            const qtyValue = qtyIndex >= 0 ? Number(row[qtyIndex] || 0) : 0;
+
+            if (!sizeValue || !Number.isFinite(qtyValue) || qtyValue <= 0) continue;
+
+            try {
+              await api.post("/warehouse/domestic", {
+                ...basePayload,
+                size: sizeValue,
+                qty: qtyValue,
+              });
+              successCount += 1;
+            } catch (err) {
+              console.error("Import row failed:", err);
+              failureCount += 1;
+            }
+          }
+        }
+
+        if (successCount === 0) {
+          alert("No rows were imported. Please verify the Excel columns and data.");
+          return;
+        }
+
+        const failureNote = failureCount > 0 ? ` (${failureCount} failed)` : "";
+        alert(`Successfully imported ${successCount} entries!${failureNote}`);
         fetchEntries();
       } catch (err) {
         console.error("Error importing Excel:", err);

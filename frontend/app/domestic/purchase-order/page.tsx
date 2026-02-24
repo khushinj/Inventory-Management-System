@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -9,7 +9,6 @@ import { api } from "../../../lib/api";
 
 type PurchaseOrderItem = {
   id: number;
-  category: string;
   itemName: string;
   designNumber: string;
   type: string;
@@ -91,7 +90,6 @@ export default function PurchaseOrderEntryForm() {
   const [items, setItems] = useState<PurchaseOrderItem[]>([
     {
       id: 1,
-      category: "",
       itemName: "",
       designNumber: "",
       type: "",
@@ -195,7 +193,6 @@ export default function PurchaseOrderEntryForm() {
       ...items,
       {
         id: newId,
-        category: "",
         itemName: "",
         designNumber: "",
         type: "",
@@ -221,15 +218,49 @@ export default function PurchaseOrderEntryForm() {
     ]);
   };
 
+  // Handle Enter key to move to next input
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const form = e.currentTarget.form;
+      if (!form) return;
+
+      const inputs = Array.from(form.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+        'input:not([disabled]):not([readonly]), button:not([disabled])'
+      ));
+      const currentIndex = inputs.indexOf(e.currentTarget);
+      
+      if (currentIndex > -1 && currentIndex < inputs.length - 1) {
+        inputs[currentIndex + 1]?.focus();
+      }
+    }
+  }, []);
+
   const handleSaveData = async () => {
     try {
+      // Validate required fields
+      if (!headerInfo.dealerName || !headerInfo.buyerName || !headerInfo.date || !headerInfo.city) {
+        alert("Please fill in all header fields (Dealer Name, Buyer Name, Date, City)");
+        return;
+      }
+
+      // Filter out empty items (items with no data)
+      const validItems = items.filter(item => 
+        item.itemName && item.designNumber && item.color && item.qty > 0
+      );
+
+      if (validItems.length === 0) {
+        alert("Please add at least one valid item with all required fields");
+        return;
+      }
+
       // Prepare data for backend
       const purchaseOrderData = {
         dealerName: headerInfo.dealerName,
         buyerName: headerInfo.buyerName,
         date: headerInfo.date,
         city: headerInfo.city,
-        items: items.map(({ id, ...item }) => item), // Remove the temporary id field
+        items: validItems.map(({ id, ...item }) => item), // Remove the temporary id field
         totalQuantity: summary.totalQuantity,
         grossTotal: summary.grossTotal,
         gstOutput: summary.gstOutput,
@@ -237,15 +268,18 @@ export default function PurchaseOrderEntryForm() {
         termsCondition: summary.termsCondition,
       };
 
+      console.log("Sending purchase order data:", purchaseOrderData);
+
       // Save to backend
       const response = await api.post("/purchase-order", purchaseOrderData);
       
       if (response.data.success) {
         alert("Purchase order saved successfully!");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving purchase order:", error);
-      alert("Failed to save purchase order. Still generating PDF and Excel...");
+      console.error("Error response:", error.response?.data);
+      alert(`Failed to save purchase order: ${error.response?.data?.error || error.message}. Still generating PDF and Excel...`);
     }
 
     // Generate PDF
@@ -294,7 +328,6 @@ export default function PurchaseOrderEntryForm() {
     const tableData = items.map((item, index) => [
       index + 1,
       `${item.itemName}\\n${item.designNumber}`,
-      item.category,
       item.color,
       item.s || "-",
       item.m || "-",
@@ -315,7 +348,7 @@ export default function PurchaseOrderEntryForm() {
     autoTable(doc, {
       startY: 68,
       head: [[
-        'SL\\nNo.', 'Description of Goods\\n& HSN/SAC', 'Category', 'Color', 'S', 'M', 'L', 'XL', 
+        'SL\\nNo.', 'Description of Goods\\n& HSN/SAC', 'Color', 'S', 'M', 'L', 'XL', 
         'XXL', '3XL', 'Quantity', 'Rate\\nper PC', 'Disc\\n%', 'Net\\nRate', 'Amount', 
         'GST\\n%', 'Tax', 'Amount\\n(₹)'
       ]],
@@ -432,7 +465,6 @@ export default function PurchaseOrderEntryForm() {
     // Excel export with item details
     const excelData = items.map((item, index) => ({
       SL: index + 1,
-      Category: item.category,
       "Item Name": item.itemName,
       "Design Number": item.designNumber,
       Type: item.type,
@@ -464,11 +496,12 @@ export default function PurchaseOrderEntryForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[1400px] mx-auto">
+      <form onSubmit={(e) => e.preventDefault()} className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold text-gray-900">Purchase Order Entry Form</h1>
           <button
+            type="button"
             onClick={handleSaveData}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors"
           >
@@ -502,6 +535,7 @@ export default function PurchaseOrderEntryForm() {
                 type="text"
                 value={headerInfo.dealerName}
                 onChange={(e) => handleHeaderChange("dealerName", e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
@@ -514,6 +548,7 @@ export default function PurchaseOrderEntryForm() {
                 type="text"
                 value={headerInfo.buyerName}
                 onChange={(e) => handleHeaderChange("buyerName", e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
@@ -526,6 +561,7 @@ export default function PurchaseOrderEntryForm() {
                 type="date"
                 value={headerInfo.date}
                 onChange={(e) => handleHeaderChange("date", e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
@@ -538,6 +574,7 @@ export default function PurchaseOrderEntryForm() {
                 type="text"
                 value={headerInfo.city}
                 onChange={(e) => handleHeaderChange("city", e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
@@ -549,6 +586,7 @@ export default function PurchaseOrderEntryForm() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Items</h2>
             <button
+              type="button"
               onClick={addRow}
               className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-colors"
             >
@@ -562,7 +600,6 @@ export default function PurchaseOrderEntryForm() {
               <thead>
                 <tr className="border-b border-gray-300">
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">SL</th>
-                  {/* <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">CATEGORY</th> */}
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">ITEM NAME</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">DESIGN NUMBER</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">TYPE</th>
@@ -591,21 +628,13 @@ export default function PurchaseOrderEntryForm() {
                 {items.map((item, index) => (
                   <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 text-black">
                     <td className="px-3 py-3 text-sm text-gray-900">{index + 1}</td>
-                    {/* <td className="px-3 py-3">
-                      <input
-                        type="text"
-                        placeholder="Category"
-                        value={item.category}
-                        onChange={(e) => handleItemChange(item.id, "category", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                      />
-                    </td> */}
                     <td className="px-3 py-3">
                       <input
                         type="text"
                         placeholder="Item Name"
                         value={item.itemName}
                         onChange={(e) => handleItemChange(item.id, "itemName", e.target.value)}
+                        onKeyDown={handleKeyDown}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
                     </td>
@@ -615,6 +644,7 @@ export default function PurchaseOrderEntryForm() {
                           placeholder="Design Number"
                           value={item.designNumber}
                           onChange={(e) => handleItemChange(item.id, "designNumber", e.target.value)}
+                          onKeyDown={handleKeyDown}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                         />
                       </td>
@@ -624,6 +654,7 @@ export default function PurchaseOrderEntryForm() {
                           placeholder="Type"
                           value={item.type}
                           onChange={(e) => handleItemChange(item.id, "type", e.target.value)}
+                          onKeyDown={handleKeyDown}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                         />
                       </td>
@@ -633,6 +664,7 @@ export default function PurchaseOrderEntryForm() {
                         placeholder="Color"
                         value={item.color}
                         onChange={(e) => handleItemChange(item.id, "color", e.target.value)}
+                        onKeyDown={handleKeyDown}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
                     </td>
@@ -641,6 +673,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.s || ""}
                         onChange={(e) => handleItemChange(item.id, "s", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -649,6 +682,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.m || ""}
                         onChange={(e) => handleItemChange(item.id, "m", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -657,6 +691,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.l || ""}
                         onChange={(e) => handleItemChange(item.id, "l", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -665,6 +700,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.xl || ""}
                         onChange={(e) => handleItemChange(item.id, "xl", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -673,6 +709,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.xxl || ""}
                         onChange={(e) => handleItemChange(item.id, "xxl", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -681,6 +718,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.xxxl || ""}
                         onChange={(e) => handleItemChange(item.id, "xxxl", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -689,6 +727,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.xxxxl || ""}
                         onChange={(e) => handleItemChange(item.id, "xxxxl", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -697,6 +736,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.xxxxxl || ""}
                         onChange={(e) => handleItemChange(item.id, "xxxxxl", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -705,6 +745,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.xxxxxxl || ""}
                         onChange={(e) => handleItemChange(item.id, "xxxxxxl", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -716,6 +757,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.mrp || ""}
                         onChange={(e) => handleItemChange(item.id, "mrp", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-20 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                       />
                     </td>
@@ -724,6 +766,7 @@ export default function PurchaseOrderEntryForm() {
                         type="number"
                         value={item.dis || ""}
                         onChange={(e) => handleItemChange(item.id, "dis", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
                         className="w-20 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
                         placeholder="%"
                       />
@@ -745,6 +788,7 @@ export default function PurchaseOrderEntryForm() {
                     </td>
                     <td className="px-3 py-3">
                       <button
+                        type="button"
                         onClick={() => setItems(items.filter((i) => i.id !== item.id))}
                         className="text-red-600 hover:text-red-800 p-2"
                       >
@@ -831,7 +875,7 @@ export default function PurchaseOrderEntryForm() {
             <p className="text-sm italic text-gray-500">This is a Computer Generated Purchase Order</p>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

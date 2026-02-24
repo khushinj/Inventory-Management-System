@@ -5,6 +5,7 @@ import PurchaseOrder from "../models/PurchaseOrder.js";
  */
 export async function createPurchaseOrder(orderData) {
   try {
+    console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
     return {
@@ -14,6 +15,11 @@ export async function createPurchaseOrder(orderData) {
     };
   } catch (error) {
     console.error("Error creating purchase order:", error);
+    console.error("Error name:", error.name);
+    console.error("Error message:", error.message);
+    if (error.errors) {
+      console.error("Validation errors:", error.errors);
+    }
     throw error;
   }
 }

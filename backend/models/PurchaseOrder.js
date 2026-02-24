@@ -1,10 +1,6 @@
 import mongoose from "mongoose";
 
 const PurchaseOrderItemSchema = new mongoose.Schema({
-  category: {
-    type: String,
-    required: true,
-  },
   itemName: {
     type: String,
     required: true,
@@ -12,6 +8,10 @@ const PurchaseOrderItemSchema = new mongoose.Schema({
   designNumber: {
     type: String,
     required: true,
+  },
+  type: {
+    type: String,
+    trim: true,
   },
   color: {
     type: String,
@@ -104,6 +104,11 @@ const PurchaseOrderSchema = new mongoose.Schema(
     city: {
       type: String,
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "partially pending", "completed"],
+      default: "pending",
     },
     items: [PurchaseOrderItemSchema],
     totalQuantity: {

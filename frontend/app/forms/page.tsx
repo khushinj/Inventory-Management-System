@@ -24,7 +24,7 @@ const formTypes = [
   {
     title: "Purchase Orders",
     description: "View and manage client purchase orders",
-    href: "/purchase-orders",
+    href: "/purchase-order-dashboard",
     color: "bg-purple-500",
   },
 ];

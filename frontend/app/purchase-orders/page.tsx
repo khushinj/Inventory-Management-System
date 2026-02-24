@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "../../lib/api";
-import { FileText, Search, Filter, Eye, MoreVertical } from "lucide-react";
+import { FileText, Search, Filter, Eye, MoreVertical, X } from "lucide-react";
 
 type PurchaseOrderItem = {
   category: string;
@@ -54,6 +54,7 @@ export default function PurchaseOrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
 
   useEffect(() => {
     fetchPurchaseOrders();
@@ -365,12 +366,175 @@ export default function PurchaseOrdersPage() {
                 <p className="text-sm text-gray-600">{order.items.length} items</p>
               </div>
 
-              <button className="w-full border flex items-center justify-center gap-2 px-4 py-2 text-black rounded-lg transition-colors">
+              {/* View Details Button */}
+              <button 
+                onClick={() => setSelectedOrder(order)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-black border rounded-lg transition-colors"
+              >
                 <Eye className="w-4 h-4" />
                 View Details
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  PO-{new Date(selectedOrder.date).getFullYear()}-{selectedOrder._id.slice(-3).toUpperCase()}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">Purchase order details and item breakdown</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                    selectedOrder.status
+                  )}`}
+                >
+                  {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                </span>
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6 text-gray-600" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {/* Client Information */}
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Client Information</h3>
+                <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Client Name</p>
+                    <p className="text-base font-semibold text-gray-900">{selectedOrder.buyerName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Company</p>
+                    <p className="text-base font-semibold text-gray-900">{selectedOrder.dealerName}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Timeline */}
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Order Timeline</h3>
+                <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Order Date</p>
+                    <p className="text-base font-semibold text-gray-900">{formatDate(selectedOrder.date)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">City</p>
+                    <p className="text-base font-semibold text-gray-900">{selectedOrder.city}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Order Items</h3>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Product Name
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Size Breakdown
+                          </th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Total Qty
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Unit Price
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Total
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {selectedOrder.items.map((item, index) => {
+                          // Get sizes with quantities
+                          const sizes = [
+                            { label: 'S', qty: item.s },
+                            { label: 'M', qty: item.m },
+                            { label: 'L', qty: item.l },
+                            { label: 'XL', qty: item.xl },
+                            { label: 'XXL', qty: item.xxl },
+                            { label: '3XL', qty: item.xxxl },
+                            { label: '4XL', qty: item.xxxxl },
+                            { label: '5XL', qty: item.xxxxxl },
+                            { label: '6XL', qty: item.xxxxxxl },
+                          ].filter(size => size.qty > 0);
+
+                          return (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-4 py-3">
+                                <div>
+                                  <p className="font-medium text-gray-900">{item.itemName}</p>
+                                  <p className="text-sm text-gray-600">{item.designNumber} - {item.color}</p>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex flex-wrap gap-2">
+                                  {sizes.map(size => (
+                                    <span
+                                      key={size.label}
+                                      className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium"
+                                    >
+                                      {size.label}: {size.qty}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-center font-medium text-gray-900">{item.qty}</td>
+                              <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(item.rate)}</td>
+                              <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(item.amt)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Amount */}
+              <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold text-gray-700">Total Amount</span>
+                  <span className="text-3xl font-bold text-blue-900">{formatCurrency(selectedOrder.grandTotal)}</span>
+                </div>
+                <div className="mt-2 text-sm text-gray-600 flex justify-between">
+                  <span>Gross Total: {formatCurrency(selectedOrder.grossTotal)}</span>
+                  <span>GST: {formatCurrency(selectedOrder.gstOutput)}</span>
+                </div>
+              </div>
+
+              {/* Notes/Terms */}
+              {selectedOrder.termsCondition && (
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-3">Notes</h3>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-sm text-gray-700">{selectedOrder.termsCondition}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

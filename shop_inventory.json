@@ -42,21 +42,11 @@
   {
     "designNumber": "2101",
     "color": "BROWN",
-    "size": "L",
-    "import": 0,
-    "return": 0,
-    "sales": 1,
-    "net": 0,
-    "type": "sales"
-  },
-  {
-    "designNumber": "2101",
-    "color": "BROWN",
     "size": "XL",
     "import": 1,
     "return": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -98,6 +88,16 @@
     "sales": 0,
     "net": 1,
     "type": "import"
+  },
+  {
+    "designNumber": "6301",
+    "color": "MIX",
+    "size": "XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "a75001",
@@ -665,7 +665,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 2,
+    "sales": 3,
     "net": 0,
     "type": "sales"
   },
@@ -675,7 +675,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 2,
+    "sales": 3,
     "net": 0,
     "type": "sales"
   },
@@ -885,8 +885,8 @@
     "size": "M",
     "import": 11,
     "return": 0,
-    "sales": 5,
-    "net": 6,
+    "sales": 6,
+    "net": 5,
     "type": "import"
   },
   {
@@ -1065,7 +1065,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 13,
+    "sales": 14,
     "net": 0,
     "type": "sales"
   },
@@ -1096,6 +1096,16 @@
     "import": 0,
     "return": 0,
     "sales": 3,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "aw-95503",
+    "color": "MIX",
+    "size": "3XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
     "net": 0,
     "type": "sales"
   },
@@ -1155,7 +1165,7 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 11,
+    "sales": 12,
     "net": 0,
     "type": "return"
   },
@@ -1245,7 +1255,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 8,
+    "sales": 9,
     "net": 0,
     "type": "sales"
   },
@@ -1375,8 +1385,8 @@
     "size": "M",
     "import": 16,
     "return": 0,
-    "sales": 11,
-    "net": 5,
+    "sales": 12,
+    "net": 4,
     "type": "import"
   },
   {
@@ -1525,7 +1535,7 @@
     "size": "XL",
     "import": 0,
     "return": 1,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "return"
   },
@@ -1595,8 +1605,8 @@
     "size": "XL",
     "import": 7,
     "return": 0,
-    "sales": 0,
-    "net": 7,
+    "sales": 1,
+    "net": 6,
     "type": "import"
   },
   {
@@ -1836,6 +1846,46 @@
     "import": 0,
     "return": 0,
     "sales": 2,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "kl-1360",
+    "color": "ICE BLUE-67",
+    "size": "XXL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "kl-1456",
+    "color": "WINE-37",
+    "size": "XXL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "kl-1524",
+    "color": "D.RUST-59",
+    "size": "XXL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "lk-2803",
+    "color": "WINE",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
     "net": 0,
     "type": "sales"
   },
@@ -3725,8 +3775,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -4022,6 +4072,16 @@
   {
     "designNumber": "ng-19342",
     "color": "GREYMEL/BLACK",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ng-19342",
+    "color": "GREYMEL/BLACK",
     "size": "XXL",
     "import": 0,
     "return": 0,
@@ -4275,8 +4335,8 @@
     "size": "L",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -5215,7 +5275,7 @@
     "size": "XL",
     "import": 0,
     "return": 2,
-    "sales": 2,
+    "sales": 3,
     "net": 0,
     "type": "return"
   },
@@ -5285,8 +5345,8 @@
     "size": "XL",
     "import": 0,
     "return": 2,
-    "sales": 1,
-    "net": 1,
+    "sales": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -5378,6 +5438,16 @@
     "sales": 0,
     "net": 1,
     "type": "return"
+  },
+  {
+    "designNumber": "ng-19405",
+    "color": "ANTHRAMEL",
+    "size": "XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "ng-19405",
@@ -5935,8 +6005,8 @@
     "size": "XL",
     "import": 1,
     "return": 1,
-    "sales": 0,
-    "net": 2,
+    "sales": 1,
+    "net": 1,
     "type": "import"
   },
   {
@@ -6035,8 +6105,8 @@
     "size": "S",
     "import": 1,
     "return": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -6265,8 +6335,8 @@
     "size": "XL",
     "import": 0,
     "return": 2,
-    "sales": 0,
-    "net": 2,
+    "sales": 1,
+    "net": 1,
     "type": "return"
   },
   {
@@ -7275,8 +7345,8 @@
     "size": "XXL",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -7865,8 +7935,8 @@
     "size": "L",
     "import": 1,
     "return": 0,
-    "sales": 1,
-    "net": 0,
+    "sales": 0,
+    "net": 1,
     "type": "import"
   },
   {
@@ -7905,8 +7975,8 @@
     "size": "L",
     "import": 1,
     "return": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -7933,10 +8003,10 @@
     "designNumber": "ng-19953",
     "color": "WINE",
     "size": "M",
-    "import": 1,
+    "import": 21,
     "return": 0,
     "sales": 0,
-    "net": 1,
+    "net": 21,
     "type": "import"
   },
   {
@@ -8358,6 +8428,16 @@
     "sales": 1,
     "net": 0,
     "type": "return"
+  },
+  {
+    "designNumber": "ng-19968",
+    "color": "GRANITE GREY",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "ng-19968",
@@ -8465,8 +8545,8 @@
     "size": "L",
     "import": 1,
     "return": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -8965,8 +9045,8 @@
     "size": "XL",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -9832,7 +9912,7 @@
   {
     "designNumber": "ng-2101",
     "color": "GREY",
-    "size": "42",
+    "size": "XL",
     "import": 0,
     "return": 0,
     "sales": 1,
@@ -10775,8 +10855,8 @@
     "size": "S",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -11475,8 +11555,8 @@
     "size": "S",
     "import": 1,
     "return": 1,
-    "sales": 1,
-    "net": 1,
+    "sales": 3,
+    "net": 0,
     "type": "import"
   },
   {
@@ -12675,8 +12755,8 @@
     "size": "XL",
     "import": 0,
     "return": 2,
-    "sales": 1,
-    "net": 1,
+    "sales": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -13635,8 +13715,8 @@
     "size": "XL",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14365,8 +14445,8 @@
     "size": "XL",
     "import": 0,
     "return": 1,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15030,6 +15110,16 @@
     "type": "sales"
   },
   {
+    "designNumber": "pkd-1517",
+    "color": "CHIKI-8",
+    "size": "3XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
     "designNumber": "ra-2230",
     "color": "L.PISTA",
     "size": "XL",
@@ -15158,6 +15248,26 @@
     "sales": 0,
     "net": 1,
     "type": "import"
+  },
+  {
+    "designNumber": "s-536a",
+    "color": "AOP",
+    "size": "XXL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "s-536a",
+    "color": "AOP",
+    "size": "3XL",
+    "import": 0,
+    "return": 1,
+    "sales": 1,
+    "net": 0,
+    "type": "return"
   },
   {
     "designNumber": "sbgprkp-a909",
@@ -16905,8 +17015,8 @@
     "size": "M",
     "import": 0,
     "return": 36,
-    "sales": 6,
-    "net": 30,
+    "sales": 7,
+    "net": 29,
     "type": "return"
   },
   {
@@ -16945,8 +17055,8 @@
     "size": "XL",
     "import": 0,
     "return": 2,
-    "sales": 1,
-    "net": 1,
+    "sales": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16975,8 +17085,8 @@
     "size": "XXL",
     "import": 2,
     "return": 0,
-    "sales": 0,
-    "net": 2,
+    "sales": 1,
+    "net": 1,
     "type": "import"
   },
   {
@@ -17315,8 +17425,8 @@
     "size": "XL",
     "import": 15,
     "return": 0,
-    "sales": 0,
-    "net": 15,
+    "sales": 2,
+    "net": 13,
     "type": "import"
   },
   {

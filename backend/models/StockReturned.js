@@ -22,6 +22,10 @@ const StockReturnedSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    type: {
+      type: String,
+      trim: true,
+    },
     color: {
       type: String,
       required: true,

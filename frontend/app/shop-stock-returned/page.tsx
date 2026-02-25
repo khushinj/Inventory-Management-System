@@ -375,6 +375,7 @@ export default function StockReturnedPage() {
               type,
               color,
               date,
+              mrp: 0,
               sizes: {
                 S: 0,
                 M: 0,

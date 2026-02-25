@@ -1331,12 +1331,14 @@ function DomesticDashboard() {
                 <p className="text-gray-600">View and manage domestic warehouse transactions</p>
               </div>
             </div>
-            <button
-              onClick={handleCreate}
-              className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
-            >
-              + New Transaction
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCreate}
+                className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+              >
+                + New Transaction
+              </button>
+            </div>
           </div>
 
           {/* Excel Import/Export Buttons */}

@@ -11,6 +11,10 @@ const StockReturnedItemSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    mrp: {
+      type: Number,
+      default: 0,
+    },
   },
   { _id: false }
 );
@@ -30,6 +34,10 @@ const StockReturnedSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+    },
+    mrp: {
+      type: Number,
+      default: 0,
     },
     items: [StockReturnedItemSchema],
     totalQuantity: {

@@ -20,6 +20,7 @@ type SampleRow = {
   dno: string;
   type: string;
   color: string;
+  mrp: number;
   date: string;
   sizes: {
     [size: string]: number;
@@ -38,6 +39,7 @@ export default function StockReturnedPage() {
     dno: "",
     type: "",
     color: "",
+    mrp: 0,
     date: new Date().toISOString().split("T")[0],
     sizes: {
       S: 0,
@@ -57,6 +59,7 @@ export default function StockReturnedPage() {
     dno: "",
     type: "",
     color: "",
+    mrp: 0,
     date: new Date().toISOString().split("T")[0],
     sizes: {
       S: 0,
@@ -74,6 +77,7 @@ export default function StockReturnedPage() {
   const stockReturnDnoRef = useRef<HTMLInputElement>(null);
   const stockReturnTypeRef = useRef<HTMLInputElement>(null);
   const stockReturnColorRef = useRef<HTMLInputElement>(null);
+  const stockReturnMrpRef = useRef<HTMLInputElement>(null);
   const stockReturnDateRef = useRef<HTMLInputElement>(null);
   const stockReturnSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,6 +114,7 @@ export default function StockReturnedPage() {
       dno: entry.dno || "",
       type: entry.type || "",
       color: entry.color || "",
+      mrp: entry.mrp || 0,
       date: entry.date ? new Date(entry.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
       sizes: {
         S: entry.items?.find((item: any) => item.size === "S")?.qty || 0,
@@ -151,6 +156,7 @@ export default function StockReturnedPage() {
         dno: "",
         type: "",
         color: "",
+        mrp: 0,
         date: new Date().toISOString().split("T")[0],
         sizes: {
           S: 0,
@@ -175,10 +181,11 @@ export default function StockReturnedPage() {
         dno: newStockReturnedRow.dno,
         type: newStockReturnedRow.type,
         color: newStockReturnedRow.color,
+        mrp: newStockReturnedRow.mrp,
         date: newStockReturnedRow.date,
         items: Object.entries(newStockReturnedRow.sizes)
           .filter(([_, qty]) => qty > 0)
-          .map(([size, qty]) => ({ size, qty })),
+          .map(([size, qty]) => ({ size, qty, mrp: newStockReturnedRow.mrp })),
         totalQuantity: totalQty,
       };
 
@@ -201,17 +208,17 @@ export default function StockReturnedPage() {
   };
 
   const handleEditStockReturnRow = (row: SampleRow) => {
-    setEditingStockReturnRow(`${row.dno}_${row.color}`);
+    setEditingStockReturnRow(row._id || null);
     setEditStockReturnForm({ ...row });
   };
 
   const handleUpdateStockReturnRow = async () => {
     try {
-      const key = `${editStockReturnForm.dno}_${editStockReturnForm.color}`;
+      const key = editStockReturnForm._id;
       
       // Update local state immediately
       setStockReturnedRows(stockReturnedRows.map(row => {
-        if (`${row.dno}_${row.color}` === key) {
+        if (row._id === key) {
           return editStockReturnForm;
         }
         return row;
@@ -231,10 +238,11 @@ export default function StockReturnedPage() {
           dno: editStockReturnForm.dno,
           type: editStockReturnForm.type,
           color: editStockReturnForm.color,
+          mrp: editStockReturnForm.mrp,
           date: editStockReturnForm.date,
           items: Object.entries(editStockReturnForm.sizes)
             .filter(([_, qty]) => qty > 0)
-            .map(([size, qty]) => ({ size, qty })),
+            .map(([size, qty]) => ({ size, qty, mrp: editStockReturnForm.mrp })),
           totalQuantity: totalQty,
         };
 
@@ -246,20 +254,16 @@ export default function StockReturnedPage() {
     }
   };
 
-  const handleDeleteStockReturnRow = async (dno: string, color: string) => {
+  const handleDeleteStockReturnRow = async (id: string) => {
     if (!confirm("Are you sure you want to delete this stock return entry?")) return;
 
     try {
       // Remove from local state immediately
-      setStockReturnedRows(stockReturnedRows.filter(row => !(row.dno === dno && row.color === color)));
+      setStockReturnedRows(stockReturnedRows.filter(row => row._id !== id));
 
       // Delete from backend in background
-      const rowToDelete = stockReturnedRows.find(
-        row => row.dno === dno && row.color === color
-      );
-
-      if (rowToDelete && rowToDelete._id) {
-        await api.delete(`/stock-returned/${rowToDelete._id}`);
+      if (id) {
+        await api.delete(`/stock-returned/${id}`);
       }
     } catch (error) {
       console.error("Error deleting stock return row:", error);
@@ -274,6 +278,8 @@ export default function StockReturnedPage() {
       } else if (field === "type") {
         stockReturnColorRef.current?.focus();
       } else if (field === "color") {
+        stockReturnMrpRef.current?.focus();
+      } else if (field === "mrp") {
         stockReturnDateRef.current?.focus();
       } else if (field === "date") {
         stockReturnSizeRefs.current["S"]?.focus();
@@ -294,6 +300,7 @@ export default function StockReturnedPage() {
       dno: "",
       type: "",
       color: "",
+      mrp: 0,
       date: new Date().toISOString().split("T")[0],
       sizes: {
         S: 0,
@@ -508,6 +515,7 @@ export default function StockReturnedPage() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">DNO</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Color</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">MRP</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Date</th>
                     {SIZES.map((size) => (
                       <th
@@ -577,6 +585,24 @@ export default function StockReturnedPage() {
                             handleStockReturnKeyDown(e, "color", 0)
                           }
                           placeholder="Color"
+                          className="w-full px-3 py-2 border rounded text-black bg-white"
+                        />
+                      </td>
+                      <td className="px-6 py-4 min-w-[120px]">
+                        <input
+                          ref={stockReturnMrpRef}
+                          type="number"
+                          value={newStockReturnedRow.mrp || ""}
+                          onChange={(e) =>
+                            setNewStockReturnedRow({
+                              ...newStockReturnedRow,
+                              mrp: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          onKeyDown={(e) =>
+                            handleStockReturnKeyDown(e, "mrp", 0)
+                          }
+                          placeholder="MRP"
                           className="w-full px-3 py-2 border rounded text-black bg-white"
                         />
                       </td>
@@ -656,7 +682,7 @@ export default function StockReturnedPage() {
                     </tr>
                   ) : (
                     stockReturnedRows.map((row) => {
-                      const key = `${row.dno}_${row.color}`;
+                      const key = row._id || "";
                       const isEditing = editingStockReturnRow === key;
 
                       return (
@@ -697,6 +723,19 @@ export default function StockReturnedPage() {
                                     setEditStockReturnForm({
                                       ...editStockReturnForm,
                                       color: e.target.value,
+                                    })
+                                  }
+                                  className="w-full px-3 py-2 border rounded text-black bg-white"
+                                />
+                              </td>
+                              <td className="px-6 py-4 min-w-[120px]">
+                                <input
+                                  type="number"
+                                  value={editStockReturnForm.mrp || ""}
+                                  onChange={(e) =>
+                                    setEditStockReturnForm({
+                                      ...editStockReturnForm,
+                                      mrp: parseFloat(e.target.value) || 0,
                                     })
                                   }
                                   className="w-full px-3 py-2 border rounded text-black bg-white"
@@ -765,6 +804,9 @@ export default function StockReturnedPage() {
                                 {row.color}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {row.mrp || "-"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {row.date}
                               </td>
                               {SIZES.map((size) => (
@@ -787,8 +829,7 @@ export default function StockReturnedPage() {
                                 <button
                                   onClick={() =>
                                     handleDeleteStockReturnRow(
-                                      row.dno,
-                                      row.color
+                                      row._id || ""
                                     )
                                   }
                                   className="text-red-600 hover:text-red-900"

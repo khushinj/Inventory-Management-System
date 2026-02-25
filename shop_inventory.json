@@ -6592,6 +6592,16 @@
   {
     "designNumber": "ng-19841",
     "color": "ECRU MELANGE",
+    "size": "M",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "ng-19841",
+    "color": "ECRU MELANGE",
     "size": "L",
     "import": 0,
     "return": 1,

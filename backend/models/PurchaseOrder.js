@@ -1,17 +1,9 @@
 import mongoose from "mongoose";
 
 const PurchaseOrderItemSchema = new mongoose.Schema({
-  itemName: {
-    type: String,
-    required: true,
-  },
   designNumber: {
     type: String,
     required: true,
-  },
-  type: {
-    type: String,
-    trim: true,
   },
   color: {
     type: String,

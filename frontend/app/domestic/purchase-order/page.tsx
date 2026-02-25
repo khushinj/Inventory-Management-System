@@ -9,9 +9,7 @@ import { api } from "../../../lib/api";
 
 type PurchaseOrderItem = {
   id: number;
-  itemName: string;
   designNumber: string;
-  type: string;
   color: string;
   s: number;
   m: number;
@@ -90,9 +88,7 @@ export default function PurchaseOrderEntryForm() {
   const [items, setItems] = useState<PurchaseOrderItem[]>([
     {
       id: 1,
-      itemName: "",
       designNumber: "",
-      type: "",
       color: "",
       s: 0,
       m: 0,
@@ -193,9 +189,7 @@ export default function PurchaseOrderEntryForm() {
       ...items,
       {
         id: newId,
-        itemName: "",
         designNumber: "",
-        type: "",
         color: "",
         s: 0,
         m: 0,
@@ -246,7 +240,7 @@ export default function PurchaseOrderEntryForm() {
 
       // Filter out empty items (items with no data)
       const validItems = items.filter(item => 
-        item.itemName && item.designNumber && item.color && item.qty > 0
+        item.designNumber && item.color && item.qty > 0
       );
 
       if (validItems.length === 0) {
@@ -327,7 +321,7 @@ export default function PurchaseOrderEntryForm() {
     // Items Table
     const tableData = items.map((item, index) => [
       index + 1,
-      `${item.itemName}\\n${item.designNumber}`,
+      item.designNumber,
       item.color,
       item.s || "-",
       item.m || "-",
@@ -465,9 +459,7 @@ export default function PurchaseOrderEntryForm() {
     // Excel export with item details
     const excelData = items.map((item, index) => ({
       SL: index + 1,
-      "Item Name": item.itemName,
       "Design Number": item.designNumber,
-      Type: item.type,
       Color: item.color,
       S: item.s,
       M: item.m,
@@ -600,9 +592,7 @@ export default function PurchaseOrderEntryForm() {
               <thead>
                 <tr className="border-b border-gray-300">
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50 sticky left-0 z-10">SL</th>
-                  <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">ITEM NAME</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">DESIGN NUMBER</th>
-                  <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">TYPE</th>
                   <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-50">COLOR</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">S</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">M</th>
@@ -631,33 +621,13 @@ export default function PurchaseOrderEntryForm() {
                     <td className="px-3 py-3">
                       <input
                         type="text"
-                        placeholder="Item Name"
-                        value={item.itemName}
-                        onChange={(e) => handleItemChange(item.id, "itemName", e.target.value)}
+                        placeholder="Design Number"
+                        value={item.designNumber}
+                        onChange={(e) => handleItemChange(item.id, "designNumber", e.target.value)}
                         onKeyDown={handleKeyDown}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
                     </td>
-                      <td className="px-3 py-3">
-                        <input
-                          type="text"
-                          placeholder="Design Number"
-                          value={item.designNumber}
-                          onChange={(e) => handleItemChange(item.id, "designNumber", e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                        />
-                      </td>
-                      <td className="px-3 py-3">
-                        <input
-                          type="text"
-                          placeholder="Type"
-                          value={item.type}
-                          onChange={(e) => handleItemChange(item.id, "type", e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                        />
-                      </td>
                       <td className="px-3 py-3 text-black">
                       <input
                         type="text"

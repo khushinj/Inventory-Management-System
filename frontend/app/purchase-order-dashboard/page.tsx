@@ -6,7 +6,6 @@ import { FileText, Search, Filter, Eye, MoreVertical, X } from "lucide-react";
 
 type PurchaseOrderItem = {
   category: string;
-  itemName: string;
   designNumber: string;
   color: string;
   s: number;
@@ -484,7 +483,6 @@ export default function PurchaseOrdersPage() {
                             <tr key={index} className="hover:bg-gray-50">
                               <td className="px-4 py-3">
                                 <div>
-                                  <p className="font-medium text-gray-900">{item.itemName}</p>
                                   <p className="text-sm text-gray-600">{item.designNumber} - {item.color}</p>
                                 </div>
                               </td>

@@ -17,14 +17,28 @@ export const createStockReturned = async (data) => {
 
 // Helper function to adjust inventory when stock is returned
 const adjustInventoryForStockReturned = async (stockReturned) => {
-  try {
-    const { dno, color, items, totalQuantity, date } = stockReturned;
-    console.log("[Stock Return] Adjusting inventory for:", { dno, color, items, totalQuantity });
+  const { dno, color, items, totalQuantity, date } = stockReturned;
+  console.log("[Stock Return] ===== Starting inventory adjustment =====");
+  console.log("[Stock Return] DNO:", dno, "Color:", color, "Total Qty:", totalQuantity);
+  console.log("[Stock Return] Items:", JSON.stringify(items));
 
+  const errors = [];
+  let successCount = 0;
+
+  try {
     // If items array exists, process by size
     if (items && items.length > 0) {
+      console.log(`[Stock Return] Processing ${items.length} items...`);
+      
       for (const item of items) {
+        if (item.qty <= 0) {
+          console.log(`[Stock Return] Skipping item with qty ${item.qty} for size ${item.size}`);
+          continue;
+        }
+
         try {
+          console.log(`[Stock Return] Processing size ${item.size} with qty ${item.qty}...`);
+          
           // Subtract from shop inventory
           const ShopModel = getTransactionModel("shop", "", "return");
           const shopRecord = await ShopModel.create({
@@ -37,7 +51,7 @@ const adjustInventoryForStockReturned = async (stockReturned) => {
             date: date || new Date(),
             channel: "domestic return",
           });
-          console.log("[Stock Return] Created shop record:", shopRecord._id);
+          console.log(`[Stock Return] ✅ Created shop record: ${shopRecord._id} (qty: ${shopRecord.qty})`);
 
           // Add to domestic inventory
           const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
@@ -52,47 +66,135 @@ const adjustInventoryForStockReturned = async (stockReturned) => {
             date: date || new Date(),
             channel: "domestic",
           });
-          console.log("[Stock Return] Created domestic record:", domesticRecord._id);
+          console.log(`[Stock Return] ✅ Created domestic record: ${domesticRecord._id} (qty: ${domesticRecord.qty})`);
+          successCount++;
         } catch (itemError) {
-          console.error("[Stock Return] Error processing item:", item, itemError.message);
+          const errorMsg = `Failed to process item size ${item.size}: ${itemError.message}`;
+          console.error(`[Stock Return] ❌ ${errorMsg}`);
+          console.error("[Stock Return] Stack:", itemError.stack);
+          errors.push(errorMsg);
+          // Re-throw to stop processing if a transaction fails
+          throw new Error(errorMsg);
         }
       }
-    } else {
+    } else if (totalQuantity && totalQuantity > 0) {
       // If no items array, use totalQuantity (old format support)
-      try {
-        // Subtract from shop inventory
+      console.log("[Stock Return] Processing using totalQuantity (no items array)...");
+      
+      // Subtract from shop inventory
+      const ShopModel = getTransactionModel("shop", "", "return");
+      const shopRecord = await ShopModel.create({
+        domain: "shop",
+        formType: "return",
+        dno,
+        color,
+        qty: -totalQuantity,
+        date: date || new Date(),
+        channel: "domestic return",
+      });
+      console.log(`[Stock Return] ✅ Created shop record (totalQty): ${shopRecord._id}`);
+
+      // Add to domestic inventory
+      const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
+      const domesticRecord = await DomesticModel.create({
+        domain: "warehouse",
+        warehouseType: "domestic",
+        formType: "return",
+        dno,
+        color,
+        qty: totalQuantity,
+        date: date || new Date(),
+        channel: "domestic",
+      });
+      console.log(`[Stock Return] ✅ Created domestic record (totalQty): ${domesticRecord._id}`);
+      successCount++;
+    } else {
+      throw new Error("No items or totalQuantity provided");
+    }
+    
+    console.log(`[Stock Return] ===== Inventory adjustment completed successfully =====`);
+    console.log(`[Stock Return] Successfully processed ${successCount} item(s)`);
+    console.log(`[Stock Return] Data added to domestic inventory for DNO: ${dno}, Color: ${color}`);
+    
+  } catch (error) {
+    console.error("[Stock Return] ❌ ===== CRITICAL ERROR adjusting inventory =====");
+    console.error("[Stock Return] Error:", error.message);
+    console.error("[Stock Return] Stack:", error.stack);
+    // Re-throw the error so it bubbles up to the controller
+    throw new Error(`Failed to adjust inventory for stock return: ${error.message}`);
+  }
+};
+
+// Helper function to reverse inventory adjustments
+const reverseInventoryAdjustments = async (stockReturned) => {
+  const { dno, color, items, totalQuantity, _id } = stockReturned;
+  console.log("[Stock Return] ===== Starting inventory reversal =====");
+  console.log("[Stock Return] DNO:", dno, "Color:", color);
+
+  try {
+    if (items && items.length > 0) {
+      console.log(`[Stock Return] Reversing ${items.length} items...`);
+      
+      for (const item of items) {
+        console.log(`[Stock Return] Reversing size ${item.size} with qty ${item.qty}...`);
+        
+        // Remove from shop inventory (undo the negative entry)
         const ShopModel = getTransactionModel("shop", "", "return");
-        const shopRecord = await ShopModel.create({
+        const shopDeleted = await ShopModel.deleteMany({
           domain: "shop",
           formType: "return",
           dno,
           color,
-          qty: -totalQuantity,
-          date: date || new Date(),
-          channel: "domestic return",
+          size: item.size,
+          qty: -item.qty,
         });
-        console.log("[Stock Return] Created shop record (totalQty):", shopRecord._id);
+        console.log(`[Stock Return] Deleted ${shopDeleted.deletedCount} shop record(s) for size ${item.size}`);
 
-        // Add to domestic inventory
+        // Remove from domestic inventory
         const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
-        const domesticRecord = await DomesticModel.create({
+        const domesticDeleted = await DomesticModel.deleteMany({
           domain: "warehouse",
           warehouseType: "domestic",
           formType: "return",
           dno,
           color,
-          qty: totalQuantity,
-          date: date || new Date(),
-          channel: "domestic",
+          size: item.size,
+          qty: item.qty,
         });
-        console.log("[Stock Return] Created domestic record (totalQty):", domesticRecord._id);
-      } catch (totalQtyError) {
-        console.error("[Stock Return] Error processing totalQuantity:", totalQtyError.message);
+        console.log(`[Stock Return] Deleted ${domesticDeleted.deletedCount} domestic record(s) for size ${item.size}`);
       }
+    } else {
+      console.log("[Stock Return] Reversing using totalQuantity...");
+      
+      // Remove from shop inventory
+      const ShopModel = getTransactionModel("shop", "", "return");
+      const shopDeleted = await ShopModel.deleteMany({
+        domain: "shop",
+        formType: "return",
+        dno,
+        color,
+        qty: -totalQuantity,
+      });
+      console.log(`[Stock Return] Deleted ${shopDeleted.deletedCount} shop record(s)`);
+
+      // Remove from domestic inventory
+      const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
+      const domesticDeleted = await DomesticModel.deleteMany({
+        domain: "warehouse",
+        warehouseType: "domestic",
+        formType: "return",
+        dno,
+        color,
+        qty: totalQuantity,
+      });
+      console.log(`[Stock Return] Deleted ${domesticDeleted.deletedCount} domestic record(s)`);
     }
-    console.log("[Stock Return] Inventory adjustment completed");
+
+    console.log("[Stock Return] ===== Reversal completed successfully =====");
   } catch (error) {
-    console.error("[Stock Return] Error adjusting inventory:", error.message, error.stack);
+    console.error("[Stock Return] ❌ ===== ERROR reversing inventory =====");
+    console.error("[Stock Return] Error:", error.message, error.stack);
+    throw new Error(`Failed to reverse inventory adjustments: ${error.message}`);
   }
 };
 
@@ -139,14 +241,23 @@ export const getStockReturnedById = async (id) => {
 
 export const updateStockReturned = async (id, data) => {
   try {
+    // Get the old stock return data
+    const oldStockReturned = await StockReturned.findById(id);
+    if (!oldStockReturned) {
+      throw new Error("Stock returned not found");
+    }
+
+    // Reverse the old inventory adjustments
+    await reverseInventoryAdjustments(oldStockReturned);
+
+    // Update the stock return record
     const stockReturned = await StockReturned.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
     });
 
-    if (!stockReturned) {
-      throw new Error("Stock returned not found");
-    }
+    // Apply new inventory adjustments
+    await adjustInventoryForStockReturned(stockReturned);
 
     return stockReturned;
   } catch (error) {
@@ -156,73 +267,17 @@ export const updateStockReturned = async (id, data) => {
 
 export const deleteStockReturned = async (id) => {
   try {
-    const stockReturned = await StockReturned.findByIdAndDelete(id);
+    const stockReturned = await StockReturned.findById(id);
 
     if (!stockReturned) {
       throw new Error("Stock returned not found");
     }
 
-    // Reverse the inventory adjustments when stock returned is deleted
-    const { dno, color, items, totalQuantity, date } = stockReturned;
-    console.log("[Stock Return] Deleting inventory adjustments for:", { dno, color, items });
+    // Reverse the inventory adjustments before deleting
+    await reverseInventoryAdjustments(stockReturned);
 
-    if (items && items.length > 0) {
-      for (const item of items) {
-        try {
-          // Remove from shop inventory (undo the negative entry)
-          const ShopModel = getTransactionModel("shop", "", "return");
-          await ShopModel.deleteMany({
-            domain: "shop",
-            formType: "return",
-            dno,
-            color,
-            size: item.size,
-            qty: -item.qty,
-          });
-          console.log("[Stock Return] Deleted shop record for:", item.size);
-
-          // Remove from domestic inventory
-          const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
-          await DomesticModel.deleteMany({
-            domain: "warehouse",
-            warehouseType: "domestic",
-            formType: "return",
-            dno,
-            color,
-            size: item.size,
-            qty: item.qty,
-          });
-          console.log("[Stock Return] Deleted domestic record for:", item.size);
-        } catch (itemError) {
-          console.error("[Stock Return] Error deleting item:", item, itemError.message);
-        }
-      }
-    } else {
-      try {
-        // Remove from shop inventory
-        const ShopModel = getTransactionModel("shop", "", "return");
-        await ShopModel.deleteMany({
-          domain: "shop",
-          formType: "return",
-          dno,
-          color,
-          qty: -totalQuantity,
-        });
-
-        // Remove from domestic inventory
-        const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
-        await DomesticModel.deleteMany({
-          domain: "warehouse",
-          warehouseType: "domestic",
-          formType: "return",
-          dno,
-          color,
-          qty: totalQuantity,
-        });
-      } catch (totalError) {
-        console.error("[Stock Return] Error deleting totalQuantity records:", totalError.message);
-      }
-    }
+    // Delete the stock return record
+    await StockReturned.findByIdAndDelete(id);
 
     console.log("[Stock Return] Deletion completed");
     return stockReturned;

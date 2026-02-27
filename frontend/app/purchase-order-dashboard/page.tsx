@@ -545,7 +545,7 @@ export default function PurchaseOrdersPage() {
                       <tbody className="divide-y divide-gray-200">
                         {selectedOrder.items.map((item, index) => {
                           // Get sizes with quantities
-                          const sizes = [
+                          const sizes: Array<{ label: string; key: SizeKey; qty: number }> = [
                             { label: "S", key: "s", qty: item.s },
                             { label: "M", key: "m", qty: item.m },
                             { label: "L", key: "l", qty: item.l },

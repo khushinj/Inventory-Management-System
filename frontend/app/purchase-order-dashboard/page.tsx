@@ -82,7 +82,7 @@ export default function PurchaseOrdersPage() {
         }));
         setOrders(ordersWithStatus);
         const nextDeliveredSizes: DeliveredSizeMap = {};
-        ordersWithStatus.forEach((order) => {
+        ordersWithStatus.forEach((order: PurchaseOrder) => {
           const orderDelivered: Record<number, Record<SizeKey, number | "">> = {};
 
           order.items.forEach((_, itemIndex) => {

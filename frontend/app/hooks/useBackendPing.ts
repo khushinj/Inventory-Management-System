@@ -6,7 +6,7 @@ export function useBackendPing() {
     const pingBackend = async () => {
       try {
         // Use lightweight health endpoint instead of /shop
-        // This is specifically designed for keep-alive pings and doesn't query the database
+        
         const response = await api.get("/health");
 
         if (response.status >= 200 && response.status < 300) {

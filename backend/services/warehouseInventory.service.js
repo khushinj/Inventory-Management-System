@@ -1,11 +1,13 @@
 import { getTransactionModel } from "../models/Transaction.js";
 
 /**
- * Normalize design number
+ * Normalize design number - removes all spaces for consistency
+ * This ensures "NGW - 351236 A" and "NGW - 351236A" are treated as the same
  */
 const normalizeDesignNumber = (dno) => {
   if (!dno) return "N/A";
-  return dno.toString().trim().toUpperCase();
+  // Remove all spaces, trim, and convert to uppercase
+  return dno.toString().trim().replace(/\s+/g, "").toUpperCase();
 };
 
 /**
@@ -61,7 +63,7 @@ export const calculateWarehouseInventory = async (warehouseType) => {
           outbound: 0,
           stock: 0,
           lastUpdated: new Date(),
-          transactions: [],
+          // Removed transactions array to improve performance with large datasets
         };
       }
 
@@ -88,14 +90,7 @@ export const calculateWarehouseInventory = async (warehouseType) => {
         inventory[key].outbound += txn.qty || 0;
       }
 
-      const inboundTypes = warehouseType === "domestic" ? domesticInboundTypes : exportInboundTypes;
-      inventory[key].transactions.push({
-        id: txn._id,
-        formType: txn.formType,
-        qty: txn.qty,
-        date: txn.date,
-        type: inboundTypes.includes(txn.formType) ? "inbound" : "outbound",
-      });
+      // Removed transactions.push() to improve performance - frontend doesn't use this data
     });
 
     // Calculate final stock

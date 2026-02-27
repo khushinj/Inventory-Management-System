@@ -93,6 +93,7 @@ export default function ShopInventoryPage() {
         params: {
           hideZeroStock: true, // Only show items with stock
         },
+        timeout: 120000, // 2 minutes for inventory recalculation
       });
       setInventory(response.data.data || []);
     } catch (err) {

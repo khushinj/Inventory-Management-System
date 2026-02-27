@@ -72,7 +72,10 @@ export default function OnlineInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const response = await api.get("/inventory/warehouse/online");
+      // Use extended timeout for inventory calculation (can be slow with large datasets)
+      const response = await api.get("/inventory/warehouse/online", {
+        timeout: 120000, // 2 minutes for inventory recalculation
+      });
       const inventoryData = response.data.inventory || response.data.items || [];
       setInventory(inventoryData);
     } catch (err: any) {

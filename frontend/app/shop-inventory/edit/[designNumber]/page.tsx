@@ -70,6 +70,7 @@ export default function EditShopInventoryPage() {
 
       const inventoryResponse = await api.get("/shop-inventory", {
         params: { designNumber },
+        timeout: 120000, // 2 minutes for inventory recalculation
       });
       setInventory(inventoryResponse.data.data || []);
     } catch (err) {

@@ -66,7 +66,9 @@ export default function EditDomesticInventoryPage() {
         }
       }
 
-      const inventoryResponse = await api.get("/inventory/warehouse/domestic");
+      const inventoryResponse = await api.get("/inventory/warehouse/domestic", {
+        timeout: 120000, // 2 minutes for inventory recalculation
+      });
       const allInventory = inventoryResponse.data.inventory || [];
       const filteredInventory = allInventory.filter((item: InventoryItem) => item.dno === designNumber);
       setInventory(filteredInventory);

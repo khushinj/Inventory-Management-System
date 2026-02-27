@@ -71,7 +71,10 @@ export default function DomesticInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const response = await api.get("/inventory/warehouse/domestic");
+      // Use extended timeout for inventory calculation (can be slow with large datasets)
+      const response = await api.get("/inventory/warehouse/domestic", {
+        timeout: 120000, // 2 minutes for inventory recalculation
+      });
       console.log("Domestic inventory response:", response.data);
       const inventoryData = response.data.inventory || response.data.items || [];
       console.log("Processed inventory:", inventoryData);

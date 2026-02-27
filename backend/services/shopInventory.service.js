@@ -14,10 +14,11 @@ class ShopInventoryService {
     this.shopInventoryPath = path.join(__dirname, '../../shop_inventory.json');
   }
 
-  // Normalize design number (handle aw-85089a and aaw-85089a as same)
+  // Normalize design number (remove all spaces for consistency and handle special cases)
   normalizeDesignNumber(dno) {
     if (!dno) return '';
-    const normalized = dno.toLowerCase().trim();
+    // Remove all spaces, trim, and convert to lowercase
+    let normalized = dno.toLowerCase().trim().replace(/\s+/g, '');
     // Remove leading 'a' if it starts with 'aaw-' to make it 'aw-'
     if (normalized.startsWith('aaw-')) {
       return normalized.substring(1); // Remove first 'a'

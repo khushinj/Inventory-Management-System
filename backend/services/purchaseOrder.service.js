@@ -7,11 +7,11 @@ import { getTransactionModel } from "../models/Transaction.js";
 export async function createPurchaseOrder(orderData) {
   try {
     console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
+    if (!Array.isArray(orderData.deliveredSizes)) {
+      orderData.deliveredSizes = orderData.items?.map(() => ({})) || [];
+    }
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
-    
-    // Automatically create dispatch entries
-    await createDispatchEntriesFromPO(purchaseOrder);
     
     return {
       success: true,
@@ -224,12 +224,13 @@ async function createDispatchEntriesFromPO(purchaseOrder) {
       'xxxxxxl': '6XL'
     };
 
-    // Convert each item in the purchase order to dispatch transactions
-    for (const item of purchaseOrder.items) {
+    // Convert delivered sizes in the purchase order to dispatch transactions
+    for (const [index, item] of purchaseOrder.items.entries()) {
       const sizes = ['s', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl', 'xxxxxl', 'xxxxxxl'];
+      const delivered = purchaseOrder.deliveredSizes?.[index] || {};
       
       for (const size of sizes) {
-        const qty = item[size];
+        const qty = delivered[size] || 0;
         if (qty && qty > 0) {
           dispatchEntries.push({
             domain: "warehouse",

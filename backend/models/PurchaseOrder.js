@@ -1,5 +1,20 @@
 import mongoose from "mongoose";
 
+const SizeBreakdownSchema = new mongoose.Schema(
+  {
+    s: { type: Number, default: 0 },
+    m: { type: Number, default: 0 },
+    l: { type: Number, default: 0 },
+    xl: { type: Number, default: 0 },
+    xxl: { type: Number, default: 0 },
+    xxxl: { type: Number, default: 0 },
+    xxxxl: { type: Number, default: 0 },
+    xxxxxl: { type: Number, default: 0 },
+    xxxxxxl: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
 const PurchaseOrderItemSchema = new mongoose.Schema({
   designNumber: {
     type: String,
@@ -103,6 +118,10 @@ const PurchaseOrderSchema = new mongoose.Schema(
       default: "pending",
     },
     items: [PurchaseOrderItemSchema],
+    deliveredSizes: {
+      type: [SizeBreakdownSchema],
+      default: [],
+    },
     totalQuantity: {
       type: Number,
       required: true,

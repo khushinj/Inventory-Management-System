@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "../../lib/api";
-import { FileText, Search, Filter, Eye, MoreVertical, X } from "lucide-react";
+import { FileText, Search, Filter, Eye, X } from "lucide-react";
 
 type PurchaseOrderItem = {
   category: string;
@@ -27,6 +27,10 @@ type PurchaseOrderItem = {
   amt: number;
 };
 
+const sizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxxl"] as const;
+type SizeKey = (typeof sizeKeys)[number];
+type SizeBreakdown = Partial<Record<SizeKey, number>>;
+
 type PurchaseOrder = {
   _id: string;
   dealerName: string;
@@ -35,6 +39,7 @@ type PurchaseOrder = {
   city: string;
   status: "pending" | "partially pending" | "completed";
   items: PurchaseOrderItem[];
+  deliveredSizes?: SizeBreakdown[];
   totalQuantity: number;
   grossTotal: number;
   gstOutput: number;
@@ -46,14 +51,16 @@ type PurchaseOrder = {
 
 type StatusFilter = "all" | "pending" | "partially pending" | "completed";
 
+type DeliveredSizeMap = Record<string, Record<number, Record<SizeKey, number | "">>>;
+
 export default function PurchaseOrdersPage() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
+  const [deliveredSizes, setDeliveredSizes] = useState<DeliveredSizeMap>({});
 
   useEffect(() => {
     fetchPurchaseOrders();
@@ -62,25 +69,6 @@ export default function PurchaseOrdersPage() {
   useEffect(() => {
     filterOrders();
   }, [orders, searchTerm, statusFilter]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      // Check if click is outside any dropdown menu
-      if (!target.closest('.status-dropdown-menu') && !target.closest('.status-menu-button')) {
-        setActiveMenu(null);
-      }
-    };
-
-    if (activeMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [activeMenu]);
 
   const fetchPurchaseOrders = async () => {
     try {
@@ -93,6 +81,31 @@ export default function PurchaseOrdersPage() {
           status: order.status || "pending",
         }));
         setOrders(ordersWithStatus);
+        const nextDeliveredSizes: DeliveredSizeMap = {};
+        ordersWithStatus.forEach((order) => {
+          const orderDelivered: Record<number, Record<SizeKey, number | "">> = {};
+
+          order.items.forEach((_, itemIndex) => {
+            const savedSizes = order.deliveredSizes?.[itemIndex] || {};
+            const entry: Record<SizeKey, number | ""> = {} as Record<SizeKey, number | "">;
+
+            sizeKeys.forEach((key) => {
+              const savedValue = savedSizes[key];
+              if (typeof savedValue === "number" && savedValue > 0) {
+                entry[key] = savedValue;
+              }
+            });
+
+            if (Object.keys(entry).length > 0) {
+              orderDelivered[itemIndex] = entry;
+            }
+          });
+
+          if (Object.keys(orderDelivered).length > 0) {
+            nextDeliveredSizes[order._id] = orderDelivered;
+          }
+        });
+        setDeliveredSizes(nextDeliveredSizes);
       }
     } catch (error) {
       console.error("Error fetching purchase orders:", error);
@@ -135,22 +148,6 @@ export default function PurchaseOrdersPage() {
     return orders.reduce((sum, order) => sum + order.grandTotal, 0);
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: "pending" | "partially pending" | "completed") => {
-    try {
-      const res = await api.put(`/purchase-order/${orderId}`, { status: newStatus });
-      if (res.data && res.data.success) {
-        // Update local state
-        setOrders(orders.map((order) => 
-          order._id === orderId ? { ...order, status: newStatus } : order
-        ));
-        setActiveMenu(null);
-      }
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      alert("Failed to update order status");
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -161,11 +158,132 @@ export default function PurchaseOrdersPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "USD",
+      currency: "INR",
       minimumFractionDigits: 2,
     }).format(amount);
+  };
+
+  const getDerivedStatus = (
+    order: PurchaseOrder,
+    orderDelivered: DeliveredSizeMap[string] = {}
+  ): PurchaseOrder["status"] => {
+    let anyDelivered = false;
+    let allComplete = true;
+
+    order.items.forEach((item, itemIndex) => {
+      const deliveredByItem = orderDelivered[itemIndex] || {};
+      sizeKeys.forEach((key) => {
+        const qty = (item as Record<SizeKey, number>)[key] || 0;
+        if (qty <= 0) {
+          return;
+        }
+
+        const deliveredRaw = deliveredByItem[key];
+        const delivered = typeof deliveredRaw === "number" ? deliveredRaw : 0;
+        if (delivered > 0) {
+          anyDelivered = true;
+        }
+        if (delivered < qty) {
+          allComplete = false;
+        }
+      });
+    });
+
+    if (!anyDelivered) {
+      return "pending";
+    }
+
+    if (allComplete) {
+      return "completed";
+    }
+
+    return "partially pending";
+  };
+
+  const buildDeliveredSizesArray = (
+    order: PurchaseOrder,
+    orderDelivered: DeliveredSizeMap[string] = {}
+  ): SizeBreakdown[] => {
+    return order.items.map((_, itemIndex) => {
+      const entry: SizeBreakdown = {};
+      const deliveredByItem = orderDelivered[itemIndex] || {};
+
+      sizeKeys.forEach((key) => {
+        const value = deliveredByItem[key];
+        entry[key] = typeof value === "number" ? value : 0;
+      });
+
+      return entry;
+    });
+  };
+
+  const updatePurchaseOrderData = async (orderId: string, updateData: Partial<PurchaseOrder>) => {
+    try {
+      const res = await api.put(`/purchase-order/${orderId}`, updateData);
+      if (res.data && res.data.success) {
+        const updatedOrder: PurchaseOrder = res.data.data;
+        setOrders((prev) =>
+          prev.map((order) => (order._id === orderId ? { ...order, ...updatedOrder } : order))
+        );
+        if (selectedOrder?._id === orderId) {
+          setSelectedOrder({ ...selectedOrder, ...updatedOrder });
+        }
+      }
+    } catch (error) {
+      console.error("Error updating purchase order:", error);
+      alert("Failed to update purchase order");
+    }
+  };
+
+  const handleDeliveredChange = (
+    order: PurchaseOrder,
+    itemIndex: number,
+    sizeKey: SizeKey,
+    value: string
+  ) => {
+    const nextValue = value === "" ? "" : Math.max(0, Number(value));
+    const nextDelivered: DeliveredSizeMap = {
+      ...deliveredSizes,
+      [order._id]: {
+        ...(deliveredSizes[order._id] || {}),
+        [itemIndex]: {
+          ...((deliveredSizes[order._id] || {})[itemIndex] || {}),
+          [sizeKey]: nextValue,
+        },
+      },
+    };
+
+    setDeliveredSizes(nextDelivered);
+
+    const derivedStatus = getDerivedStatus(order, nextDelivered[order._id]);
+    const deliveredSizesArray = buildDeliveredSizesArray(order, nextDelivered[order._id]);
+    updatePurchaseOrderData(order._id, {
+      status: derivedStatus,
+      deliveredSizes: deliveredSizesArray,
+    });
+  };
+
+  const handleDeliveredKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    const currentInput = event.currentTarget;
+    const row = currentInput.closest("tr");
+    if (!row) {
+      return;
+    }
+
+    const inputs = Array.from(row.querySelectorAll<HTMLInputElement>("input[data-delivered-input]"));
+    const currentIndex = inputs.indexOf(currentInput);
+    const nextInput = inputs[currentIndex + 1];
+    if (nextInput) {
+      nextInput.focus();
+      nextInput.select();
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -287,55 +405,18 @@ export default function PurchaseOrdersPage() {
               key={order._id}
               className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 p-6 relative"
             >
-              {/* Status Badge and Menu */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">
-                    PO-{new Date(order.date).getFullYear()}-{order._id.slice(-3).toUpperCase()}
-                  </h3>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                      order.status
-                    )}`}
-                  >
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                  </span>
-                </div>
-                <div className="relative">
-                  <button
-                    onClick={() => setActiveMenu(activeMenu === order._id ? null : order._id)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors status-menu-button"
-                  >
-                    <MoreVertical className="w-5 h-5 text-gray-600" />
-                  </button>
-                  {activeMenu === order._id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10 status-dropdown-menu">
-                      <div className="py-1">
-                        <button
-                          onClick={() => updateOrderStatus(order._id, "pending")}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                        >
-                          <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-                          Pending
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order._id, "partially pending")}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                        >
-                          <span className="w-3 h-3 rounded-full bg-purple-500"></span>
-                          Partially Pending
-                        </button>
-                        <button
-                          onClick={() => updateOrderStatus(order._id, "completed")}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                        >
-                          <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                          Completed
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              {/* Status Badge */}
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-900 mb-1">
+                  PO-{new Date(order.date).getFullYear()}-{order._id.slice(-3).toUpperCase()}
+                </h3>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                    order.status
+                  )}`}
+                >
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </span>
               </div>
 
               {/* Client Info */}
@@ -457,9 +538,6 @@ export default function PurchaseOrdersPage() {
                             Total Qty
                           </th>
                           <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Unit Price
-                          </th>
-                          <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Total
                           </th>
                         </tr>
@@ -468,15 +546,15 @@ export default function PurchaseOrdersPage() {
                         {selectedOrder.items.map((item, index) => {
                           // Get sizes with quantities
                           const sizes = [
-                            { label: 'S', qty: item.s },
-                            { label: 'M', qty: item.m },
-                            { label: 'L', qty: item.l },
-                            { label: 'XL', qty: item.xl },
-                            { label: 'XXL', qty: item.xxl },
-                            { label: '3XL', qty: item.xxxl },
-                            { label: '4XL', qty: item.xxxxl },
-                            { label: '5XL', qty: item.xxxxxl },
-                            { label: '6XL', qty: item.xxxxxxl },
+                            { label: "S", key: "s", qty: item.s },
+                            { label: "M", key: "m", qty: item.m },
+                            { label: "L", key: "l", qty: item.l },
+                            { label: "XL", key: "xl", qty: item.xl },
+                            { label: "XXL", key: "xxl", qty: item.xxl },
+                            { label: "3XL", key: "xxxl", qty: item.xxxl },
+                            { label: "4XL", key: "xxxxl", qty: item.xxxxl },
+                            { label: "5XL", key: "xxxxxl", qty: item.xxxxxl },
+                            { label: "6XL", key: "xxxxxxl", qty: item.xxxxxxl },
                           ].filter(size => size.qty > 0);
 
                           return (
@@ -487,7 +565,8 @@ export default function PurchaseOrdersPage() {
                                 </div>
                               </td>
                               <td className="px-4 py-3">
-                                <div className="flex flex-wrap gap-2">
+                                <p className="text-[10px] uppercase tracking-wide text-gray-500">Ordered Qty</p>
+                                <div className="mt-1 flex flex-wrap gap-2">
                                   {sizes.map(size => (
                                     <span
                                       key={size.label}
@@ -497,9 +576,38 @@ export default function PurchaseOrdersPage() {
                                     </span>
                                   ))}
                                 </div>
+                                <p className="mt-3 text-[10px] uppercase tracking-wide text-gray-500">Delivered Qty</p>
+                                <div className="mt-1 grid grid-cols-3 sm:grid-cols-6 gap-2">
+                                  {sizes.map((size) => {
+                                    const deliveredValue =
+                                      deliveredSizes[selectedOrder._id]?.[index]?.[size.key] ?? "";
+
+                                    return (
+                                      <label key={size.label} className="flex flex-col text-[10px] text-gray-500">
+                                        {size.label}
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          inputMode="numeric"
+                                          value={deliveredValue}
+                                          onChange={(event) =>
+                                            handleDeliveredChange(
+                                              selectedOrder,
+                                              index,
+                                              size.key as SizeKey,
+                                              event.target.value
+                                            )
+                                          }
+                                          onKeyDown={handleDeliveredKeyDown}
+                                          data-delivered-input
+                                          className="mt-1 w-full rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        />
+                                      </label>
+                                    );
+                                  })}
+                                </div>
                               </td>
                               <td className="px-4 py-3 text-center font-medium text-gray-900">{item.qty}</td>
-                              <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(item.rate)}</td>
                               <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(item.amt)}</td>
                             </tr>
                           );

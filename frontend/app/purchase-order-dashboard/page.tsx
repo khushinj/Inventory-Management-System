@@ -545,7 +545,7 @@ export default function PurchaseOrdersPage() {
                       <tbody className="divide-y divide-gray-200">
                         {selectedOrder.items.map((item, index) => {
                           // Get sizes with quantities
-                          const sizes: Array<{ label: string; key: SizeKey; qty: number }> = [
+                          const sizes = [
                             { label: "S", key: "s", qty: item.s },
                             { label: "M", key: "m", qty: item.m },
                             { label: "L", key: "l", qty: item.l },
@@ -555,7 +555,8 @@ export default function PurchaseOrdersPage() {
                             { label: "4XL", key: "xxxxl", qty: item.xxxxl },
                             { label: "5XL", key: "xxxxxl", qty: item.xxxxxl },
                             { label: "6XL", key: "xxxxxxl", qty: item.xxxxxxl },
-                          ].filter(size => size.qty > 0);
+                          ] as const satisfies ReadonlyArray<{ label: string; key: SizeKey; qty: number }>;
+                          const sizeList = sizes.filter((size) => size.qty > 0);
 
                           return (
                             <tr key={index} className="hover:bg-gray-50">
@@ -567,7 +568,7 @@ export default function PurchaseOrdersPage() {
                               <td className="px-4 py-3">
                                 <p className="text-[10px] uppercase tracking-wide text-gray-500">Ordered Qty</p>
                                 <div className="mt-1 flex flex-wrap gap-2">
-                                  {sizes.map(size => (
+                                  {sizeList.map(size => (
                                     <span
                                       key={size.label}
                                       className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium"
@@ -578,7 +579,7 @@ export default function PurchaseOrdersPage() {
                                 </div>
                                 <p className="mt-3 text-[10px] uppercase tracking-wide text-gray-500">Delivered Qty</p>
                                 <div className="mt-1 grid grid-cols-3 sm:grid-cols-6 gap-2">
-                                  {sizes.map((size) => {
+                                  {sizeList.map((size) => {
                                     const deliveredValue =
                                       deliveredSizes[selectedOrder._id]?.[index]?.[size.key] ?? "";
 

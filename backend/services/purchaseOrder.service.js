@@ -97,6 +97,8 @@ export async function getPurchaseOrderById(id) {
  */
 export async function updatePurchaseOrder(id, updateData) {
   try {
+    console.log("Updating PO with data:", JSON.stringify(updateData, null, 2));
+    
     // First delete existing dispatch entries for this PO
     await deleteDispatchEntriesForPO(id);
 
@@ -111,6 +113,8 @@ export async function updatePurchaseOrder(id, updateData) {
         message: "Purchase order not found",
       };
     }
+
+    console.log("Updated PO deliveredSizes:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
 
     // Create new dispatch entries with updated data
     await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
@@ -224,10 +228,16 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
       'xxxxxxl': '6XL'
     };
 
+    console.log(`Creating dispatch entries for PO ${purchaseOrder._id}`);
+    console.log("Delivered override:", JSON.stringify(deliveredOverride, null, 2));
+    console.log("PO deliveredSizes from DB:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
+
     // Convert delivered sizes in the purchase order to dispatch transactions
     for (const [index, item] of purchaseOrder.items.entries()) {
       const sizes = ['s', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl', 'xxxxxl', 'xxxxxxl'];
+      // Use delivered override first, then fall back to deliveredSizes from DB - NEVER use ordered quantities
       const delivered = deliveredOverride?.[index] || purchaseOrder.deliveredSizes?.[index] || {};
+      console.log(`Item ${index} (${item.designNumber}-${item.color}) delivered:`, JSON.stringify(delivered));
       
       for (const size of sizes) {
         const qty = delivered[size] || 0;

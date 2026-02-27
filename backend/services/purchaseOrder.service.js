@@ -99,7 +99,7 @@ export async function updatePurchaseOrder(id, updateData) {
   try {
     // First delete existing dispatch entries for this PO
     await deleteDispatchEntriesForPO(id);
-    
+
     const purchaseOrder = await PurchaseOrder.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
@@ -113,7 +113,7 @@ export async function updatePurchaseOrder(id, updateData) {
     }
 
     // Create new dispatch entries with updated data
-    await createDispatchEntriesFromPO(purchaseOrder);
+    await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
 
     return {
       success: true,
@@ -203,7 +203,7 @@ export async function getPurchaseOrderStats(filters = {}) {
 /**
  * Helper function to create dispatch entries from purchase order
  */
-async function createDispatchEntriesFromPO(purchaseOrder) {
+async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = null) {
   try {
     const DispatchModel = getTransactionModel("warehouse", "domestic", "dispatch");
     const dispatchEntries = [];
@@ -227,7 +227,7 @@ async function createDispatchEntriesFromPO(purchaseOrder) {
     // Convert delivered sizes in the purchase order to dispatch transactions
     for (const [index, item] of purchaseOrder.items.entries()) {
       const sizes = ['s', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl', 'xxxxxl', 'xxxxxxl'];
-      const delivered = purchaseOrder.deliveredSizes?.[index] || {};
+      const delivered = deliveredOverride?.[index] || purchaseOrder.deliveredSizes?.[index] || {};
       
       for (const size of sizes) {
         const qty = delivered[size] || 0;

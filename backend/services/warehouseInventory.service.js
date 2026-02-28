@@ -1,31 +1,9 @@
 import { getTransactionModel } from "../models/Transaction.js";
-
-/**
- * Normalize design number - removes all spaces for consistency
- * This ensures "NGW - 351236 A" and "NGW - 351236A" are treated as the same
- */
-const normalizeDesignNumber = (dno) => {
-  if (!dno) return "N/A";
-  // Remove all spaces, trim, and convert to uppercase
-  return dno.toString().trim().replace(/\s+/g, "").toUpperCase();
-};
-
-/**
- * Normalize color
- */
-const normalizeColor = (color) => {
-  if (!color) return "N/A";
-  // Remove extra spaces and convert to uppercase
-  return color.toString().trim().replace(/\s+/g, " ").toUpperCase();
-};
-
-/**
- * Normalize size
- */
-const normalizeSize = (size) => {
-  if (!size) return "N/A";
-  return size.toString().trim().toUpperCase();
-};
+import {
+  normalizeDesignNumber,
+  normalizeColor,
+  normalizeSize
+} from "../utils/normalization.js";
 
 /**
  * Calculate inventory for a specific warehouse type (export/online/domestic)

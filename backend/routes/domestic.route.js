@@ -1,4 +1,5 @@
 import express from "express";
+import { normalizeDesignNumberAll } from "../middleware/normalizeDesignNumber.js";
 import {
   createDomesticEntry,
   createDomesticEntriesBulk,
@@ -9,6 +10,9 @@ import {
 import { autoRecalculateInventory } from "../middleware/autoRecalculateInventory.js";
 
 const router = express.Router();
+
+// Apply normalization middleware to all routes
+router.use(normalizeDesignNumberAll);
 
 router.post("/", autoRecalculateInventory, createDomesticEntry);
 router.post("/bulk", autoRecalculateInventory, createDomesticEntriesBulk);

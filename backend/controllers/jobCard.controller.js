@@ -1,5 +1,6 @@
 import JobCard from "../models/JobCard.js";
 import { uploadToCloudinary, deleteFromCloudinary, extractPublicId, isBase64Image } from "../utils/cloudinaryUpload.js";
+import { normalizeDesignNumber } from "../utils/normalization.js";
 
 // Create a new job card entry
 export const createJobCard = async (req, res) => {
@@ -158,9 +159,12 @@ export const searchJobCards = async (req, res) => {
       return res.status(400).json({ error: "Search query is required" });
     }
     
+    // Normalize the design number for comparison
+    const normalizedQuery = normalizeDesignNumber(query);
+    
     const jobCards = await JobCard.find({
       $or: [
-        { designNumber: { $regex: query, $options: "i" } },
+        { designNumber: { $regex: normalizedQuery, $options: "i" } },
         { brand: { $regex: query, $options: "i" } },
         { fabric: { $regex: query, $options: "i" } },
       ],

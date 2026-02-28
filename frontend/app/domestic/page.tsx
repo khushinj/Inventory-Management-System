@@ -213,7 +213,8 @@ function DomesticDashboard() {
         }
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        grouped[key].sizes[normalizedSize] = entry.qty;
+        // SUM quantities if duplicate entries exist (don't overwrite)
+        grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
       }
     });
     
@@ -236,7 +237,8 @@ function DomesticDashboard() {
         }
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        grouped[key].sizes[normalizedSize] = entry.qty;
+        // SUM quantities if duplicate entries exist (don't overwrite)
+        grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
       }
     });
     
@@ -259,7 +261,8 @@ function DomesticDashboard() {
         }
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        grouped[key].sizes[normalizedSize] = entry.qty;
+        // SUM quantities if duplicate entries exist (don't overwrite)
+        grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
       }
     });
     
@@ -282,7 +285,8 @@ function DomesticDashboard() {
         }
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        grouped[key].sizes[normalizedSize] = entry.qty;
+        // SUM quantities if duplicate entries exist (don't overwrite)
+        grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
       }
     });
     
@@ -304,12 +308,17 @@ function DomesticDashboard() {
     });
 
   // Filter grouped rows (sample, production, purchase, dispatch) by search term
+  // Limit to last 30 entries to reduce frontend load
   const filterGroupedRows = (rows: SampleRow[]) => {
-    if (!searchTerm) return rows;
-    return rows.filter((row) => 
-      row.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      row.color?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = rows;
+    if (searchTerm) {
+      filtered = rows.filter((row) => 
+        row.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.color?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    // Show only last 30 entries
+    return filtered.slice(0, 30);
   };
 
   const filteredSampleRows = filterGroupedRows(sampleRows);

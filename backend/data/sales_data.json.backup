@@ -3,24 +3,85 @@
     "dno": "AW-95500",
     "color": "MIX COLOUR",
     "sizes": {
-      "M": 5,
-      "L": 2,
-      "XL": 3,
-      "XXL": 1,
-      "3XL": 2
+      "M": 1
     },
-    "totalQty": 13,
+    "totalQty": 1,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95500",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
     "type": "sales"
   },
   {
     "dno": "AW-95504",
     "color": "MIX COLOUR",
     "sizes": {
-      "M": 7,
-      "L": 1,
+      "M": 7
+    },
+    "totalQty": 7,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95504",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95504",
+    "color": "MIX COLOUR",
+    "sizes": {
       "XL": 1,
-      "XXL": 2,
+      "XXL": 1
+    },
+    "totalQty": 2,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95504",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "XXL": 1,
       "3XL": 1
+    },
+    "totalQty": 2,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95505",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 2,
+      "XL": 1,
+      "3XL": 1
+    },
+    "totalQty": 4,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95505",
+    "color": "MIX",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95505",
+    "color": "MIX",
+    "sizes": {
+      "M": 8,
+      "L": 3,
+      "XL": 1
     },
     "totalQty": 12,
     "type": "sales"
@@ -29,22 +90,9 @@
     "dno": "AW-95505",
     "color": "MIX COLOUR",
     "sizes": {
-      "M": 3,
-      "XL": 1,
-      "3XL": 1
+      "M": 1
     },
-    "totalQty": 5,
-    "type": "sales"
-  },
-  {
-    "dno": "AW-95505",
-    "color": "MIX",
-    "sizes": {
-      "M": 9,
-      "L": 3,
-      "XL": 1
-    },
-    "totalQty": 13,
+    "totalQty": 1,
     "type": "sales"
   },
   {
@@ -52,26 +100,20 @@
     "color": "MIX",
     "sizes": {
       "S": 2,
-      "M": 10,
-      "L": 4,
-      "XXL": 1,
-      "XL": 1
+      "M": 7,
+      "L": 3,
+      "XXL": 1
     },
-    "totalQty": 18,
+    "totalQty": 13,
     "type": "sales"
   },
   {
     "dno": "AW-95503",
     "color": "MIX COLOUR",
     "sizes": {
-      "M": 8,
-      "L": 7,
-      "XXL": 5,
-      "S": 3,
-      "XL": 4,
-      "3XL": 1
+      "M": 1
     },
-    "totalQty": 28,
+    "totalQty": 1,
     "type": "sales"
   },
   {
@@ -82,6 +124,41 @@
       "XL": 1
     },
     "totalQty": 2,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95503",
+    "color": "MIX",
+    "sizes": {
+      "M": 3,
+      "L": 1,
+      "XL": 1
+    },
+    "totalQty": 5,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95503",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 2,
+      "L": 2,
+      "XXL": 3
+    },
+    "totalQty": 7,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95503",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "S": 1,
+      "M": 4,
+      "L": 3,
+      "XL": 3,
+      "XXL": 1
+    },
+    "totalQty": 12,
     "type": "sales"
   },
   {
@@ -157,6 +234,19 @@
     "type": "sales"
   },
   {
+    "dno": "AW-95503",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "S": 2,
+      "L": 1,
+      "XL": 1,
+      "XXL": 1,
+      "3XL": 1
+    },
+    "totalQty": 6,
+    "type": "sales"
+  },
+  {
     "dno": "AW-95501",
     "color": "MIX",
     "sizes": {
@@ -181,9 +271,9 @@
     "color": "MIX COLOUR",
     "sizes": {
       "S": 3,
-      "M": 3
+      "M": 2
     },
-    "totalQty": 6,
+    "totalQty": 5,
     "type": "sales"
   },
   {
@@ -198,6 +288,15 @@
   {
     "dno": "AW-95501",
     "color": "BLUE AOP",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95501",
+    "color": "MIX COLOUR",
     "sizes": {
       "M": 1
     },
@@ -244,18 +343,36 @@
     "dno": "AW-95501",
     "color": "PEACH",
     "sizes": {
-      "M": 4
+      "M": 2
     },
-    "totalQty": 4,
+    "totalQty": 2,
     "type": "sales"
   },
   {
     "dno": "AW-95501",
     "color": "GREY AOP",
     "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95501",
+    "color": "PEACH",
+    "sizes": {
       "M": 2
     },
     "totalQty": 2,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95501",
+    "color": "GREY AOP",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
     "type": "sales"
   },
   {
@@ -308,12 +425,9 @@
     "dno": "AW-95502",
     "color": "MIX COLOUR",
     "sizes": {
-      "M": 5,
-      "XL": 25,
-      "XXL": 10,
-      "L": 15
+      "M": 1
     },
-    "totalQty": 55,
+    "totalQty": 1,
     "type": "sales"
   },
   {
@@ -329,11 +443,53 @@
   },
   {
     "dno": "AW-95502",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 4,
+      "XL": 19,
+      "XXL": 1
+    },
+    "totalQty": 24,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95502",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "L": 6,
+      "XL": 5,
+      "XXL": 8
+    },
+    "totalQty": 19,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95502",
     "color": "BEIGE",
     "sizes": {
       "L": 1
     },
     "totalQty": 1,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95502",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "L": 2,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95502",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "L": 7
+    },
+    "totalQty": 7,
     "type": "sales"
   },
   {
@@ -356,6 +512,26 @@
   },
   {
     "dno": "AW-95500",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 2
+    },
+    "totalQty": 2,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95500",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "L": 2,
+      "XL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95500",
     "color": "MIX AOP",
     "sizes": {
       "S": 2,
@@ -366,15 +542,52 @@
     "type": "sales"
   },
   {
+    "dno": "AW-95500",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 1,
+      "XL": 2,
+      "3XL": 2
+    },
+    "totalQty": 5,
+    "type": "sales"
+  },
+  {
     "dno": "AW-95508",
     "color": "MIX COLOUR",
     "sizes": {
-      "M": 22,
-      "L": 8,
-      "XXL": 2,
-      "S": 1
+      "M": 14,
+      "L": 8
     },
-    "totalQty": 33,
+    "totalQty": 22,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95508",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "XXL": 2
+    },
+    "totalQty": 2,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95508",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "S": 1,
+      "M": 5
+    },
+    "totalQty": 6,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95508",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 3
+    },
+    "totalQty": 3,
     "type": "sales"
   },
   {
@@ -417,6 +630,16 @@
     "type": "sales"
   },
   {
+    "dno": "AW-95503",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 1,
+      "L": 1
+    },
+    "totalQty": 2,
+    "type": "sales"
+  },
+  {
     "dno": "AW-95511",
     "color": "MIX AOP",
     "sizes": {
@@ -441,12 +664,22 @@
     "dno": "AW-95511",
     "color": "MIX COLOUR",
     "sizes": {
-      "M": 4,
-      "L": 5,
-      "XXL": 1,
+      "M": 1,
+      "L": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "sales"
+  },
+  {
+    "dno": "AW-95511",
+    "color": "MIX COLOUR",
+    "sizes": {
+      "M": 3,
+      "L": 4,
       "XL": 15
     },
-    "totalQty": 25,
+    "totalQty": 22,
     "type": "sales"
   },
   {
@@ -475,11 +708,20 @@
     "dno": "A75005",
     "color": "BLACK",
     "sizes": {
-      "M": 3,
+      "M": 2,
       "XL": 1,
       "XXL": 2
     },
-    "totalQty": 6,
+    "totalQty": 5,
+    "type": "sales"
+  },
+  {
+    "dno": "A75005",
+    "color": "BLACK",
+    "sizes": {
+      "M": 1
+    },
+    "totalQty": 1,
     "type": "sales"
   },
   {

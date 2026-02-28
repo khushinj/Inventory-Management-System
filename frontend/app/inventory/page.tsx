@@ -97,7 +97,7 @@ export default function InventoryPage() {
 
       return matchesSearch && matchesFabric && matchesMrp;
     })
-    .slice(0,30);
+    .slice(0,100);
 
   return (
     <div className="min-h-screen bg-gray-100">

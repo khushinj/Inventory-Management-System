@@ -151,7 +151,8 @@ function ShopDashboard() {
 
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        grouped[key].sizes[normalizedSize] = entry.qty;
+        // SUM quantities if duplicate entries exist (don't overwrite)
+        grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
 
         if (entry.date) {
           const currentDate = grouped[key].date;

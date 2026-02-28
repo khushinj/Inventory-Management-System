@@ -173,7 +173,8 @@ function OnlineDashboard() {
         }
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        grouped[key].sizes[normalizedSize] = entry.qty;
+        // SUM quantities if duplicate entries exist (don't overwrite)
+        grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
       }
     });
     
@@ -197,7 +198,8 @@ function OnlineDashboard() {
         }
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        grouped[key].sizes[normalizedSize] = entry.qty;
+        // SUM quantities if duplicate entries exist (don't overwrite)
+        grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
       }
     });
     
@@ -216,8 +218,23 @@ function OnlineDashboard() {
         entry.formType === selectedFormType;
 
       return matchesSearch && matchesFormType;
-    })
-    .slice(0,30);
+    });
+
+  // Filter and limit grouped rows (transfer, purchase) to last 30 entries to reduce frontend load
+  const filterGroupedRows = (rows: SampleRow[]) => {
+    let filtered = rows;
+    if (searchTerm) {
+      filtered = rows.filter((row) => 
+        row.dno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        row.color?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    // Show only last 30 entries
+    return filtered.slice(0, 30);
+  };
+
+  const filteredTransferRows = filterGroupedRows(transferRows);
+  const filteredPurchaseRows = filterGroupedRows(purchaseRows);
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
@@ -932,7 +949,7 @@ function OnlineDashboard() {
                       </td>
                     </tr>
                   )}
-                  {purchaseRows.map((row, idx) => {
+                  {filteredPurchaseRows.map((row, idx) => {
                     const rowKey = `${row.dno}_${row.color}`;
                     const isEditing = editingPurchaseRow === rowKey;
                     
@@ -1001,7 +1018,7 @@ function OnlineDashboard() {
                   })}
                 </tbody>
               </table>
-              {purchaseRows.length === 0 && !isCreatingPurchase && (
+              {filteredPurchaseRows.length === 0 && !isCreatingPurchase && (
                 <div className="text-center py-12 text-gray-500">
                   No purchase transactions found.
                 </div>
@@ -1084,7 +1101,7 @@ function OnlineDashboard() {
                       </td>
                     </tr>
                   )}
-                  {transferRows.map((row, idx) => {
+                  {filteredTransferRows.map((row, idx) => {
                     const rowKey = `${row.dno}_${row.color}`;
                     const isEditing = editingTransferRow === rowKey;
                     
@@ -1153,7 +1170,7 @@ function OnlineDashboard() {
                   })}
                 </tbody>
               </table>
-              {transferRows.length === 0 && !isCreatingTransfer && (
+              {filteredTransferRows.length === 0 && !isCreatingTransfer && (
                 <div className="text-center py-12 text-gray-500">
                   No transfer transactions found.
                 </div>

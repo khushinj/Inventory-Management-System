@@ -1,4 +1,5 @@
 import express from 'express';
+import { normalizeDesignNumberAll } from '../middleware/normalizeDesignNumber.js';
 import {
   saveDailyReport,
   getAllDailyReports,
@@ -16,6 +17,9 @@ import {
 } from '../middleware/validateDailyReport.js';
 
 const router = express.Router();
+
+// Apply normalization middleware to all routes
+router.use(normalizeDesignNumberAll);
 
 // POST - Create or update daily report
 router.post('/', validateDailyReport, saveDailyReport);

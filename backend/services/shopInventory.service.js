@@ -2,6 +2,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getTransactionModel } from '../models/Transaction.js';
+import { 
+  normalizeDesignNumber, 
+  normalizeColor, 
+  normalizeSize,
+  createInventoryKey 
+} from '../utils/normalization.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,30 +18,6 @@ class ShopInventoryService {
     this.returnDataPath = path.join(__dirname, '../data/return_data.json');
     this.salesDataPath = path.join(__dirname, '../data/sales_data.json');
     this.shopInventoryPath = path.join(__dirname, '../../shop_inventory.json');
-  }
-
-  // Normalize design number (remove all spaces for consistency and handle special cases)
-  normalizeDesignNumber(dno) {
-    if (!dno) return '';
-    // Remove all spaces, trim, and convert to lowercase
-    let normalized = dno.toLowerCase().trim().replace(/\s+/g, '');
-    // Remove leading 'a' if it starts with 'aaw-' to make it 'aw-'
-    if (normalized.startsWith('aaw-')) {
-      return normalized.substring(1); // Remove first 'a'
-    }
-    return normalized;
-  }
-
-  // Normalize color
-  normalizeColor(color) {
-    if (!color) return '';
-    return color.toUpperCase().trim();
-  }
-
-  // Normalize size
-  normalizeSize(size) {
-    if (!size) return '';
-    return size.toUpperCase().trim();
   }
 
   // Load JSON file
@@ -73,9 +55,9 @@ class ShopInventoryService {
       const grouped = {};
       
       transactions.forEach(txn => {
-        const dno = this.normalizeDesignNumber(txn.dno);
-        const color = this.normalizeColor(txn.color);
-        const size = this.normalizeSize(txn.size);
+        const dno = normalizeDesignNumber(txn.dno);
+        const color = normalizeColor(txn.color);
+        const size = normalizeSize(txn.size);
         const qty = Number(txn.qty) || 0;
         
         // Log return transactions specifically
@@ -152,12 +134,12 @@ class ShopInventoryService {
 
       // Process import data (add to inventory)
       for (const item of importData) {
-        const dno = this.normalizeDesignNumber(item.dno);
-        const color = this.normalizeColor(item.color);
+        const dno = normalizeDesignNumber(item.dno);
+        const color = normalizeColor(item.color);
         
         if (item.sizes && typeof item.sizes === 'object') {
           for (const [size, qty] of Object.entries(item.sizes)) {
-            const normalizedSize = this.normalizeSize(size);
+            const normalizedSize = normalizeSize(size);
             const key = `${dno}|${color}|${normalizedSize}`;
             
             if (!inventoryMap.has(key)) {
@@ -182,12 +164,12 @@ class ShopInventoryService {
       // Process return data (add to inventory)
       let returnProcessedCount = 0;
       for (const item of returnData) {
-        const dno = this.normalizeDesignNumber(item.dno);
-        const color = this.normalizeColor(item.color);
+        const dno = normalizeDesignNumber(item.dno);
+        const color = normalizeColor(item.color);
         
         if (item.sizes && typeof item.sizes === 'object') {
           for (const [size, qty] of Object.entries(item.sizes)) {
-            const normalizedSize = this.normalizeSize(size);
+            const normalizedSize = normalizeSize(size);
             const key = `${dno}|${color}|${normalizedSize}`;
             
             if (!inventoryMap.has(key)) {
@@ -221,12 +203,12 @@ class ShopInventoryService {
 
       // Process sales data (subtract from inventory)
       for (const item of salesData) {
-        const dno = this.normalizeDesignNumber(item.dno);
-        const color = this.normalizeColor(item.color);
+        const dno = normalizeDesignNumber(item.dno);
+        const color = normalizeColor(item.color);
         
         if (item.sizes && typeof item.sizes === 'object') {
           for (const [size, qty] of Object.entries(item.sizes)) {
-            const normalizedSize = this.normalizeSize(size);
+            const normalizedSize = normalizeSize(size);
             const key = `${dno}|${color}|${normalizedSize}`;
             
             if (!inventoryMap.has(key)) {
@@ -318,21 +300,21 @@ class ShopInventoryService {
 
       // Apply filters
       if (filters.designNumber) {
-        const searchTerm = this.normalizeDesignNumber(filters.designNumber);
+        const searchTerm = normalizeDesignNumber(filters.designNumber);
         inventory = inventory.filter(item => 
           item.designNumber.includes(searchTerm)
         );
       }
 
       if (filters.color) {
-        const searchColor = this.normalizeColor(filters.color);
+        const searchColor = normalizeColor(filters.color);
         inventory = inventory.filter(item => 
           item.color.includes(searchColor)
         );
       }
 
       if (filters.size) {
-        const searchSize = this.normalizeSize(filters.size);
+        const searchSize = normalizeSize(filters.size);
         inventory = inventory.filter(item => 
           item.size === searchSize
         );
@@ -362,7 +344,7 @@ class ShopInventoryService {
   async getInventoryGrouped(designNumber) {
     try {
       const inventory = await this.loadJsonFile(this.shopInventoryPath);
-      const normalizedDN = this.normalizeDesignNumber(designNumber);
+      const normalizedDN = normalizeDesignNumber(designNumber);
       
       // Filter by design number
       const items = inventory.filter(item => 

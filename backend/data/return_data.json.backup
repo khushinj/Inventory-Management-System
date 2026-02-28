@@ -1476,10 +1476,18 @@
     "dno": "MDT-1010",
     "color": "COOTTECH BLUE",
     "sizes": {
-      "S": 1,
+      "S": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1010",
+    "color": "COOTTECH BLUE",
+    "sizes": {
       "3XL": 1
     },
-    "totalQty": 2,
+    "totalQty": 1,
     "type": "return"
   },
   {
@@ -1488,11 +1496,19 @@
     "sizes": {
       "M": 1,
       "L": 1,
-      "XXL": 2,
+      "XXL": 2
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1012",
+    "color": "MID BATA",
+    "sizes": {
       "4XL": 1,
       "5XL": 1
     },
-    "totalQty": 6,
+    "totalQty": 2,
     "type": "return"
   },
   {
@@ -1512,22 +1528,38 @@
       "S": 1,
       "M": 1,
       "XL": 1,
-      "XXL": 1,
+      "XXL": 1
+    },
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1005",
+    "color": "GREY BLAST",
+    "sizes": {
       "3XL": 1,
       "4XL": 1,
       "5XL": 1
     },
-    "totalQty": 7,
+    "totalQty": 3,
     "type": "return"
   },
   {
     "dno": "MDT-1005",
     "color": "INDIGO BLAST",
     "sizes": {
-      "XXL": 1,
+      "XXL": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1005",
+    "color": "INDIGO BLAST",
+    "sizes": {
       "4XL": 1
     },
-    "totalQty": 2,
+    "totalQty": 1,
     "type": "return"
   },
   {
@@ -1538,12 +1570,20 @@
       "M": 1,
       "L": 1,
       "XL": 1,
-      "XXL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "MDT-1009",
+    "color": "CLASSIC BLUE",
+    "sizes": {
       "3XL": 1,
       "4XL": 1,
       "5XL": 1
     },
-    "totalQty": 8,
+    "totalQty": 3,
     "type": "return"
   },
   {
@@ -1997,10 +2037,10 @@
     "dno": "SMIX-2678",
     "color": "MIX",
     "sizes": {
-      "M": 36,
-      "L": 7
+      "M": 16,
+      "L": 1
     },
-    "totalQty": 43,
+    "totalQty": 17,
     "type": "return"
   },
   {
@@ -2011,6 +2051,16 @@
       "L": 5
     },
     "totalQty": 16,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2678",
+    "color": "MIX",
+    "sizes": {
+      "M": 20,
+      "L": 6
+    },
+    "totalQty": 26,
     "type": "return"
   },
   {
@@ -2278,14 +2328,23 @@
     "dno": "SMIX-2611",
     "color": "GREY",
     "sizes": {
-      "L": 3
+      "L": 2
     },
-    "totalQty": 3,
+    "totalQty": 2,
     "type": "return"
   },
   {
     "dno": "SMIX-2611",
     "color": "BURDUNDY",
+    "sizes": {
+      "L": 1
+    },
+    "totalQty": 1,
+    "type": "return"
+  },
+  {
+    "dno": "SMIX-2611",
+    "color": "GREY",
     "sizes": {
       "L": 1
     },
@@ -3038,12 +3097,9 @@
     "sizes": {
       "M": 1,
       "L": 1,
-      "XXL": 1,
-      "3XL": 1,
-      "4XL": 1,
-      "5XL": 1
+      "XXL": 1
     },
-    "totalQty": 6,
+    "totalQty": 3,
     "type": "return"
   },
   {
@@ -3065,12 +3121,31 @@
       "M": 1,
       "L": 1,
       "XL": 2,
-      "XXL": 1,
+      "XXL": 1
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "INDIGO MELANGE",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19841",
+    "color": "ANTHRA MELANGE",
+    "sizes": {
       "3XL": 2,
       "4XL": 1,
       "5XL": 1
     },
-    "totalQty": 9,
+    "totalQty": 4,
     "type": "return"
   },
   {
@@ -3172,12 +3247,9 @@
       "M": 1,
       "L": 1,
       "XL": 1,
-      "XXL": 1,
-      "3XL": 1,
-      "4XL": 1,
-      "5XL": 1
+      "XXL": 1
     },
-    "totalQty": 7,
+    "totalQty": 4,
     "type": "return"
   },
   {
@@ -3186,11 +3258,9 @@
     "sizes": {
       "M": 2,
       "XL": 2,
-      "XXL": 2,
-      "4XL": 1,
-      "5XL": 1
+      "XXL": 2
     },
-    "totalQty": 8,
+    "totalQty": 6,
     "type": "return"
   },
   {
@@ -3200,12 +3270,9 @@
       "M": 1,
       "L": 1,
       "XL": 1,
-      "XXL": 1,
-      "3XL": 1,
-      "4XL": 1,
-      "5XL": 1
+      "XXL": 1
     },
-    "totalQty": 7,
+    "totalQty": 4,
     "type": "return"
   },
   {
@@ -3215,11 +3282,9 @@
       "M": 1,
       "L": 1,
       "XL": 1,
-      "XXL": 1,
-      "3XL": 1,
-      "5XL": 1
+      "XXL": 1
     },
-    "totalQty": 6,
+    "totalQty": 4,
     "type": "return"
   },
   {
@@ -3228,12 +3293,62 @@
     "sizes": {
       "L": 1,
       "XL": 1,
-      "XXL": 1,
+      "XXL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "OLIVE GREY",
+    "sizes": {
+      "3XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "OLIVE",
+    "sizes": {
       "3XL": 2,
       "4XL": 1,
       "5XL": 1
     },
-    "totalQty": 7,
+    "totalQty": 4,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "BLACK",
+    "sizes": {
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 2,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "BRIGHT INDIGO",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19853",
+    "color": "NAVY",
+    "sizes": {
+      "3XL": 1,
+      "4XL": 1,
+      "5XL": 1
+    },
+    "totalQty": 3,
     "type": "return"
   },
   {
@@ -3397,23 +3512,18 @@
     "dno": "NG-19403",
     "color": "WINE",
     "sizes": {
-      "M": 1,
-      "L": 1,
-      "XL": 2,
-      "XXL": 2
+      "M": 1
     },
-    "totalQty": 6,
+    "totalQty": 1,
     "type": "return"
   },
   {
     "dno": "NG-19403",
     "color": "GREY MELANGE",
     "sizes": {
-      "M": 2,
-      "L": 2,
-      "XL": 2
+      "M": 1
     },
-    "totalQty": 6,
+    "totalQty": 1,
     "type": "return"
   },
   {
@@ -3439,6 +3549,17 @@
   },
   {
     "dno": "NG-19403",
+    "color": "GREY MELANGE",
+    "sizes": {
+      "M": 1,
+      "L": 2,
+      "XL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19403",
     "color": "INDIGO",
     "sizes": {
       "L": 2,
@@ -3449,15 +3570,23 @@
     "type": "return"
   },
   {
+    "dno": "NG-19403",
+    "color": "WINE",
+    "sizes": {
+      "L": 1,
+      "XL": 2,
+      "XXL": 2
+    },
+    "totalQty": 5,
+    "type": "return"
+  },
+  {
     "dno": "NG-19402P",
     "color": "NAVY",
     "sizes": {
-      "XL": 2,
-      "3XL": 2,
-      "4XL": 1,
-      "5XL": 2
+      "XL": 2
     },
-    "totalQty": 7,
+    "totalQty": 2,
     "type": "return"
   },
   {
@@ -3469,6 +3598,17 @@
       "5XL": 1
     },
     "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19402P",
+    "color": "NAVY",
+    "sizes": {
+      "3XL": 2,
+      "4XL": 1,
+      "5XL": 2
+    },
+    "totalQty": 5,
     "type": "return"
   },
   {
@@ -3504,10 +3644,10 @@
     "dno": "NG-19405P",
     "color": "BLACK",
     "sizes": {
-      "3XL": 3,
+      "3XL": 2,
       "4XL": 2
     },
-    "totalQty": 5,
+    "totalQty": 4,
     "type": "return"
   },
   {
@@ -3519,6 +3659,15 @@
       "5XL": 1
     },
     "totalQty": 3,
+    "type": "return"
+  },
+  {
+    "dno": "NG-19405P",
+    "color": "BLACK",
+    "sizes": {
+      "3XL": 1
+    },
+    "totalQty": 1,
     "type": "return"
   },
   {

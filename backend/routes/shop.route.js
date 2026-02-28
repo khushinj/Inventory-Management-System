@@ -1,8 +1,12 @@
 import express from "express";
 import { createShopEntry, getShopEntries, updateShopEntry, deleteShopEntry } from "../controllers/shop.controller.js";
 import { autoRecalculateInventory } from "../middleware/autoRecalculateInventory.js";
+import { normalizeDesignNumberAll } from "../middleware/normalizeDesignNumber.js";
 
 const router = express.Router();
+
+// Apply normalization middleware to all routes
+router.use(normalizeDesignNumberAll);
 
 // Apply auto-recalculate middleware to all write operations
 router.post("/", autoRecalculateInventory, createShopEntry);

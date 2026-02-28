@@ -9,7 +9,7 @@ const sizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxx
 export async function createPurchaseOrder(orderData) {
   try {
     console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
-    
+
     // Initialize deliveredSizes with explicit zeros for all sizes to prevent auto-population
     // This ensures dispatch entries are NEVER created on PO creation
     orderData.deliveredSizes = orderData.items?.map(() => {
@@ -19,15 +19,15 @@ export async function createPurchaseOrder(orderData) {
       });
       return explicitZeros;
     }) || [];
-    
+
     console.log("Initializing deliveredSizes with explicit zeros:", JSON.stringify(orderData.deliveredSizes, null, 2));
-    
+
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
-    
+
     // DO NOT create dispatch entries on PO creation - only when delivered qty is entered
     console.log("✓ Purchase order created successfully - no dispatch entries created");
-    
+
     return {
       success: true,
       data: purchaseOrder,
@@ -183,7 +183,7 @@ export async function deletePurchaseOrder(id) {
   try {
     // First delete associated dispatch entries
     await deleteDispatchEntriesForPO(id);
-    
+
     const purchaseOrder = await PurchaseOrder.findByIdAndDelete(id);
 
     if (!purchaseOrder) {
@@ -278,10 +278,10 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
     console.log("\n========================================");
     console.log(`=== CREATE DISPATCH ENTRIES START for PO ${purchaseOrder._id} ===`);
     console.log("========================================");
-    
+
     console.log("\n📊 DELIVERED OVERRIDE DATA RECEIVED:");
     console.log(JSON.stringify(deliveredOverride, null, 2));
-    
+
     console.log("\n📦 PURCHASE ORDER ITEMS (for reference only - should NOT be used):");
     purchaseOrder.items.forEach((item, idx) => {
       const sizeQtys = {};
@@ -309,62 +309,64 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
     }
 
     console.log("\n📝 BUILDING DISPATCH ENTRIES:\n");
-    
+
     // IMPORTANT: Convert delivered sizes from deliveredOverride parameter ONLY
     // Never use purchaseOrder.items[index][size] which contains ORDERED quantities
-    for (const [index, item] of purchaseOrder.items.entries()) {
-      const delivered = deliveredOverride[index];
-      
-      // Safety check: if no delivered object for this item, skip it
-      if (!delivered || typeof delivered !== 'object') {
-        console.log(`Item ${index} (${item.designNumber}-${item.color}): ❌ No delivered data provided, SKIPPING`);
-        console.log(`  Delivered value type: ${typeof delivered}, value: ${delivered}`);
+    for (const item of purchaseOrder.items) {
+      const delivered = deliveredOverride.find(d =>
+        d.designNumber === item.designNumber &&
+        d.color === item.color
+      );
+
+      if (!delivered) {
+        console.log(`❌ No delivered data found for ${item.designNumber}-${item.color}, skipping`);
         continue;
       }
 
       console.log(`Item ${index}: ${item.designNumber}-${item.color}`);
-      
+
       // Show comparison
       const orderedQtys = {};
       const deliveredQtys = {};
       let deliveredMatchesOrdered = true;
-      
+
       sizeKeys.forEach(size => {
         orderedQtys[size] = item[size] || 0;
         deliveredQtys[size] = delivered[size];
-        
+
         // Check if delivered exactly matches ordered (suspicious!)
         if (deliveredQtys[size] !== orderedQtys[size]) {
           deliveredMatchesOrdered = false;
         }
       });
-      
+
       console.log(`  📋 Ordered:   ${JSON.stringify(orderedQtys)}`);
       console.log(`  📥 Delivered: ${JSON.stringify(deliveredQtys)}`);
-      
+
       // ALERT if delivered exactly matches ordered - this could indicate wrong data
       if (deliveredMatchesOrdered && Object.values(deliveredQtys).some(v => v > 0)) {
         console.log(`  ⚠️ ⚠️ ⚠️ SUSPICIOUS: All delivered quantities EXACTLY match ordered quantities!`);
         console.log(`     This may indicate the frontend is sending ordered quantities instead of delivered!`);
       }
-      
+
       let itemEntriesCount = 0;
-      
+
       for (const size of sizeKeys) {
-        const deliveredQty = parseDeliveredQty(delivered[size]);
-        const orderedQty = item[size] || 0;
-        
-        // CRITICAL: Do NOT use orderedQty for dispatch entry qty
-        // ONLY use deliveredQty from the delivered object
-        
+        const deliveredQty = Number(delivered[size]) || 0;
+        const orderedQty = Number(item[size]) || 0;
+
+        if (deliveredQty > orderedQty) {
+          console.log(`⚠️ Delivered qty (${deliveredQty}) exceeds ordered (${orderedQty})`);
+        }
+
         if (deliveredQty > 0) {
           // Validation: delivered should not exceed ordered
           if (deliveredQty > orderedQty) {
             console.log(`    ⚠️  Size ${size.toUpperCase()}: Delivered (${deliveredQty}) > Ordered (${orderedQty})`);
           }
-          
+
           console.log(`    ✓ Dispatch: ${size.toUpperCase()} x${deliveredQty} (ordered: ${orderedQty})`);
-          
+
           dispatchEntries.push({
             domain: "warehouse",
             warehouseType: "domestic",
@@ -377,33 +379,33 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
             date: purchaseOrder.date,
             receiver: poReference,  // Store PO reference for tracking
           });
-          
+
           itemEntriesCount++;
         } else if (orderedQty > 0) {
           console.log(`    - Size ${size.toUpperCase()}: ordered=${orderedQty}, delivered=0 (no entry)`);
         }
       }
-      
+
       if (itemEntriesCount === 0) {
         console.log(`  Result: No dispatch entries created (all delivered qtys are 0)`);
       }
     }
 
     console.log("\n" + "=".repeat(50));
-    
+
     // Bulk insert all dispatch entries
     if (dispatchEntries.length > 0) {
       console.log(`✓ CREATING ${dispatchEntries.length} dispatch entries:`);
       dispatchEntries.forEach((entry, idx) => {
         console.log(`  ${idx + 1}. ${entry.dno}-${entry.color} Size ${entry.size} x${entry.qty}`);
       });
-      
+
       await DispatchModel.insertMany(dispatchEntries);
       console.log(`\n✅ Successfully created ${dispatchEntries.length} dispatch entries for PO ${purchaseOrder._id}`);
     } else {
       console.log(`✅ No dispatch entries needed (all delivered quantities are 0 or empty)`);
     }
-    
+
     console.log("=== CREATE DISPATCH ENTRIES END ===");
     console.log("========================================\n");
   } catch (error) {
@@ -419,14 +421,14 @@ async function deleteDispatchEntriesForPO(purchaseOrderId) {
   try {
     const DispatchModel = getTransactionModel("warehouse", "domestic", "dispatch");
     const poReference = `PO_${purchaseOrderId}`;
-    
+
     console.log(`\n🗑️  Deleting dispatch entries for PO ${purchaseOrderId}...`);
     console.log(`   Looking for entries with receiver="${poReference}"`);
-    
+
     // Delete entries by receiver field (entries created by our code)
     const result = await DispatchModel.deleteMany({ receiver: poReference });
     console.log(`✓ Deleted ${result.deletedCount} dispatch entries for PO ${purchaseOrderId}\n`);
-    
+
     return result.deletedCount;
   } catch (error) {
     console.error("Error deleting dispatch entries for PO:", error);
@@ -435,16 +437,22 @@ async function deleteDispatchEntriesForPO(purchaseOrderId) {
 }
 
 function normalizeDeliveredSizes(deliveredSizes) {
-  if (!Array.isArray(deliveredSizes)) {
-    return [];
-  }
+  if (!Array.isArray(deliveredSizes)) return [];
 
-  return deliveredSizes.map((item = {}) => {
-    const normalized = {};
-    for (const key of sizeKeys) {
-      normalized[key] = parseDeliveredQty(item?.[key]);
+  return deliveredSizes.map(item => {
+    const normalizedItem = {
+      designNumber: item.designNumber,
+      color: item.color
+    };
+
+    for (const size of sizeKeys) {
+      normalizedItem[size] =
+        item[size] !== undefined && item[size] !== null
+          ? Number(item[size])
+          : 0;   // ONLY default to 0 — NEVER use ordered qty
     }
-    return normalized;
+
+    return normalizedItem;
   });
 }
 

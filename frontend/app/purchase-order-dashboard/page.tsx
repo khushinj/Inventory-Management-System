@@ -277,11 +277,11 @@ export default function PurchaseOrdersPage() {
     // Verify we're sending delivered, not ordered quantities
     order.items.forEach((item, idx) => {
       const deliveredEntry = deliveredSizesArray[idx] || {};
-      const orderedQtys = {};
-      const deliveredQtys = {};
+      const orderedQtys: Record<SizeKey, number> = {} as Record<SizeKey, number>;
+      const deliveredQtys: Record<SizeKey, number> = {} as Record<SizeKey, number>;
       sizeKeys.forEach(size => {
         orderedQtys[size] = item[size];
-        deliveredQtys[size] = deliveredEntry[size];
+        deliveredQtys[size] = deliveredEntry[size] ?? 0;
       });
       console.log(`Item ${idx} (${item.designNumber}): Ordered=${JSON.stringify(orderedQtys)}, Delivered=${JSON.stringify(deliveredQtys)}`);
     });

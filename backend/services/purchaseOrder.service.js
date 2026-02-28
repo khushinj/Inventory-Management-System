@@ -99,13 +99,17 @@ export async function updatePurchaseOrder(id, updateData) {
   try {
     console.log("Updating PO with data:", JSON.stringify(updateData, null, 2));
 
-    const shouldSyncDispatch = Object.prototype.hasOwnProperty.call(updateData || {}, "deliveredSizes");
+    const hasDeliveredSizesField = Object.prototype.hasOwnProperty.call(updateData || {}, "deliveredSizes");
 
-    if (shouldSyncDispatch) {
+    if (hasDeliveredSizesField) {
       updateData.deliveredSizes = normalizeDeliveredSizes(updateData.deliveredSizes);
     }
 
-    if (shouldSyncDispatch) {
+    // Check if there are any actual delivered quantities > 0
+    const hasActualDeliveredQty = hasDeliveredSizesField && hasDeliveredQuantities(updateData.deliveredSizes);
+
+    // Always delete existing dispatch entries when deliveredSizes field is present
+    if (hasDeliveredSizesField) {
       await deleteDispatchEntriesForPO(id);
     }
 
@@ -123,7 +127,8 @@ export async function updatePurchaseOrder(id, updateData) {
 
     console.log("Updated PO deliveredSizes:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
 
-    if (shouldSyncDispatch) {
+    // Only create dispatch entries if there are actual delivered quantities > 0
+    if (hasActualDeliveredQty) {
       await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
     }
 
@@ -325,4 +330,28 @@ function parseDeliveredQty(value) {
   }
 
   return 0;
+}
+
+/**
+ * Helper function to check if deliveredSizes contains any quantity > 0
+ */
+function hasDeliveredQuantities(deliveredSizes) {
+  if (!Array.isArray(deliveredSizes)) {
+    return false;
+  }
+
+  for (const item of deliveredSizes) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
+
+    for (const size of sizeKeys) {
+      const qty = parseDeliveredQty(item[size]);
+      if (qty > 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }

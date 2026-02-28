@@ -8020,6 +8020,16 @@
     "type": "sales"
   },
   {
+    "designNumber": "NG-19887",
+    "color": "CHARCOAL",
+    "size": "M",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
     "designNumber": "NG-19938",
     "color": "BLACK",
     "size": "XXL",

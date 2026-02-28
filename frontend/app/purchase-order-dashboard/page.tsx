@@ -628,7 +628,7 @@ export default function PurchaseOrdersPage() {
                                           min={0}
                                           inputMode="numeric"
                                           value={deliveredInputValue}
-                                          onChange={(event) =>
+                                          onChange={(event) => 
                                             handleDeliveredChange(
                                               selectedOrder,
                                               index,

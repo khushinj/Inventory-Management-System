@@ -420,8 +420,14 @@ async function deleteDispatchEntriesForPO(purchaseOrderId) {
     const DispatchModel = getTransactionModel("warehouse", "domestic", "dispatch");
     const poReference = `PO_${purchaseOrderId}`;
     
+    console.log(`\n🗑️  Deleting dispatch entries for PO ${purchaseOrderId}...`);
+    console.log(`   Looking for entries with receiver="${poReference}"`);
+    
+    // Delete entries by receiver field (entries created by our code)
     const result = await DispatchModel.deleteMany({ receiver: poReference });
-    console.log(`Deleted ${result.deletedCount} dispatch entries for PO ${purchaseOrderId}`);
+    console.log(`✓ Deleted ${result.deletedCount} dispatch entries for PO ${purchaseOrderId}\n`);
+    
+    return result.deletedCount;
   } catch (error) {
     console.error("Error deleting dispatch entries for PO:", error);
     throw error;

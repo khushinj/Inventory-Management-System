@@ -254,6 +254,11 @@ export async function getPurchaseOrderStats(filters = {}) {
  * Helper function to create dispatch entries from purchase order
  * ONLY uses deliveredOverride parameter - NEVER uses purchaseOrder.items quantities
  */
+
+console.log("FINAL DISPATCH ENTRIES BEFORE INSERT:");
+console.log(JSON.stringify(dispatchEntries, null, 2));
+
+
 async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = null) {
   try {
     const DispatchModel = getTransactionModel("warehouse", "domestic", "dispatch");

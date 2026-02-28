@@ -9,13 +9,24 @@ const sizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxx
 export async function createPurchaseOrder(orderData) {
   try {
     console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
-    // Initialize deliveredSizes with empty objects but ensure no dispatch entries are created
-    orderData.deliveredSizes = orderData.items?.map(() => ({})) || [];
+    
+    // Initialize deliveredSizes with explicit zeros for all sizes to prevent auto-population
+    // This ensures dispatch entries are NEVER created on PO creation
+    orderData.deliveredSizes = orderData.items?.map(() => {
+      const explicitZeros = {};
+      sizeKeys.forEach(size => {
+        explicitZeros[size] = 0;
+      });
+      return explicitZeros;
+    }) || [];
+    
+    console.log("Initializing deliveredSizes with explicit zeros:", JSON.stringify(orderData.deliveredSizes, null, 2));
+    
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
     
     // DO NOT create dispatch entries on PO creation - only when delivered qty is entered
-    console.log("Purchase order created - no dispatch entries created yet");
+    console.log("✓ Purchase order created successfully - no dispatch entries created");
     
     return {
       success: true,
@@ -103,10 +114,10 @@ export async function updatePurchaseOrder(id, updateData) {
   try {
     console.log("=== UPDATE PURCHASE ORDER START ===");
     console.log("PO ID:", id);
-    console.log("Update data:", JSON.stringify(updateData, null, 2));
+    console.log("Update data received from frontend:", JSON.stringify(updateData, null, 2));
 
     const hasDeliveredSizesField = Object.prototype.hasOwnProperty.call(updateData || {}, "deliveredSizes");
-    console.log("Has deliveredSizes field:", hasDeliveredSizesField);
+    console.log("Has deliveredSizes field in update:", hasDeliveredSizesField);
 
     if (hasDeliveredSizesField) {
       updateData.deliveredSizes = normalizeDeliveredSizes(updateData.deliveredSizes);
@@ -135,14 +146,16 @@ export async function updatePurchaseOrder(id, updateData) {
       };
     }
 
-    console.log("PO updated successfully");
+    console.log("PO updated successfully in database");
 
     // Only create dispatch entries if there are actual delivered quantities > 0
+    // CRITICAL: We pass updateData.deliveredSizes (from frontend), NOT purchaseOrder.deliveredSizes (from DB)
     if (hasActualDeliveredQty) {
-      console.log("Creating dispatch entries for PO:", id);
-      await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
+      console.log("Creating dispatch entries using delivered quantities from frontend update");
+      console.log("IMPORTANT: Using updateData.deliveredSizes, NOT purchaseOrder.items (ordered qty)");
+      await createDispatchEntriesFromPO(purchaseOrder, updateData.deliveredSizes);
     } else {
-      console.log("Skipping dispatch entry creation - no qty > 0");
+      console.log("Skipping dispatch entry creation - no delivered qty > 0");
     }
 
     console.log("=== UPDATE PURCHASE ORDER END ===");
@@ -233,6 +246,7 @@ export async function getPurchaseOrderStats(filters = {}) {
 
 /**
  * Helper function to create dispatch entries from purchase order
+ * ONLY uses deliveredOverride parameter - NEVER uses purchaseOrder.items quantities
  */
 async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = null) {
   try {
@@ -256,10 +270,11 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
     };
 
     console.log(`=== CREATE DISPATCH ENTRIES START for PO ${purchaseOrder._id} ===`);
-    console.log("Delivered override:", JSON.stringify(deliveredOverride, null, 2));
+    console.log("Delivered override parameter:", JSON.stringify(deliveredOverride, null, 2));
+    console.log("WARNING: Will ONLY use deliveredOverride, NOT purchaseOrder.items or purchaseOrder.deliveredSizes");
 
     if (!Array.isArray(deliveredOverride)) {
-      console.log("deliveredOverride is not an array, exiting");
+      console.log("ERROR: deliveredOverride is not an array, exiting");
       console.log("=== CREATE DISPATCH ENTRIES END (no entries created) ===");
       return;
     }
@@ -270,15 +285,32 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
       return;
     }
 
-    // Convert delivered sizes from editable delivered qty fields to dispatch transactions
+    // IMPORTANT: Convert delivered sizes from deliveredOverride parameter ONLY
+    // Never use purchaseOrder.items[index][size] which contains ORDERED quantities
     for (const [index, item] of purchaseOrder.items.entries()) {
-      const delivered = deliveredOverride[index] || {};
-      console.log(`Item ${index} (${item.designNumber}-${item.color}) delivered:`, JSON.stringify(delivered));
+      const delivered = deliveredOverride[index];
+      
+      // Safety check: if no delivered object for this item, skip it
+      if (!delivered || typeof delivered !== 'object') {
+        console.log(`Item ${index} (${item.designNumber}-${item.color}): No delivered data, skipping`);
+        continue;
+      }
+
+      console.log(`\nItem ${index}: ${item.designNumber}-${item.color}`);
+      console.log(`  Ordered quantities: ${JSON.stringify({ s: item.s, m: item.m, l: item.l, xl: item.xl, xxl: item.xxl, xxxl: item.xxxl, xxxxl: item.xxxxl, xxxxxl: item.xxxxxl, xxxxxxl: item.xxxxxxl })}`);
+      console.log(`  Delivered quantities: ${JSON.stringify(delivered)}`);
       
       for (const size of sizeKeys) {
-        const qty = parseDeliveredQty(delivered[size]);
-        if (qty && qty > 0) {
-          console.log(`  -> Creating dispatch entry: ${size.toUpperCase()} = ${qty}`);
+        const deliveredQty = parseDeliveredQty(delivered[size]);
+        const orderedQty = item[size] || 0;
+        
+        if (deliveredQty > 0) {
+          // Validation: delivered should not exceed ordered
+          if (deliveredQty > orderedQty) {
+            console.log(`  ⚠️  WARNING: Delivered qty (${deliveredQty}) exceeds ordered qty (${orderedQty}) for size ${size.toUpperCase()}`);
+          }
+          
+          console.log(`  ✓ Creating dispatch entry: ${size.toUpperCase()} = ${deliveredQty} (ordered: ${orderedQty})`);
           dispatchEntries.push({
             domain: "warehouse",
             warehouseType: "domestic",
@@ -287,10 +319,12 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
             type: "",
             color: item.color,
             size: sizeMapping[size],
-            qty: qty,
+            qty: deliveredQty,  // MUST be from delivered, NOT from item[size]
             date: purchaseOrder.date,
             receiver: poReference,  // Store PO reference for tracking
           });
+        } else if (orderedQty > 0) {
+          console.log(`  - Size ${size.toUpperCase()}: ordered=${orderedQty}, delivered=0 (no dispatch entry)`);
         }
       }
     }
@@ -298,9 +332,9 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
     // Bulk insert all dispatch entries
     if (dispatchEntries.length > 0) {
       await DispatchModel.insertMany(dispatchEntries);
-      console.log(`✓ Successfully created ${dispatchEntries.length} dispatch entries for PO ${purchaseOrder._id}`);
+      console.log(`\n✓ Successfully created ${dispatchEntries.length} dispatch entries for PO ${purchaseOrder._id}`);
     } else {
-      console.log(`No dispatch entries to create (all quantities were 0)`);
+      console.log(`\nNo dispatch entries to create (all delivered quantities were 0)`);
     }
     console.log("=== CREATE DISPATCH ENTRIES END ===");
   } catch (error) {

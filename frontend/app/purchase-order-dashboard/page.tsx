@@ -224,6 +224,11 @@ export default function PurchaseOrdersPage() {
 
   const updatePurchaseOrderData = async (orderId: string, updateData: Partial<PurchaseOrder>) => {
     try {
+      console.log("=== updatePurchaseOrderData called ===");
+      console.log("Order ID:", orderId);
+      console.log("Update data:", JSON.stringify(updateData, null, 2));
+      console.log("====================================");
+      
       const res = await api.put(`/purchase-order/${orderId}`, updateData);
       if (res.data && res.data.success) {
         const updatedOrder: PurchaseOrder = res.data.data;
@@ -264,12 +269,31 @@ export default function PurchaseOrdersPage() {
     const derivedStatus = getDerivedStatus(order, nextDelivered[order._id]);
     const deliveredSizesArray = buildDeliveredSizesArray(order, nextDelivered[order._id]);
 
+    console.log("=== FRONTEND: Prepared deliveredSizesArray to send ===");
+    console.log("Item Index:", itemIndex);
+    console.log("Size Key:", sizeKey, "Value:", nextValue);
+    console.log("Delivered Sizes Array:", JSON.stringify(deliveredSizesArray, null, 2));
+    
+    // Verify we're sending delivered, not ordered quantities
+    order.items.forEach((item, idx) => {
+      const deliveredEntry = deliveredSizesArray[idx] || {};
+      const orderedQtys = {};
+      const deliveredQtys = {};
+      sizeKeys.forEach(size => {
+        orderedQtys[size] = item[size];
+        deliveredQtys[size] = deliveredEntry[size];
+      });
+      console.log(`Item ${idx} (${item.designNumber}): Ordered=${JSON.stringify(orderedQtys)}, Delivered=${JSON.stringify(deliveredQtys)}`);
+    });
+
     const existingTimer = deliveredUpdateTimersRef.current[order._id];
     if (existingTimer) {
       clearTimeout(existingTimer);
     }
 
     deliveredUpdateTimersRef.current[order._id] = setTimeout(() => {
+      console.log("=== FRONTEND: Sending update to backend ===");
+      console.log("deliveredSizes payload:", JSON.stringify(deliveredSizesArray, null, 2));
       updatePurchaseOrderData(order._id, {
         status: derivedStatus,
         deliveredSizes: deliveredSizesArray,

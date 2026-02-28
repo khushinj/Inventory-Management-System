@@ -1,15 +1,15 @@
 import PurchaseOrder from "../models/PurchaseOrder.js";
 import { getTransactionModel } from "../models/Transaction.js";
 
+const sizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxxl"];
+
 /**
  * Create a new purchase order
  */
 export async function createPurchaseOrder(orderData) {
   try {
     console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
-    if (!Array.isArray(orderData.deliveredSizes)) {
-      orderData.deliveredSizes = orderData.items?.map(() => ({})) || [];
-    }
+    orderData.deliveredSizes = orderData.items?.map(() => ({})) || [];
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
     
@@ -98,9 +98,16 @@ export async function getPurchaseOrderById(id) {
 export async function updatePurchaseOrder(id, updateData) {
   try {
     console.log("Updating PO with data:", JSON.stringify(updateData, null, 2));
-    
-    // First delete existing dispatch entries for this PO
-    await deleteDispatchEntriesForPO(id);
+
+    const shouldSyncDispatch = Object.prototype.hasOwnProperty.call(updateData || {}, "deliveredSizes");
+
+    if (shouldSyncDispatch) {
+      updateData.deliveredSizes = normalizeDeliveredSizes(updateData.deliveredSizes);
+    }
+
+    if (shouldSyncDispatch) {
+      await deleteDispatchEntriesForPO(id);
+    }
 
     const purchaseOrder = await PurchaseOrder.findByIdAndUpdate(id, updateData, {
       new: true,
@@ -116,8 +123,9 @@ export async function updatePurchaseOrder(id, updateData) {
 
     console.log("Updated PO deliveredSizes:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
 
-    // Create new dispatch entries with updated data
-    await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
+    if (shouldSyncDispatch) {
+      await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
+    }
 
     return {
       success: true,
@@ -232,15 +240,17 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
     console.log("Delivered override:", JSON.stringify(deliveredOverride, null, 2));
     console.log("PO deliveredSizes from DB:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
 
-    // Convert delivered sizes in the purchase order to dispatch transactions
+    if (!Array.isArray(deliveredOverride)) {
+      return;
+    }
+
+    // Convert delivered sizes from editable delivered qty fields to dispatch transactions
     for (const [index, item] of purchaseOrder.items.entries()) {
-      const sizes = ['s', 'm', 'l', 'xl', 'xxl', 'xxxl', 'xxxxl', 'xxxxxl', 'xxxxxxl'];
-      // Use delivered override first, then fall back to deliveredSizes from DB - NEVER use ordered quantities
-      const delivered = deliveredOverride?.[index] || purchaseOrder.deliveredSizes?.[index] || {};
+      const delivered = deliveredOverride[index] || {};
       console.log(`Item ${index} (${item.designNumber}-${item.color}) delivered:`, JSON.stringify(delivered));
       
-      for (const size of sizes) {
-        const qty = delivered[size] || 0;
+      for (const size of sizeKeys) {
+        const qty = parseDeliveredQty(delivered[size]);
         if (qty && qty > 0) {
           dispatchEntries.push({
             domain: "warehouse",
@@ -283,4 +293,36 @@ async function deleteDispatchEntriesForPO(purchaseOrderId) {
     console.error("Error deleting dispatch entries for PO:", error);
     throw error;
   }
+}
+
+function normalizeDeliveredSizes(deliveredSizes) {
+  if (!Array.isArray(deliveredSizes)) {
+    return [];
+  }
+
+  return deliveredSizes.map((item = {}) => {
+    const normalized = {};
+    for (const key of sizeKeys) {
+      normalized[key] = parseDeliveredQty(item?.[key]);
+    }
+    return normalized;
+  });
+}
+
+function parseDeliveredQty(value) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return 0;
+    }
+
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }
+
+  return 0;
 }

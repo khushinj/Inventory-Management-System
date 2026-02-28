@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "../../lib/api";
 import { FileText, Search, Filter, Eye, X } from "lucide-react";
 
@@ -51,7 +51,7 @@ type PurchaseOrder = {
 
 type StatusFilter = "all" | "pending" | "partially pending" | "completed";
 
-type DeliveredSizeMap = Record<string, Record<number, Record<SizeKey, number | "">>>;
+type DeliveredSizeMap = Record<string, Record<number, Record<SizeKey, number>>>;
 
 export default function PurchaseOrdersPage() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -61,6 +61,7 @@ export default function PurchaseOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
   const [deliveredSizes, setDeliveredSizes] = useState<DeliveredSizeMap>({});
+  const deliveredUpdateTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     fetchPurchaseOrders();
@@ -69,6 +70,14 @@ export default function PurchaseOrdersPage() {
   useEffect(() => {
     filterOrders();
   }, [orders, searchTerm, statusFilter]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(deliveredUpdateTimersRef.current).forEach((timerId) => {
+        clearTimeout(timerId);
+      });
+    };
+  }, []);
 
   const fetchPurchaseOrders = async () => {
     try {
@@ -83,27 +92,21 @@ export default function PurchaseOrdersPage() {
         setOrders(ordersWithStatus);
         const nextDeliveredSizes: DeliveredSizeMap = {};
         ordersWithStatus.forEach((order: PurchaseOrder) => {
-          const orderDelivered: Record<number, Record<SizeKey, number | "">> = {};
+          const orderDelivered: Record<number, Record<SizeKey, number>> = {};
 
           order.items.forEach((_, itemIndex) => {
             const savedSizes = order.deliveredSizes?.[itemIndex] || {};
-            const entry: Record<SizeKey, number | ""> = {} as Record<SizeKey, number | "">;
+            const entry = {} as Record<SizeKey, number>;
 
             sizeKeys.forEach((key) => {
               const savedValue = savedSizes[key];
-              if (typeof savedValue === "number" && savedValue > 0) {
-                entry[key] = savedValue;
-              }
+              entry[key] = typeof savedValue === "number" && savedValue >= 0 ? savedValue : 0;
             });
 
-            if (Object.keys(entry).length > 0) {
-              orderDelivered[itemIndex] = entry;
-            }
+            orderDelivered[itemIndex] = entry;
           });
 
-          if (Object.keys(orderDelivered).length > 0) {
-            nextDeliveredSizes[order._id] = orderDelivered;
-          }
+          nextDeliveredSizes[order._id] = orderDelivered;
         });
         setDeliveredSizes(nextDeliveredSizes);
       }
@@ -243,7 +246,8 @@ export default function PurchaseOrdersPage() {
     sizeKey: SizeKey,
     value: string
   ) => {
-    const nextValue = value === "" ? "" : Math.max(0, Number(value));
+    const parsedValue = Number(value);
+    const nextValue = Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : 0;
     const nextDelivered: DeliveredSizeMap = {
       ...deliveredSizes,
       [order._id]: {
@@ -259,10 +263,18 @@ export default function PurchaseOrdersPage() {
 
     const derivedStatus = getDerivedStatus(order, nextDelivered[order._id]);
     const deliveredSizesArray = buildDeliveredSizesArray(order, nextDelivered[order._id]);
-    updatePurchaseOrderData(order._id, {
-      status: derivedStatus,
-      deliveredSizes: deliveredSizesArray,
-    });
+
+    const existingTimer = deliveredUpdateTimersRef.current[order._id];
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    deliveredUpdateTimersRef.current[order._id] = setTimeout(() => {
+      updatePurchaseOrderData(order._id, {
+        status: derivedStatus,
+        deliveredSizes: deliveredSizesArray,
+      });
+    }, 300);
   };
 
   const handleDeliveredKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -581,7 +593,8 @@ export default function PurchaseOrdersPage() {
                                 <div className="mt-1 grid grid-cols-3 sm:grid-cols-6 gap-2">
                                   {sizeList.map((size) => {
                                     const deliveredValue =
-                                      deliveredSizes[selectedOrder._id]?.[index]?.[size.key] ?? "";
+                                      deliveredSizes[selectedOrder._id]?.[index]?.[size.key] ?? 0;
+                                    const deliveredInputValue = deliveredValue === 0 ? "" : deliveredValue;
 
                                     return (
                                       <label key={size.label} className="flex flex-col text-[10px] text-gray-500">
@@ -590,7 +603,7 @@ export default function PurchaseOrdersPage() {
                                           type="number"
                                           min={0}
                                           inputMode="numeric"
-                                          value={deliveredValue}
+                                          value={deliveredInputValue}
                                           onChange={(event) =>
                                             handleDeliveredChange(
                                               selectedOrder,

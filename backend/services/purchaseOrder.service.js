@@ -9,9 +9,13 @@ const sizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxx
 export async function createPurchaseOrder(orderData) {
   try {
     console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
+    // Initialize deliveredSizes with empty objects but ensure no dispatch entries are created
     orderData.deliveredSizes = orderData.items?.map(() => ({})) || [];
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
+    
+    // DO NOT create dispatch entries on PO creation - only when delivered qty is entered
+    console.log("Purchase order created - no dispatch entries created yet");
     
     return {
       success: true,
@@ -97,19 +101,25 @@ export async function getPurchaseOrderById(id) {
  */
 export async function updatePurchaseOrder(id, updateData) {
   try {
-    console.log("Updating PO with data:", JSON.stringify(updateData, null, 2));
+    console.log("=== UPDATE PURCHASE ORDER START ===");
+    console.log("PO ID:", id);
+    console.log("Update data:", JSON.stringify(updateData, null, 2));
 
     const hasDeliveredSizesField = Object.prototype.hasOwnProperty.call(updateData || {}, "deliveredSizes");
+    console.log("Has deliveredSizes field:", hasDeliveredSizesField);
 
     if (hasDeliveredSizesField) {
       updateData.deliveredSizes = normalizeDeliveredSizes(updateData.deliveredSizes);
+      console.log("Normalized deliveredSizes:", JSON.stringify(updateData.deliveredSizes, null, 2));
     }
 
     // Check if there are any actual delivered quantities > 0
     const hasActualDeliveredQty = hasDeliveredSizesField && hasDeliveredQuantities(updateData.deliveredSizes);
+    console.log("Has actual delivered qty > 0:", hasActualDeliveredQty);
 
     // Always delete existing dispatch entries when deliveredSizes field is present
     if (hasDeliveredSizesField) {
+      console.log("Deleting existing dispatch entries for PO:", id);
       await deleteDispatchEntriesForPO(id);
     }
 
@@ -125,13 +135,17 @@ export async function updatePurchaseOrder(id, updateData) {
       };
     }
 
-    console.log("Updated PO deliveredSizes:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
+    console.log("PO updated successfully");
 
     // Only create dispatch entries if there are actual delivered quantities > 0
     if (hasActualDeliveredQty) {
+      console.log("Creating dispatch entries for PO:", id);
       await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
+    } else {
+      console.log("Skipping dispatch entry creation - no qty > 0");
     }
 
+    console.log("=== UPDATE PURCHASE ORDER END ===");
     return {
       success: true,
       data: purchaseOrder,
@@ -241,11 +255,18 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
       'xxxxxxl': '6XL'
     };
 
-    console.log(`Creating dispatch entries for PO ${purchaseOrder._id}`);
+    console.log(`=== CREATE DISPATCH ENTRIES START for PO ${purchaseOrder._id} ===`);
     console.log("Delivered override:", JSON.stringify(deliveredOverride, null, 2));
-    console.log("PO deliveredSizes from DB:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
 
     if (!Array.isArray(deliveredOverride)) {
+      console.log("deliveredOverride is not an array, exiting");
+      console.log("=== CREATE DISPATCH ENTRIES END (no entries created) ===");
+      return;
+    }
+
+    if (deliveredOverride.length === 0) {
+      console.log("deliveredOverride is empty array, exiting");
+      console.log("=== CREATE DISPATCH ENTRIES END (no entries created) ===");
       return;
     }
 
@@ -257,6 +278,7 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
       for (const size of sizeKeys) {
         const qty = parseDeliveredQty(delivered[size]);
         if (qty && qty > 0) {
+          console.log(`  -> Creating dispatch entry: ${size.toUpperCase()} = ${qty}`);
           dispatchEntries.push({
             domain: "warehouse",
             warehouseType: "domestic",
@@ -276,8 +298,11 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
     // Bulk insert all dispatch entries
     if (dispatchEntries.length > 0) {
       await DispatchModel.insertMany(dispatchEntries);
-      console.log(`Created ${dispatchEntries.length} dispatch entries for PO ${purchaseOrder._id}`);
+      console.log(`✓ Successfully created ${dispatchEntries.length} dispatch entries for PO ${purchaseOrder._id}`);
+    } else {
+      console.log(`No dispatch entries to create (all quantities were 0)`);
     }
+    console.log("=== CREATE DISPATCH ENTRIES END ===");
   } catch (error) {
     console.error("Error creating dispatch entries from PO:", error);
     throw error;
@@ -337,10 +362,16 @@ function parseDeliveredQty(value) {
  */
 function hasDeliveredQuantities(deliveredSizes) {
   if (!Array.isArray(deliveredSizes)) {
+    console.log("hasDeliveredQuantities: Not an array, returning false");
     return false;
   }
 
-  for (const item of deliveredSizes) {
+  if (deliveredSizes.length === 0) {
+    console.log("hasDeliveredQuantities: Empty array, returning false");
+    return false;
+  }
+
+  for (const [index, item] of deliveredSizes.entries()) {
     if (!item || typeof item !== 'object') {
       continue;
     }
@@ -348,10 +379,12 @@ function hasDeliveredQuantities(deliveredSizes) {
     for (const size of sizeKeys) {
       const qty = parseDeliveredQty(item[size]);
       if (qty > 0) {
+        console.log(`hasDeliveredQuantities: Found qty > 0 at item ${index}, size ${size}: ${qty}`);
         return true;
       }
     }
   }
 
+  console.log("hasDeliveredQuantities: No quantities > 0 found, returning false");
   return false;
 }

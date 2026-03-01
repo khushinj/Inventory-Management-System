@@ -362,8 +362,9 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
       <div className="md:flex md:gap-10 p-6">
-        {/* Product Image */}
-        <div className="md:w-1/2 w-full">
+        {/* Left Column: Product Image + Details Below */}
+        <div className="md:w-1/2 w-full space-y-6">
+          {/* Product Image */}
           <div className="relative w-full h-[520px] bg-gray-100 rounded-lg overflow-hidden">
             {!loadingDetails && productDetails?.image ? (
               <Image
@@ -378,9 +379,18 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
               </div>
             )}
           </div>
+
+          {/* Product Details Grid - Below Image */}
+          <div className="grid grid-cols-2 gap-4">
+            <DetailBlock label="Brand" value={productDetails?.brand || "-"} />
+            <DetailBlock label="Fabric" value={productDetails?.fabric || "-"} />
+            <DetailBlock label="Composition" value={productDetails?.fabricComposition || "-"} />
+            <DetailBlock label="GSM" value={productDetails?.gsm || "-"} />
+            <DetailBlock label="MRP" value={productDetails?.mrp ? `₹${productDetails.mrp}` : "-"} />
+          </div>
         </div>
 
-        {/* Product Details */}
+        {/* Right Column: Design Number, Stock Summary, Available Stock */}
         <div className="md:w-1/2 w-full mt-6 md:mt-0 space-y-6">
           <div className="flex items-start justify-between gap-4">
             <DetailBlock label="Design Number" value={productDetails?.designNumber || designNumber.toUpperCase()} />
@@ -429,27 +439,6 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
               )}
             </div>
           </div>
-
-          {/* Product Details Grid */}
-          {(productDetails?.brand || productDetails?.fabric || productDetails?.gsm || productDetails?.mrp) && (
-            <div className="grid grid-cols-2 gap-4">
-              {productDetails?.brand && (
-                <DetailBlock label="Brand" value={productDetails.brand} />
-              )}
-              {productDetails?.fabric && (
-                <DetailBlock label="Fabric" value={productDetails.fabric} />
-              )}
-              {productDetails?.fabricComposition && (
-                <DetailBlock label="Composition" value={productDetails.fabricComposition} />
-              )}
-              {productDetails?.gsm && (
-                <DetailBlock label="GSM" value={productDetails.gsm} />
-              )}
-              {productDetails?.mrp && (
-                <DetailBlock label="MRP" value={`₹${productDetails.mrp}`} />
-              )}
-            </div>
-          )}
 
           {/* Stock Summary */}
           <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">

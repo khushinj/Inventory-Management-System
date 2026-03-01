@@ -9,7 +9,29 @@ const sizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxx
 export async function createPurchaseOrder(orderData) {
   try {
     console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
+    
+    // Extract year from the order date
+    const orderDate = new Date(orderData.date);
+    const year = orderDate.getFullYear();
+    
+    // Find the highest sequence number for this year
+    const lastOrder = await PurchaseOrder.findOne({ year })
+      .sort({ sequenceNumber: -1 })
+      .select('sequenceNumber')
+      .lean();
+    
+    // Generate next sequence number
+    const sequenceNumber = lastOrder ? lastOrder.sequenceNumber + 1 : 1;
+    
+    // Format the order number: PO-YYYY-XXX
+    const orderNumber = `PO-${year}-${String(sequenceNumber).padStart(3, '0')}`;
+    
+    // Add generated fields to order data
+    orderData.orderNumber = orderNumber;
+    orderData.sequenceNumber = sequenceNumber;
+    orderData.year = year;
     orderData.deliveredSizes = orderData.items?.map(() => ({})) || [];
+    
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
     

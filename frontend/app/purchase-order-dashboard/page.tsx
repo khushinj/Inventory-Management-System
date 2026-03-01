@@ -33,6 +33,9 @@ type SizeBreakdown = Partial<Record<SizeKey, number>>;
 
 type PurchaseOrder = {
   _id: string;
+  orderNumber?: string;
+  sequenceNumber?: number;
+  year?: number;
   dealerName: string;
   buyerName: string;
   date: string;
@@ -63,6 +66,17 @@ export default function PurchaseOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
   const [deliveredSizes, setDeliveredSizes] = useState<DeliveredSizeMap>({});
   const deliveredUpdateTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // Helper function to get order number with fallback
+  const getOrderNumber = (order: PurchaseOrder) => {
+    if (order.orderNumber) {
+      return order.orderNumber;
+    }
+    // Fallback to old format if orderNumber doesn't exist
+    const year = new Date(order.date).getFullYear();
+    const id = order._id.slice(-3).toUpperCase();
+    return `PO-${year}-${id}`;
+  };
 
   useEffect(() => {
     fetchPurchaseOrders();
@@ -445,7 +459,7 @@ export default function PurchaseOrdersPage() {
               {/* Status Badge */}
               <div className="mb-4">
                 <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  PO-{new Date(order.date).getFullYear()}-{order._id.slice(-3).toUpperCase()}
+                  {getOrderNumber(order)}
                 </h3>
                 <span
                   className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
@@ -519,7 +533,7 @@ export default function PurchaseOrdersPage() {
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  PO-{new Date(selectedOrder.date).getFullYear()}-{selectedOrder._id.slice(-3).toUpperCase()}
+                  {getOrderNumber(selectedOrder)}
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">Purchase order details and item breakdown</p>
               </div>

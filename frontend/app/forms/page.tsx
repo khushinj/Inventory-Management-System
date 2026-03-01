@@ -20,13 +20,7 @@ const formTypes = [
     description: "Manage online warehouse transactions",
     href: "/online-homepage",
     color: "bg-orange-500",
-  },
-  {
-    title: "Purchase Orders",
-    description: "View and manage client purchase orders",
-    href: "/purchase-order-dashboard",
-    color: "bg-purple-500",
-  },
+  }
 ];
 
 export default function FormsPage() {

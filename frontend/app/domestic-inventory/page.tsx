@@ -28,6 +28,15 @@ type ProductDetails = {
   image?: string;
 };
 
+const isEmptyField = (value?: string) => {
+  if (!value) return true;
+  const normalized = value.trim().toLowerCase();
+  return normalized === "" || normalized === "unknown" || normalized === "n/a";
+};
+
+const normalizeDno = (value?: string) =>
+  (value || "").trim().replace(/\s+/g, "").toUpperCase();
+
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"];
 const COLORS = [
   "BLACK",
@@ -49,6 +58,7 @@ const COLORS = [
 
 export default function DomesticInventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [jobCardsByDesign, setJobCardsByDesign] = useState<Record<string, ProductDetails>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
@@ -61,7 +71,7 @@ export default function DomesticInventoryPage() {
   const initializeInventory = async () => {
     try {
       setLoading(true);
-      await fetchInventory();
+      await Promise.all([fetchInventory(), fetchJobCards()]);
     } catch (err) {
       console.error("Error initializing inventory:", err);
     } finally {
@@ -82,6 +92,37 @@ export default function DomesticInventoryPage() {
     } catch (err) {
       console.error("Error fetching inventory:", err);
       setInventory([]);
+    }
+  };
+
+  const fetchJobCards = async () => {
+    try {
+      const response = await api.get("/jobcard", {
+        timeout: 20000,
+      });
+
+      const jobCards = Array.isArray(response.data) ? response.data : [];
+      const mapped: Record<string, ProductDetails> = {};
+
+      for (const card of jobCards) {
+        const key = normalizeDno(card.designNumber);
+        if (!key || mapped[key]) continue;
+
+        mapped[key] = {
+          designNumber: card.designNumber,
+          image: card.image,
+          brand: card.brand,
+          fabric: card.fabric,
+          fabricComposition: card.fabricComposition,
+          gsm: card.gsm,
+          mrp: card.mrp,
+        };
+      }
+
+      setJobCardsByDesign(mapped);
+    } catch (err) {
+      console.error("Error fetching job cards:", err);
+      setJobCardsByDesign({});
     }
   };
 
@@ -262,7 +303,12 @@ export default function DomesticInventoryPage() {
               </div>
             ) : (
               filteredDesigns.map(([designNumber, items]) => (
-                <ProductCard key={designNumber} designNumber={designNumber} items={items} />
+                <ProductCard
+                  key={designNumber}
+                  designNumber={designNumber}
+                  items={items}
+                  productDetails={jobCardsByDesign[normalizeDno(designNumber)]}
+                />
               ))
             )}
 
@@ -290,65 +336,14 @@ export default function DomesticInventoryPage() {
 type ProductCardProps = {
   designNumber: string;
   items: InventoryItem[];
+  productDetails?: ProductDetails;
 };
 
-function ProductCard({ designNumber, items }: ProductCardProps) {
-  const [productDetails, setProductDetails] = useState<ProductDetails | null>(
-    null
-  );
-  const [loadingDetails, setLoadingDetails] = useState(true);
-
-  useEffect(() => {
-    fetchProductDetails();
-  }, [designNumber]);
-
-  const fetchProductDetails = async () => {
-    try {
-      setLoadingDetails(true);
-      // Try to fetch job card details, but don't break if it fails
-      try {
-        const response = await api.get("/jobcard/search", {
-          params: { query: designNumber },
-          timeout: 5000, // 5 second timeout
-        });
-
-        const jobCards = response.data;
-        if (Array.isArray(jobCards) && jobCards.length > 0) {
-          const matchingCard = jobCards.find(
-            (card: any) =>
-              card.designNumber.toLowerCase() === designNumber.toLowerCase()
-          );
-
-          if (matchingCard) {
-            setProductDetails({
-              designNumber: matchingCard.designNumber,
-              image: matchingCard.image,
-              brand: matchingCard.brand,
-              fabric: matchingCard.fabric,
-              fabricComposition: matchingCard.fabricComposition,
-              gsm: matchingCard.gsm,
-              mrp: matchingCard.mrp,
-            });
-            return;
-          }
-        }
-      } catch (jobCardErr) {
-        // Silently fail if job card endpoint has issues - we'll just use the design number
-      }
-
-      // Fallback: just use the design number
-      setProductDetails({
-        designNumber: designNumber.toUpperCase(),
-      });
-    } catch (err) {
-      // Final fallback
-      setProductDetails({
-        designNumber: designNumber.toUpperCase(),
-      });
-    } finally {
-      setLoadingDetails(false);
-    }
-  };
+function ProductCard({ designNumber, items, productDetails }: ProductCardProps) {
+  const resolvedDetails: ProductDetails =
+    productDetails || {
+      designNumber: designNumber.toUpperCase(),
+    };
 
   // Group items by color
   const groupedByColor: GroupedInventory = items.reduce((acc, item) => {
@@ -366,77 +361,55 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
         <div className="md:w-1/2 w-full space-y-6">
           {/* Product Image */}
           <div className="relative w-full h-[520px] bg-gray-100 rounded-lg overflow-hidden">
-            {!loadingDetails && productDetails?.image ? (
+            {resolvedDetails?.image ? (
               <Image
-                src={productDetails.image}
+                src={resolvedDetails.image}
                 alt={designNumber}
                 fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                {loadingDetails ? "Loading..." : "No Image"}
+                No Image
               </div>
             )}
           </div>
 
           {/* Product Details Grid - Below Image */}
           <div className="grid grid-cols-2 gap-4">
-            <DetailBlock label="Brand" value={productDetails?.brand || "-"} />
-            <DetailBlock label="Fabric" value={productDetails?.fabric || "-"} />
-            <DetailBlock label="Composition" value={productDetails?.fabricComposition || "-"} />
-            <DetailBlock label="GSM" value={productDetails?.gsm || "-"} />
-            <DetailBlock label="MRP" value={productDetails?.mrp ? `₹${productDetails.mrp}` : "-"} />
+            <DetailBlock label="Brand" value={isEmptyField(resolvedDetails?.brand) ? "-" : resolvedDetails?.brand || "-"} />
+            <DetailBlock label="Fabric" value={isEmptyField(resolvedDetails?.fabric) ? "-" : resolvedDetails?.fabric || "-"} />
+            <DetailBlock label="Composition" value={isEmptyField(resolvedDetails?.fabricComposition) ? "-" : resolvedDetails?.fabricComposition || "-"} />
+            <DetailBlock label="GSM" value={resolvedDetails?.gsm && resolvedDetails.gsm > 0 ? resolvedDetails.gsm : "-"} />
+            <DetailBlock label="MRP" value={resolvedDetails?.mrp && resolvedDetails.mrp > 0 ? `₹${resolvedDetails.mrp}` : "-"} />
           </div>
         </div>
 
         {/* Right Column: Design Number, Stock Summary, Available Stock */}
         <div className="md:w-1/2 w-full mt-6 md:mt-0 space-y-6">
           <div className="flex items-start justify-between gap-4">
-            <DetailBlock label="Design Number" value={productDetails?.designNumber || designNumber.toUpperCase()} />
+            <DetailBlock label="Design Number" value={resolvedDetails?.designNumber || designNumber.toUpperCase()} />
             <div className="flex gap-2">
-              {productDetails?.brand ? (
-                <Link
-                  href={`/domestic-inventory/edit/${encodeURIComponent(designNumber)}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+              <Link
+                href={`/domestic-inventory/edit/${encodeURIComponent(designNumber)}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
-                  Edit
-                </Link>
-              ) : (
-                <Link
-                  href={`/jobcard`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                  title="Create a JobCard for this design number to fill in GSM, MRP, Fabric details"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Create JobCard
-                </Link>
-              )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit
+              </Link>
             </div>
           </div>
 

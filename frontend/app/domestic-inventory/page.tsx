@@ -378,11 +378,11 @@ function ProductCard({ designNumber, items, productDetails }: ProductCardProps) 
 
           {/* Product Details Grid - Below Image */}
           <div className="grid grid-cols-2 gap-4">
-            <DetailBlock label="Brand" value={isEmptyField(resolvedDetails?.brand) ? "-" : resolvedDetails?.brand || "-"} />
-            <DetailBlock label="Fabric" value={isEmptyField(resolvedDetails?.fabric) ? "-" : resolvedDetails?.fabric || "-"} />
-            <DetailBlock label="Composition" value={isEmptyField(resolvedDetails?.fabricComposition) ? "-" : resolvedDetails?.fabricComposition || "-"} />
-            <DetailBlock label="GSM" value={resolvedDetails?.gsm && resolvedDetails.gsm > 0 ? resolvedDetails.gsm : "-"} />
-            <DetailBlock label="MRP" value={resolvedDetails?.mrp && resolvedDetails.mrp > 0 ? `₹${resolvedDetails.mrp}` : "-"} />
+            <DetailBlock compact label="Brand" value={isEmptyField(resolvedDetails?.brand) ? "-" : resolvedDetails?.brand || "-"} />
+            <DetailBlock compact label="Fabric" value={isEmptyField(resolvedDetails?.fabric) ? "-" : resolvedDetails?.fabric || "-"} />
+            <DetailBlock compact label="Composition" value={isEmptyField(resolvedDetails?.fabricComposition) ? "-" : resolvedDetails?.fabricComposition || "-"} />
+            <DetailBlock compact label="GSM" value={resolvedDetails?.gsm && resolvedDetails.gsm > 0 ? resolvedDetails.gsm : "-"} />
+            <DetailBlock compact label="MRP" value={resolvedDetails?.mrp && resolvedDetails.mrp > 0 ? `₹${resolvedDetails.mrp}` : "-"} />
           </div>
         </div>
 
@@ -501,13 +501,14 @@ function ProductCard({ designNumber, items, productDetails }: ProductCardProps) 
 type DetailBlockProps = {
   label: string;
   value: string | number;
+  compact?: boolean;
 };
 
-function DetailBlock({ label, value }: DetailBlockProps) {
+function DetailBlock({ label, value, compact = false }: DetailBlockProps) {
   return (
     <div className="space-y-1">
-      <p className="text-sm font-semibold text-gray-500">{label}</p>
-      <p className="text-2xl font-semibold text-gray-900">{value}</p>
+      <p className={`${compact ? "text-xs" : "text-sm"} font-semibold text-gray-500`}>{label}</p>
+      <p className={`${compact ? "text-xl" : "text-2xl"} font-semibold text-gray-900`}>{value}</p>
     </div>
   );
 }

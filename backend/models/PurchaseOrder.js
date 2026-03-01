@@ -108,6 +108,10 @@ const PurchaseOrderSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    deadline: {
+      type: Date,
+      required: false,
+    },
     city: {
       type: String,
       required: true,

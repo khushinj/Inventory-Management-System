@@ -36,6 +36,7 @@ type PurchaseOrder = {
   dealerName: string;
   buyerName: string;
   date: string;
+  deadline?: string;
   city: string;
   status: "pending" | "partially pending" | "completed";
   items: PurchaseOrderItem[];
@@ -467,11 +468,26 @@ export default function PurchaseOrdersPage() {
                   <p className="text-gray-500">Order Date</p>
                   <p className="text-gray-900 font-medium">{formatDate(order.date)}</p>
                 </div>
-                <div>
+                {order.deadline && (
+                  <div>
+                    <p className="text-gray-500">Deadline</p>
+                    <p className="text-red-600 font-medium">{formatDate(order.deadline)}</p>
+                  </div>
+                )}
+                {!order.deadline && (
+                  <div>
+                    <p className="text-gray-500">City</p>
+                    <p className="text-gray-900 font-medium">{order.city}</p>
+                  </div>
+                )}
+              </div>
+              
+              {order.deadline && (
+                <div className="mb-4 text-sm">
                   <p className="text-gray-500">City</p>
                   <p className="text-gray-900 font-medium">{order.city}</p>
                 </div>
-              </div>
+              )}
 
               {/* Amount and Items */}
               <div className="border-t border-gray-200 pt-4 mb-4">

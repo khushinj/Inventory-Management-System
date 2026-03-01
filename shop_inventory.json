@@ -695,7 +695,7 @@
     "size": "M",
     "import": 1,
     "return": 0,
-    "sales": 7,
+    "sales": 8,
     "net": 0,
     "type": "import"
   },
@@ -955,7 +955,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 7,
+    "sales": 8,
     "net": 0,
     "type": "sales"
   },
@@ -1005,7 +1005,7 @@
     "size": "M",
     "import": 0,
     "return": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "sales"
   },
@@ -1168,6 +1168,16 @@
     "sales": 12,
     "net": 0,
     "type": "return"
+  },
+  {
+    "designNumber": "AW-95503",
+    "color": "MIX COLOUR",
+    "size": "M,",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "AW-95503",
@@ -1385,8 +1395,8 @@
     "size": "M",
     "import": 16,
     "return": 0,
-    "sales": 12,
-    "net": 4,
+    "sales": 13,
+    "net": 3,
     "type": "import"
   },
   {
@@ -1846,6 +1856,16 @@
     "import": 0,
     "return": 0,
     "sales": 2,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "KI-1438",
+    "color": "T.BLUE",
+    "size": "M",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
     "net": 0,
     "type": "sales"
   },
@@ -2828,6 +2848,16 @@
     "sales": 0,
     "net": 0,
     "type": "return"
+  },
+  {
+    "designNumber": "NG-002",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "NG-1005",
@@ -17470,13 +17500,23 @@
     "type": "return"
   },
   {
+    "designNumber": "SMIX-2702",
+    "color": "MIX",
+    "size": "L",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
     "designNumber": "SMIX-2801",
     "color": "MIX",
     "size": "M",
     "import": 4,
     "return": 0,
-    "sales": 0,
-    "net": 4,
+    "sales": 1,
+    "net": 3,
     "type": "import"
   },
   {
@@ -18185,7 +18225,7 @@
     "size": "XL",
     "import": 0,
     "return": 0,
-    "sales": 0,
+    "sales": 1,
     "net": 0,
     "type": "return"
   },
@@ -20038,6 +20078,16 @@
     "sales": 0,
     "net": 1,
     "type": "import"
+  },
+  {
+    "designNumber": "TP-1461",
+    "color": "GOLD-87",
+    "size": "XXL",
+    "import": 0,
+    "return": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
   },
   {
     "designNumber": "W-55117",

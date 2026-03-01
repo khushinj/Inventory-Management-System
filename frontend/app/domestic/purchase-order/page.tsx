@@ -82,6 +82,7 @@ export default function PurchaseOrderEntryForm() {
     dealerName: "",
     buyerName: "",
     date: "",
+    deadline: "",
     city: "",
   });
 
@@ -253,6 +254,7 @@ export default function PurchaseOrderEntryForm() {
         dealerName: headerInfo.dealerName,
         buyerName: headerInfo.buyerName,
         date: headerInfo.date,
+        deadline: headerInfo.deadline,
         city: headerInfo.city,
         items: validItems.map(({ id, ...item }) => item), // Remove the temporary id field
         totalQuantity: summary.totalQuantity,
@@ -553,6 +555,19 @@ export default function PurchaseOrderEntryForm() {
                 type="date"
                 value={headerInfo.date}
                 onChange={(e) => handleHeaderChange("date", e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Deadline
+              </label>
+              <input
+                type="date"
+                value={headerInfo.deadline}
+                onChange={(e) => handleHeaderChange("deadline", e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />

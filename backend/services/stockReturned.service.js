@@ -39,7 +39,7 @@ const adjustInventoryForStockReturned = async (stockReturned) => {
         try {
           console.log(`[Stock Return] Processing size ${item.size} with qty ${item.qty}...`);
           
-          // Subtract from shop inventory
+          // ⭐ Store as POSITIVE value - calculation logic will subtract based on form type
           const ShopModel = getTransactionModel("shop", "", "return");
           const shopRecord = await ShopModel.create({
             domain: "shop",
@@ -47,13 +47,15 @@ const adjustInventoryForStockReturned = async (stockReturned) => {
             dno,
             color,
             size: item.size,
-            qty: -item.qty,
+            qty: item.qty,  // POSITIVE VALUE - calculation will subtract
             date: date || new Date(),
             channel: "domestic return",
           });
-          console.log(`[Stock Return] ✅ Created shop record: ${shopRecord._id} (qty: ${shopRecord.qty})`);
+          console.log(`[Stock Return] ✅ Created shop return record: ${shopRecord._id}`);
+          console.log(`   Design: ${dno}, Color: ${color}, Size: ${item.size}`);
+          console.log(`   Quantity: ${item.qty} (will be subtracted during calculation)`);
 
-          // Add to domestic inventory
+          // ⭐ ADD to domestic inventory (positive record)
           const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
           const domesticRecord = await DomesticModel.create({
             domain: "warehouse",
@@ -66,7 +68,8 @@ const adjustInventoryForStockReturned = async (stockReturned) => {
             date: date || new Date(),
             channel: "domestic",
           });
-          console.log(`[Stock Return] ✅ Created domestic record: ${domesticRecord._id} (qty: ${domesticRecord.qty})`);
+          console.log(`[Stock Return] ✅ Added to domestic: ${domesticRecord._id}`);
+          console.log(`   Quantity: +${item.qty}`);
           successCount++;
         } catch (itemError) {
           const errorMsg = `Failed to process item size ${item.size}: ${itemError.message}`;
@@ -81,20 +84,21 @@ const adjustInventoryForStockReturned = async (stockReturned) => {
       // If no items array, use totalQuantity (old format support)
       console.log("[Stock Return] Processing using totalQuantity (no items array)...");
       
-      // Subtract from shop inventory
+      // ⭐ Store as POSITIVE value - calculation logic will subtract based on form type
       const ShopModel = getTransactionModel("shop", "", "return");
       const shopRecord = await ShopModel.create({
         domain: "shop",
         formType: "return",
         dno,
         color,
-        qty: -totalQuantity,
+        qty: totalQuantity,  // POSITIVE VALUE - calculation will subtract
         date: date || new Date(),
         channel: "domestic return",
       });
-      console.log(`[Stock Return] ✅ Created shop record (totalQty): ${shopRecord._id}`);
+      console.log(`[Stock Return] ✅ Created shop return record: ${shopRecord._id}`);
+      console.log(`   Quantity: ${totalQuantity} (will be subtracted during calculation)`);
 
-      // Add to domestic inventory
+      // ⭐ ADD to domestic inventory (positive record)
       const DomesticModel = getTransactionModel("warehouse", "domestic", "return");
       const domesticRecord = await DomesticModel.create({
         domain: "warehouse",
@@ -106,7 +110,8 @@ const adjustInventoryForStockReturned = async (stockReturned) => {
         date: date || new Date(),
         channel: "domestic",
       });
-      console.log(`[Stock Return] ✅ Created domestic record (totalQty): ${domesticRecord._id}`);
+      console.log(`[Stock Return] ✅ Added to domestic: ${domesticRecord._id}`);
+      console.log(`   Quantity: +${totalQuantity}`);
       successCount++;
     } else {
       throw new Error("No items or totalQuantity provided");
@@ -138,7 +143,7 @@ const reverseInventoryAdjustments = async (stockReturned) => {
       for (const item of items) {
         console.log(`[Stock Return] Reversing size ${item.size} with qty ${item.qty}...`);
         
-        // Remove from shop inventory (undo the negative entry)
+        // Remove from shop inventory (positive value stored)
         const ShopModel = getTransactionModel("shop", "", "return");
         const shopDeleted = await ShopModel.deleteMany({
           domain: "shop",
@@ -146,7 +151,8 @@ const reverseInventoryAdjustments = async (stockReturned) => {
           dno,
           color,
           size: item.size,
-          qty: -item.qty,
+          qty: item.qty,  // Now stored as positive
+          channel: "domestic return"
         });
         console.log(`[Stock Return] Deleted ${shopDeleted.deletedCount} shop record(s) for size ${item.size}`);
 
@@ -166,14 +172,15 @@ const reverseInventoryAdjustments = async (stockReturned) => {
     } else {
       console.log("[Stock Return] Reversing using totalQuantity...");
       
-      // Remove from shop inventory
+      // Remove from shop inventory (positive value stored)
       const ShopModel = getTransactionModel("shop", "", "return");
       const shopDeleted = await ShopModel.deleteMany({
         domain: "shop",
         formType: "return",
         dno,
         color,
-        qty: -totalQuantity,
+        qty: totalQuantity,  // Now stored as positive
+        channel: "domestic return"
       });
       console.log(`[Stock Return] Deleted ${shopDeleted.deletedCount} shop record(s)`);
 

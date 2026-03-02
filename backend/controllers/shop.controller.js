@@ -47,14 +47,19 @@ export const createShopEntry = async (req, res) => {
 };
 
 export const getShopEntries = async (req, res) => {
-  const results = await Promise.all(
-    allowedShopForms.map((form) =>
-      getTransactionModel("shop", "", form).find().sort({ date: -1 }).lean()
-    )
-  );
+  try {
+    const results = await Promise.all(
+      allowedShopForms.map((form) =>
+        getTransactionModel("shop", "", form).find().sort({ date: -1 }).lean()
+      )
+    );
 
-  const combined = results.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(combined);
+    const combined = results.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(combined);
+  } catch (err) {
+    console.error("Error fetching shop entries:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 export const updateShopEntry = async (req, res) => {

@@ -98,34 +98,103 @@ class ShopInventoryService {
     }
   }
 
+  // Load transactions from database for stock returns only
+  async loadStockReturnsFromDB() {
+    try {
+      const Model = getTransactionModel('shop', '', 'return');
+      const transactions = await Model.find({ channel: 'domestic return' }).lean();
+      
+      console.log(`[Shop Inventory] Loading stock returns from DB: ${transactions.length} found`);
+      
+      const grouped = {};
+      
+      transactions.forEach(txn => {
+        const dno = normalizeDesignNumber(txn.dno);
+        const color = normalizeColor(txn.color);
+        const size = normalizeSize(txn.size);
+        const qty = Number(txn.qty) || 0;
+        
+        console.log(`[Shop Inventory] Stock return: DNO=${dno}, Color=${color}, Size=${size}, Qty=${qty}`);
+        
+        if (!dno || !size || qty === 0) return;
+        
+        const key = `${dno}|${color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno,
+            color,
+            sizes: {},
+            totalQty: 0,
+            type: 'stock_return'
+          };
+        }
+        
+        grouped[key].sizes[size] = (grouped[key].sizes[size] || 0) + qty;
+        grouped[key].totalQty += qty;
+      });
+      
+      const result = Object.values(grouped);
+      console.log(`[Shop Inventory] Grouped stock returns into ${result.length} design groups`);
+      
+      return result;
+    } catch (error) {
+      console.error(`Error loading stock returns from DB:`, error);
+      return [];
+    }
+  }
+
+  // Load customer returns from database only
+  async loadCustomerReturnsFromDB() {
+    try {
+      // For now, customer returns come from the JSON file return_data.json
+      // This is kept for legacy compatibility
+      console.log(`[Shop Inventory] Loading customer returns...`);
+      return [];
+    } catch (error) {
+      console.error(`Error loading customer returns from DB:`, error);
+      return [];
+    }
+  }
+
   // Calculate shop inventory
   async calculateInventory() {
     try {
       // Load all data from JSON files (legacy data)
       const importDataFromFile = await this.loadJsonFile(this.importDataPath);
-      const returnDataFromFile = await this.loadJsonFile(this.returnDataPath);
+      const customerReturnDataFromFile = await this.loadJsonFile(this.returnDataPath);
       const salesDataFromFile = await this.loadJsonFile(this.salesDataPath);
 
       // Load data from database (new transactions)
       const importDataFromDB = await this.loadTransactionsFromDB('import');
-      const returnDataFromDB = await this.loadTransactionsFromDB('return');
+      const customerReturnDataFromDB = [];  // Customer returns come from JSON only
       const salesDataFromDB = await this.loadTransactionsFromDB('sales');
+      const stockReturnsFromDB = await this.loadStockReturnsFromDB();
 
       // Combine file data and database data
       const importData = [...importDataFromFile, ...importDataFromDB];
-      const returnData = [...returnDataFromFile, ...returnDataFromDB];
+      const customerReturnData = [...customerReturnDataFromFile, ...customerReturnDataFromDB];
       const salesData = [...salesDataFromFile, ...salesDataFromDB];
+      const stockReturnData = stockReturnsFromDB;
 
       console.log(`📦 Data sources combined:`);
       console.log(`   Import: ${importDataFromFile.length} (file) + ${importDataFromDB.length} (DB) = ${importData.length}`);
-      console.log(`   Return: ${returnDataFromFile.length} (file) + ${returnDataFromDB.length} (DB) = ${returnData.length}`);
+      console.log(`   Customer Return: ${customerReturnDataFromFile.length} (file) + ${customerReturnDataFromDB.length} (DB) = ${customerReturnData.length}`);
+      console.log(`   Stock Return: ${stockReturnData.length} (from DB)`);
       console.log(`   Sales: ${salesDataFromFile.length} (file) + ${salesDataFromDB.length} (DB) = ${salesData.length}`);
 
-      // Log sample return data for debugging
-      if (returnData.length > 0) {
-        console.log(`\n📋 Sample return data (first 3):`);
-        returnData.slice(0, 3).forEach(item => {
+      // Log sample customer return data for debugging
+      if (customerReturnData.length > 0) {
+        console.log(`\n📋 Sample customer return data (first 3):`);
+        customerReturnData.slice(0, 3).forEach(item => {
           console.log(`   DNO: ${item.dno}, Color: ${item.color}, Sizes:`, item.sizes);
+        });
+      }
+
+      // Log sample stock return data for debugging
+      if (stockReturnData.length > 0) {
+        console.log(`\n📋 Sample stock return data (first 3):`);
+        stockReturnData.slice(0, 3).forEach(item => {
+          console.log(`   DNO: ${item.dno}, Color: ${item.color}, Qty: ${item.totalQty}`);
         });
       }
 
@@ -148,7 +217,8 @@ class ShopInventoryService {
                 color: color,
                 size: normalizedSize,
                 import: 0,
-                return: 0,
+                customerReturn: 0,
+                stockReturn: 0,
                 sales: 0,
                 net: 0,
                 type: item.type || 'regular'
@@ -161,9 +231,9 @@ class ShopInventoryService {
         }
       }
 
-      // Process return data (add to inventory)
-      let returnProcessedCount = 0;
-      for (const item of returnData) {
+      // Process customer return data (ADD to inventory - items coming back to shop)
+      let customerReturnProcessedCount = 0;
+      for (const item of customerReturnData) {
         const dno = normalizeDesignNumber(item.dno);
         const color = normalizeColor(item.color);
         
@@ -178,7 +248,8 @@ class ShopInventoryService {
                 color: color,
                 size: normalizedSize,
                 import: 0,
-                return: 0,
+                customerReturn: 0,
+                stockReturn: 0,
                 sales: 0,
                 net: 0,
                 type: item.type || 'regular'
@@ -187,19 +258,56 @@ class ShopInventoryService {
             
             const record = inventoryMap.get(key);
             const qtyNum = Number(qty) || 0;
-            // Preserve sign: negative quantities (stock returns) subtract, positive add
-            record.return += qtyNum;
+            // ✅ CUSTOMER RETURNS: Positive value - ADD to inventory
+            record.customerReturn += qtyNum;
             
-            // Log return processing for debugging
-            if (returnProcessedCount < 5) {
-              console.log(`[Shop Inventory] Processing return: DNO=${dno}, Color=${color}, Size=${normalizedSize}, Qty=${qtyNum}, New return total=${record.return}`);
+            if (customerReturnProcessedCount < 5) {
+              console.log(`[Shop Inventory] ✅ Customer Return: DNO=${dno}, Color=${color}, Size=${normalizedSize}, Qty=${qtyNum}, New total=${record.customerReturn}`);
             }
-            returnProcessedCount++;
+            customerReturnProcessedCount++;
           }
         }
       }
-      console.log(`[Shop Inventory] Processed ${returnProcessedCount} return entries`);
+      console.log(`[Shop Inventory] Processed ${customerReturnProcessedCount} customer return entries`);
 
+      // Process stock return data (SUBTRACT from inventory - items going back to warehouse)
+      let stockReturnProcessedCount = 0;
+      for (const item of stockReturnData) {
+        const dno = normalizeDesignNumber(item.dno);
+        const color = normalizeColor(item.color);
+        
+        if (item.sizes && typeof item.sizes === 'object') {
+          for (const [size, qty] of Object.entries(item.sizes)) {
+            const normalizedSize = normalizeSize(size);
+            const key = `${dno}|${color}|${normalizedSize}`;
+            
+            if (!inventoryMap.has(key)) {
+              inventoryMap.set(key, {
+                designNumber: dno,
+                color: color,
+                size: normalizedSize,
+                import: 0,
+                customerReturn: 0,
+                stockReturn: 0,
+                sales: 0,
+                net: 0,
+                type: item.type || 'regular'
+              });
+            }
+            
+            const record = inventoryMap.get(key);
+            const qtyNum = Number(qty) || 0;
+            // ❌ STOCK RETURNS: Negative value - SUBTRACT from inventory
+            record.stockReturn += qtyNum;
+            
+            if (stockReturnProcessedCount < 5) {
+              console.log(`[Shop Inventory] ❌ Stock Return: DNO=${dno}, Color=${color}, Size=${normalizedSize}, Qty=${qtyNum}, New total=${record.stockReturn}`);
+            }
+            stockReturnProcessedCount++;
+          }
+        }
+      }
+      console.log(`[Shop Inventory] Processed ${stockReturnProcessedCount} stock return entries`);
 
       // Process sales data (subtract from inventory)
       for (const item of salesData) {
@@ -217,7 +325,8 @@ class ShopInventoryService {
                 color: color,
                 size: normalizedSize,
                 import: 0,
-                return: 0,
+                customerReturn: 0,
+                stockReturn: 0,
                 sales: 0,
                 net: 0,
                 type: item.type || 'regular'
@@ -231,24 +340,25 @@ class ShopInventoryService {
       }
 
       // Calculate net quantity for each record
-      // Net = (Import + Return) - Sales
-      // Ensure no negative values
+      // Net = Import + CustomerReturn - StockReturn - Sales
+      // Logic: Start with imports, ADD customer returns, SUBTRACT stock returns, SUBTRACT sales
       let calculatedCount = 0;
       const inventory = Array.from(inventoryMap.values()).map(record => {
-        const oldNet = record.net;
-        record.net = (record.import + record.return) - record.sales;
+        // Clear formula: 
+        // Net = Import + CustomerReturn - StockReturn - Sales
+        record.net = record.import + record.customerReturn - record.stockReturn - record.sales;
         
         // Log sample calculations for debugging (first 5 with returns)
-        if (record.return !== 0 && calculatedCount < 5) {
-          console.log(`[Shop Inventory] Net calculation: DNO=${record.designNumber}, Size=${record.size}`);
-          console.log(`   Import=${record.import}, Return=${record.return}, Sales=${record.sales}`);
-          console.log(`   Net = (${record.import} + ${record.return}) - ${record.sales} = ${record.net}`);
+        if ((record.customerReturn !== 0 || record.stockReturn !== 0) && calculatedCount < 5) {
+          console.log(`[Shop Inventory] 📊 Net calculation: DNO=${record.designNumber}, Size=${record.size}`);
+          console.log(`   Import=${record.import}, CustomerReturn=+${record.customerReturn}, StockReturn=-${record.stockReturn}, Sales=${record.sales}`);
+          console.log(`   Net = ${record.import} + ${record.customerReturn} - ${record.stockReturn} - ${record.sales} = ${record.net}`);
           calculatedCount++;
         }
         
         // Ensure no negative net quantity
         if (record.net < 0) {
-          console.log(`[Shop Inventory] ⚠️ Negative net (${record.net}) for ${record.designNumber}, setting to 0`);
+          console.log(`[Shop Inventory] ⚠️ Negative net (${record.net}) for ${record.designNumber}|${record.color}|${record.size}, setting to 0`);
           record.net = 0;
         }
         

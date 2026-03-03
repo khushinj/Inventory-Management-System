@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { api } from "../../lib/api";
-import { FileText, Search, Filter, Eye, X } from "lucide-react";
+import { FileText, Search, Filter, Eye, X, Trash2 } from "lucide-react";
 
 type PurchaseOrderItem = {
   category: string;
@@ -292,6 +292,42 @@ export default function PurchaseOrdersPage() {
     }
   };
 
+  const handleDeleteOrder = async (order: PurchaseOrder) => {
+    const confirmed = window.confirm(
+      `Delete ${getOrderNumber(order)} for ${order.buyerName}? This action cannot be undone.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api.delete(`/purchase-order/${order._id}`);
+
+      const existingTimer = deliveredUpdateTimersRef.current[order._id];
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+        delete deliveredUpdateTimersRef.current[order._id];
+      }
+
+      setOrders((prev) => prev.filter((current) => current._id !== order._id));
+      setDeliveredSizes((prev) => {
+        const next = { ...prev };
+        delete next[order._id];
+        return next;
+      });
+
+      if (selectedOrder?._id === order._id) {
+        setSelectedOrder(null);
+        setSaveStatus("idle");
+        setHasUnsavedChanges(false);
+      }
+    } catch (error) {
+      console.error("Error deleting purchase order:", error);
+      alert("Failed to delete purchase order");
+    }
+  };
+
   const handleDeliveredChange = (
     order: PurchaseOrder,
     itemIndex: number,
@@ -546,18 +582,26 @@ export default function PurchaseOrdersPage() {
                 <p className="text-sm text-gray-600">{order.items.length} items</p>
               </div>
 
-              {/* View Details Button */}
-              <button 
-                onClick={() => {
-                  setSelectedOrder(order);
-                  setSaveStatus("idle");
-                  setHasUnsavedChanges(false);
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 text-black border rounded-lg transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-                View Details
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedOrder(order);
+                    setSaveStatus("idle");
+                    setHasUnsavedChanges(false);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-black border rounded-lg transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  View Details
+                </button>
+                <button
+                  onClick={() => handleDeleteOrder(order)}
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -596,7 +640,7 @@ export default function PurchaseOrdersPage() {
                   )}
                   {saveStatus === "saved" && <span>✓</span>}
                   {saveStatus === "error" && <span>✗</span>}
-                  {saveStatus === "idle" && hasUnsavedChanges}
+                  {saveStatus === "idle" && hasUnsavedChanges && <span>💾</span>}
                   {saveStatus === "idle" && !hasUnsavedChanges && <span>✓</span>}
                   {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : saveStatus === "error" ? "Error" : "Save"}
                 </button>

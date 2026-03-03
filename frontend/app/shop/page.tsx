@@ -78,24 +78,28 @@ function ShopDashboard() {
     dno: "",
     type: "",
     color: "",
+    date: new Date().toISOString().split("T")[0],
     sizes: {}
   });
   const [newReturnRow, setNewReturnRow] = useState<SampleRow>({
     dno: "",
     type: "",
     color: "",
+    date: new Date().toISOString().split("T")[0],
     sizes: {}
   });
   const [editImportForm, setEditImportForm] = useState<SampleRow>({
     dno: "",
     type: "",
     color: "",
+    date: new Date().toISOString().split("T")[0],
     sizes: {}
   });
   const [editReturnForm, setEditReturnForm] = useState<SampleRow>({
     dno: "",
     type: "",
     color: "",
+    date: new Date().toISOString().split("T")[0],
     sizes: {}
   });
   const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
@@ -358,7 +362,7 @@ function ShopDashboard() {
             color: newImportRow.color,
             size: size,
             qty: qty,
-            date: new Date().toISOString().split("T")[0],
+            date: newImportRow.date || new Date().toISOString().split("T")[0],
             formType: "import",
             channel: "retail",
           });
@@ -372,6 +376,7 @@ function ShopDashboard() {
         dno: "",
         type: "",
         color: "",
+        date: new Date().toISOString().split("T")[0],
         sizes: {}
       });
       fetchEntries();
@@ -462,6 +467,7 @@ function ShopDashboard() {
       dno: "",
       type: "",
       color: "",
+      date: new Date().toISOString().split("T")[0],
       sizes: {}
     });
   };
@@ -501,7 +507,7 @@ function ShopDashboard() {
             color: newReturnRow.color,
             size: size,
             qty: qty,
-            date: new Date().toISOString().split("T")[0],
+            date: newReturnRow.date || new Date().toISOString().split("T")[0],
             formType: "return",
             channel: "retail",
           });
@@ -515,6 +521,7 @@ function ShopDashboard() {
         dno: "",
         type: "",
         color: "",
+        date: new Date().toISOString().split("T")[0],
         sizes: {}
       });
       fetchEntries();
@@ -605,6 +612,7 @@ function ShopDashboard() {
       dno: "",
       type: "",
       color: "",
+      date: new Date().toISOString().split("T")[0],
       sizes: {}
     });
   };
@@ -814,8 +822,13 @@ function ShopDashboard() {
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date().toISOString().split("T")[0]}
+                      <td className="px-6 py-4">
+                        <input 
+                          type="date" 
+                          value={newImportRow.date} 
+                          onChange={(e) => setNewImportRow({...newImportRow, date: e.target.value})} 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
                       </td>
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
@@ -876,8 +889,13 @@ function ShopDashboard() {
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date().toISOString().split("T")[0]}
+                      <td className="px-6 py-4">
+                        <input 
+                          type="date" 
+                          value={newReturnRow.date} 
+                          onChange={(e) => setNewReturnRow({...newReturnRow, date: e.target.value})} 
+                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        />
                       </td>
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">

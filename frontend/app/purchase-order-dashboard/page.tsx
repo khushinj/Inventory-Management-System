@@ -65,6 +65,8 @@ export default function PurchaseOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
   const [deliveredSizes, setDeliveredSizes] = useState<DeliveredSizeMap>({});
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const deliveredUpdateTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Helper function to get order number with fallback
@@ -256,7 +258,37 @@ export default function PurchaseOrdersPage() {
       }
     } catch (error) {
       console.error("Error updating purchase order:", error);
-      alert("Failed to update purchase order");
+      throw error;
+    }
+  };
+
+  const handleManualSave = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      setSaveStatus("saving");
+
+      const existingTimer = deliveredUpdateTimersRef.current[selectedOrder._id];
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+        delete deliveredUpdateTimersRef.current[selectedOrder._id];
+      }
+
+      const derivedStatus = getDerivedStatus(selectedOrder, deliveredSizes[selectedOrder._id]);
+      const deliveredSizesArray = buildDeliveredSizesArray(selectedOrder, deliveredSizes[selectedOrder._id]);
+
+      await updatePurchaseOrderData(selectedOrder._id, {
+        status: derivedStatus,
+        deliveredSizes: deliveredSizesArray,
+      });
+
+      setSaveStatus("saved");
+      setHasUnsavedChanges(false);
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Error saving purchase order:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 2000);
     }
   };
 
@@ -268,6 +300,8 @@ export default function PurchaseOrdersPage() {
   ) => {
     const parsedValue = Number(value);
     const nextValue = Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : 0;
+      setHasUnsavedChanges(true);
+
     const nextDelivered: DeliveredSizeMap = {
       ...deliveredSizes,
       [order._id]: {
@@ -514,7 +548,11 @@ export default function PurchaseOrdersPage() {
 
               {/* View Details Button */}
               <button 
-                onClick={() => setSelectedOrder(order)}
+                onClick={() => {
+                  setSelectedOrder(order);
+                  setSaveStatus("idle");
+                  setHasUnsavedChanges(false);
+                }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 text-black border rounded-lg transition-colors"
               >
                 <Eye className="w-4 h-4" />
@@ -538,6 +576,30 @@ export default function PurchaseOrdersPage() {
                 <p className="text-sm text-gray-600 mt-1">Purchase order details and item breakdown</p>
               </div>
               <div className="flex items-center gap-3">
+                <button
+                  onClick={handleManualSave}
+                  disabled={!hasUnsavedChanges || saveStatus === "saving"}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                    saveStatus === "saved"
+                      ? "bg-green-100 text-green-800"
+                      : saveStatus === "error"
+                      ? "bg-red-100 text-red-800"
+                      : saveStatus === "saving"
+                      ? "bg-blue-100 text-blue-800"
+                      : hasUnsavedChanges
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  {saveStatus === "saving" && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                  )}
+                  {saveStatus === "saved" && <span>✓</span>}
+                  {saveStatus === "error" && <span>✗</span>}
+                  {saveStatus === "idle" && hasUnsavedChanges}
+                  {saveStatus === "idle" && !hasUnsavedChanges && <span>✓</span>}
+                  {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : saveStatus === "error" ? "Error" : "Save"}
+                </button>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
                     selectedOrder.status
@@ -546,7 +608,11 @@ export default function PurchaseOrdersPage() {
                   {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
                 </span>
                 <button
-                  onClick={() => setSelectedOrder(null)}
+                  onClick={() => {
+                    setSelectedOrder(null);
+                    setSaveStatus("idle");
+                    setHasUnsavedChanges(false);
+                  }}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
                   <X className="w-6 h-6 text-gray-600" />

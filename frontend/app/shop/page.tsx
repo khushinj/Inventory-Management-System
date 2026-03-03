@@ -389,7 +389,9 @@ function ShopDashboard() {
     setEditingImportRow(key);
     const row = importRows.find(r => r.dno === dno && r.color === color);
     if (row) {
-      setEditImportForm({...row});
+      // Format date to YYYY-MM-DD for date input
+      const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
+      setEditImportForm({...row, date: formattedDate});
     }
   };
 
@@ -414,7 +416,7 @@ function ShopDashboard() {
             color: editImportForm.color,
             size: size,
             qty: qty,
-            date: new Date().toISOString().split("T")[0],
+            date: editImportForm.date || new Date().toISOString().split("T")[0],
             formType: "import",
             channel: "retail",
           });
@@ -530,7 +532,9 @@ function ShopDashboard() {
     setEditingReturnRow(key);
     const row = returnRows.find(r => r.dno === dno && r.color === color);
     if (row) {
-      setEditReturnForm({...row});
+      // Format date to YYYY-MM-DD for date input
+      const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
+      setEditReturnForm({...row, date: formattedDate});
     }
   };
 
@@ -555,7 +559,7 @@ function ShopDashboard() {
             color: editReturnForm.color,
             size: size,
             qty: qty,
-            date: new Date().toISOString().split("T")[0],
+            date: editReturnForm.date || new Date().toISOString().split("T")[0],
             formType: "return",
             channel: "retail",
           });
@@ -931,8 +935,13 @@ function ShopDashboard() {
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {row.date ? row.date.split("T")[0] : "-"}
+                            <td className="px-6 py-4">
+                              <input 
+                                type="date" 
+                                value={editImportForm.date || ""} 
+                                onChange={(e) => setEditImportForm({...editImportForm, date: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
                             </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4">
@@ -1004,8 +1013,13 @@ function ShopDashboard() {
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {row.date ? row.date.split("T")[0] : "-"}
+                            <td className="px-6 py-4">
+                              <input 
+                                type="date" 
+                                value={editReturnForm.date || ""} 
+                                onChange={(e) => setEditReturnForm({...editReturnForm, date: e.target.value})} 
+                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              />
                             </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4">

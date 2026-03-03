@@ -102,6 +102,7 @@ class ShopInventoryService {
   async loadStockReturnsFromDB() {
     try {
       const Model = getTransactionModel('shop', '', 'return');
+      // Stock returns: Channel 'domestic return' = items being sent back to warehouse
       const transactions = await Model.find({ channel: 'domestic return' }).lean();
       
       console.log(`[Shop Inventory] Loading stock returns from DB: ${transactions.length} found`);
@@ -146,10 +147,41 @@ class ShopInventoryService {
   // Load customer returns from database only
   async loadCustomerReturnsFromDB() {
     try {
-      // For now, customer returns come from the JSON file return_data.json
-      // This is kept for legacy compatibility
-      console.log(`[Shop Inventory] Loading customer returns...`);
-      return [];
+      const Model = getTransactionModel('shop', '', 'return');
+      // Customer returns: All other returns (NOT 'domestic return' channel)
+      const transactions = await Model.find({ channel: { $ne: 'domestic return' } }).lean();
+
+      console.log(`[Shop Inventory] Loading customer returns from DB: ${transactions.length} found`);
+
+      const grouped = {};
+
+      transactions.forEach(txn => {
+        const dno = normalizeDesignNumber(txn.dno);
+        const color = normalizeColor(txn.color);
+        const size = normalizeSize(txn.size);
+        const qty = Number(txn.qty) || 0;
+
+        if (!dno || !size || qty === 0) return;
+
+        const key = `${dno}|${color}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            dno,
+            color,
+            sizes: {},
+            totalQty: 0,
+            type: 'customer_return'
+          };
+        }
+
+        grouped[key].sizes[size] = (grouped[key].sizes[size] || 0) + qty;
+        grouped[key].totalQty += qty;
+      });
+
+      const result = Object.values(grouped);
+      console.log(`[Shop Inventory] Grouped customer returns into ${result.length} design groups`);
+
+      return result;
     } catch (error) {
       console.error(`Error loading customer returns from DB:`, error);
       return [];
@@ -166,7 +198,7 @@ class ShopInventoryService {
 
       // Load data from database (new transactions)
       const importDataFromDB = await this.loadTransactionsFromDB('import');
-      const customerReturnDataFromDB = [];  // Customer returns come from JSON only
+      const customerReturnDataFromDB = await this.loadCustomerReturnsFromDB();
       const salesDataFromDB = await this.loadTransactionsFromDB('sales');
       const stockReturnsFromDB = await this.loadStockReturnsFromDB();
 

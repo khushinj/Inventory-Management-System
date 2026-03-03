@@ -129,7 +129,10 @@ function ShopDashboard() {
   };
 
   const groupReturnEntries = (allEntries: Entry[]) => {
-    const returnEntries = allEntries.filter(entry => entry.formType === "return");
+    // Only show customer returns (retail channel), NOT stock returns (domestic return channel)
+    const returnEntries = allEntries.filter(entry => 
+      entry.formType === "return" && entry.channel !== "domestic return"
+    );
     setReturnRows(buildGroupedRows(returnEntries));
   };
 
@@ -179,7 +182,11 @@ function ShopDashboard() {
       const matchesFormType =
         entry.formType === selectedFormType;
 
-      return matchesSearch && matchesChannel && matchesFormType;
+      // When viewing returns, exclude stock returns (which have channel: "domestic return")
+      const isNotStockReturn = 
+        selectedFormType === "return" ? entry.channel !== "domestic return" : true;
+
+      return matchesSearch && matchesChannel && matchesFormType && isNotStockReturn;
     });
 
   const limitedEntries = filteredEntries.slice(0, 30);

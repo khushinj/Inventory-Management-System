@@ -2145,61 +2145,6 @@
     "type": "import"
   },
   {
-    "designNumber": "HAHA",
-    "color": "HAHA",
-    "size": "S",
-    "import": 4,
-    "customerReturn": 0,
-    "stockReturn": 4,
-    "sales": 0,
-    "net": 0,
-    "type": "import"
-  },
-  {
-    "designNumber": "HAHA",
-    "color": "HAHA",
-    "size": "M",
-    "import": 6,
-    "customerReturn": 0,
-    "stockReturn": 3,
-    "sales": 3,
-    "net": 0,
-    "type": "import"
-  },
-  {
-    "designNumber": "HAHA",
-    "color": "HAHA",
-    "size": "L",
-    "import": 8,
-    "customerReturn": 0,
-    "stockReturn": 7,
-    "sales": 0,
-    "net": 1,
-    "type": "import"
-  },
-  {
-    "designNumber": "HAHA",
-    "color": "HAHA",
-    "size": "XL",
-    "import": 16,
-    "customerReturn": 0,
-    "stockReturn": 0,
-    "sales": 0,
-    "net": 16,
-    "type": "import"
-  },
-  {
-    "designNumber": "HAHA",
-    "color": "HAHA",
-    "size": "XXL",
-    "import": 18,
-    "customerReturn": 0,
-    "stockReturn": 0,
-    "sales": 0,
-    "net": 18,
-    "type": "import"
-  },
-  {
     "designNumber": "KI-1386",
     "color": "D.TURQ-29",
     "size": "L",
@@ -3242,6 +3187,39 @@
     "stockReturn": 0,
     "sales": 0,
     "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NEW1",
+    "color": "NEW1",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "import"
+  },
+  {
+    "designNumber": "NEW1",
+    "color": "NEW1",
+    "size": "M",
+    "import": 2,
+    "customerReturn": 1,
+    "stockReturn": 3,
+    "sales": 0,
+    "net": 0,
+    "type": "import"
+  },
+  {
+    "designNumber": "NEW1",
+    "color": "NEW1",
+    "size": "L",
+    "import": 8,
+    "customerReturn": 5,
+    "stockReturn": 10,
+    "sales": 0,
+    "net": 3,
     "type": "import"
   },
   {

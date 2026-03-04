@@ -30,6 +30,46 @@ type SampleRow = {
 
 const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
+const normalizeDesignNumber = (value: string) =>
+  value.trim().replace(/\s+/g, "").toUpperCase();
+
+const normalizeColor = (value: string) =>
+  value.trim().replace(/\s+/g, " ").toUpperCase();
+
+const normalizeSizeKey = (value: string) => {
+  const normalized = value.trim().toUpperCase();
+  return normalized === "2XL" ? "XXL" : normalized;
+};
+
+const normalizeStockReturnRow = (row: SampleRow): SampleRow => {
+  const normalizedSizes: SampleRow["sizes"] = {
+    S: 0,
+    M: 0,
+    L: 0,
+    XL: 0,
+    XXL: 0,
+    "3XL": 0,
+    "4XL": 0,
+    "5XL": 0,
+    "6XL": 0,
+  };
+
+  Object.entries(row.sizes || {}).forEach(([size, qty]) => {
+    const normalizedSize = normalizeSizeKey(size);
+    if (normalizedSize in normalizedSizes) {
+      normalizedSizes[normalizedSize] = (normalizedSizes[normalizedSize] || 0) + (Number(qty) || 0);
+    }
+  });
+
+  return {
+    ...row,
+    dno: normalizeDesignNumber(row.dno || ""),
+    type: (row.type || "").trim(),
+    color: normalizeColor(row.color || ""),
+    sizes: normalizedSizes,
+  };
+};
+
 export default function StockReturnedPage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [stockReturnedRows, setStockReturnedRows] = useState<SampleRow[]>([]);
@@ -86,6 +126,14 @@ export default function StockReturnedPage() {
     fetchStockReturnEntries();
   }, []);
 
+  const recalculateShopInventory = async () => {
+    try {
+      await api.post("/shop-inventory/calculate");
+    } catch (error) {
+      console.error("Error recalculating shop inventory:", error);
+    }
+  };
+
   const fetchStockReturnEntries = async () => {
     try {
       setLoading(true);
@@ -111,9 +159,9 @@ export default function StockReturnedPage() {
 
   const convertToGroupedRows = (allStockReturned: any[]) => {
     const rows: SampleRow[] = allStockReturned.map((entry) => ({
-      dno: entry.dno || "",
+      dno: normalizeDesignNumber(entry.dno || ""),
       type: entry.type || "",
-      color: entry.color || "",
+      color: normalizeColor(entry.color || ""),
       mrp: entry.mrp || 0,
       date: entry.date ? new Date(entry.date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
       sizes: {
@@ -133,20 +181,22 @@ export default function StockReturnedPage() {
   };
 
   const handleSaveStockReturnRow = async () => {
-    if (!newStockReturnedRow.dno.trim() || !newStockReturnedRow.color.trim()) {
+    const normalizedRow = normalizeStockReturnRow(newStockReturnedRow);
+
+    if (!normalizedRow.dno || !normalizedRow.color) {
       alert("Please enter DNO and Color");
       return;
     }
 
-    if (Object.values(newStockReturnedRow.sizes).every(size => size === 0)) {
+    if (Object.values(normalizedRow.sizes).every(size => size === 0)) {
       alert("Please enter at least one size quantity");
       return;
     }
 
+    const tempId = `temp_${Date.now()}`;
+
     try {
-      // Create temporary ID for immediate display
-      const tempId = `temp_${Date.now()}`;
-      const rowWithTempId = { ...newStockReturnedRow, _id: tempId };
+      const rowWithTempId = { ...normalizedRow, _id: tempId };
 
       // Add new row to local state immediately
       setStockReturnedRows([...stockReturnedRows, rowWithTempId]);
@@ -175,21 +225,22 @@ export default function StockReturnedPage() {
       stockReturnDnoRef.current?.focus();
 
       // Save to backend in background
-      const totalQty = Object.values(newStockReturnedRow.sizes).reduce((a, b) => a + b, 0);
+      const totalQty = Object.values(normalizedRow.sizes).reduce((a, b) => a + b, 0);
       
       const dataToSave = {
-        dno: newStockReturnedRow.dno,
-        type: newStockReturnedRow.type,
-        color: newStockReturnedRow.color,
-        mrp: newStockReturnedRow.mrp,
-        date: newStockReturnedRow.date,
-        items: Object.entries(newStockReturnedRow.sizes)
+        dno: normalizedRow.dno,
+        type: normalizedRow.type,
+        color: normalizedRow.color,
+        mrp: normalizedRow.mrp,
+        date: normalizedRow.date,
+        items: Object.entries(normalizedRow.sizes)
           .filter(([_, qty]) => qty > 0)
-          .map(([size, qty]) => ({ size, qty, mrp: newStockReturnedRow.mrp })),
+          .map(([size, qty]) => ({ size: normalizeSizeKey(size), qty, mrp: normalizedRow.mrp })),
         totalQuantity: totalQty,
       };
 
       const res = await api.post("/stock-returned", dataToSave);
+      await recalculateShopInventory();
       
       // Update the row with the real ID from backend
       setStockReturnedRows(prevRows =>
@@ -202,7 +253,7 @@ export default function StockReturnedPage() {
       alert("Failed to save stock return entry");
       // Remove the temporary row if save failed
       setStockReturnedRows(prevRows =>
-        prevRows.filter(row => row._id !== `temp_${Date.now()}`)
+        prevRows.filter(row => row._id !== tempId)
       );
     }
   };
@@ -213,13 +264,25 @@ export default function StockReturnedPage() {
   };
 
   const handleUpdateStockReturnRow = async () => {
+    const normalizedForm = normalizeStockReturnRow(editStockReturnForm);
+
+    if (!normalizedForm.dno || !normalizedForm.color) {
+      alert("Please enter DNO and Color");
+      return;
+    }
+
+    if (Object.values(normalizedForm.sizes).every(size => size === 0)) {
+      alert("Please enter at least one size quantity");
+      return;
+    }
+
     try {
-      const key = editStockReturnForm._id;
+      const key = normalizedForm._id;
       
       // Update local state immediately
       setStockReturnedRows(stockReturnedRows.map(row => {
         if (row._id === key) {
-          return editStockReturnForm;
+          return normalizedForm;
         }
         return row;
       }));
@@ -227,26 +290,23 @@ export default function StockReturnedPage() {
       setEditingStockReturnRow(null);
 
       // Save to backend in background
-      const rowToUpdate = stockReturnedRows.find(
-        row => row.dno === editStockReturnForm.dno && row.color === editStockReturnForm.color
-      );
-
-      if (rowToUpdate && rowToUpdate._id) {
-        const totalQty = Object.values(editStockReturnForm.sizes).reduce((a, b) => a + b, 0);
+      if (key) {
+        const totalQty = Object.values(normalizedForm.sizes).reduce((a, b) => a + b, 0);
 
         const dataToUpdate = {
-          dno: editStockReturnForm.dno,
-          type: editStockReturnForm.type,
-          color: editStockReturnForm.color,
-          mrp: editStockReturnForm.mrp,
-          date: editStockReturnForm.date,
-          items: Object.entries(editStockReturnForm.sizes)
+          dno: normalizedForm.dno,
+          type: normalizedForm.type,
+          color: normalizedForm.color,
+          mrp: normalizedForm.mrp,
+          date: normalizedForm.date,
+          items: Object.entries(normalizedForm.sizes)
             .filter(([_, qty]) => qty > 0)
-            .map(([size, qty]) => ({ size, qty, mrp: editStockReturnForm.mrp })),
+            .map(([size, qty]) => ({ size: normalizeSizeKey(size), qty, mrp: normalizedForm.mrp })),
           totalQuantity: totalQty,
         };
 
-        await api.put(`/stock-returned/${rowToUpdate._id}`, dataToUpdate);
+        await api.put(`/stock-returned/${key}`, dataToUpdate);
+        await recalculateShopInventory();
       }
     } catch (error) {
       console.error("Error updating stock return row:", error);
@@ -264,6 +324,7 @@ export default function StockReturnedPage() {
       // Delete from backend in background
       if (id) {
         await api.delete(`/stock-returned/${id}`);
+        await recalculateShopInventory();
       }
     } catch (error) {
       console.error("Error deleting stock return row:", error);
@@ -359,11 +420,11 @@ export default function StockReturnedPage() {
       const groupedData: { [key: string]: SampleRow } = {};
 
       jsonData.forEach((row: any) => {
-        const dno = row.DNO?.toString().trim();
+        const dno = normalizeDesignNumber(row.DNO?.toString() || "");
         const type = row.Type?.toString().trim() || "";
-        const color = row.Color?.toString().trim();
+        const color = normalizeColor(row.Color?.toString() || "");
         const date = row.Date?.toString().trim() || new Date().toISOString().split("T")[0];
-        const size = row.Size?.toString().trim().toUpperCase();
+        const size = normalizeSizeKey(row.Size?.toString() || "");
         const qty = parseInt(row.Quantity) || 0;
 
         if (dno && color && size && qty > 0) {
@@ -402,16 +463,20 @@ export default function StockReturnedPage() {
         
         const dataToSave = {
           dno: row.dno,
+          type: row.type,
           color: row.color,
+          mrp: row.mrp,
           date: row.date,
           items: Object.entries(row.sizes)
             .filter(([_, qty]) => qty > 0)
-            .map(([size, qty]) => ({ size, qty })),
+            .map(([size, qty]) => ({ size: normalizeSizeKey(size), qty, mrp: row.mrp })),
           totalQuantity: totalQty,
         };
 
         await api.post("/stock-returned", dataToSave);
       }
+
+      await recalculateShopInventory();
 
       // Refresh data
       fetchStockReturnEntries();

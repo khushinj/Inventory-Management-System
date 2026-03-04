@@ -1117,18 +1117,25 @@ function DomesticDashboard() {
   };
 
   const handleImportFromExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("📥 Import button clicked, processing file...");
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log("❌ No file selected");
+      return;
+    }
 
+    console.log("✅ File selected:", file.name);
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
+        console.log("📖 Reading Excel file...");
         const data = new Uint8Array(event.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" }) as any[];
 
+        console.log("📊 Rows found:", rows.length);
         if (!rows.length) {
           alert("No rows found in the Excel sheet.");
           return;
@@ -1218,9 +1225,13 @@ function DomesticDashboard() {
         }
 
         if (payloads.length === 0) {
+          console.log("❌ No valid rows to import");
           alert("No rows were imported. Please verify the Excel columns and data.");
           return;
         }
+
+        console.log(`✅ Prepared ${payloads.length} entries for import`);
+        console.log("📤 Sending to API:", '/warehouse/domestic/bulk');
 
         const chunkSize = 200;
         let inserted = 0;
@@ -1229,16 +1240,20 @@ function DomesticDashboard() {
 
         for (let i = 0; i < payloads.length; i += chunkSize) {
           const chunk = payloads.slice(i, i + chunkSize);
+          console.log(`📦 Sending chunk ${Math.floor(i/chunkSize) + 1}, size: ${chunk.length}`);
           try {
             const response = await api.post("/warehouse/domestic/bulk", { entries: chunk });
+            console.log("✅ Chunk response:", response.data);
             inserted += response.data?.inserted || 0;
             rejected += response.data?.rejected?.length || 0;
             failed += response.data?.errors?.length || 0;
           } catch (err) {
-            console.error("Bulk import failed:", err);
+            console.error("❌ Bulk import failed for chunk:", err);
             failed += chunk.length;
           }
         }
+
+        console.log(`📊 Import results: ${inserted} inserted, ${rejected} rejected, ${failed} failed`);
 
         if (inserted === 0) {
           alert("No rows were imported. Please verify the Excel columns and data.");
@@ -1247,9 +1262,10 @@ function DomesticDashboard() {
 
         const failureNote = rejected + failed > 0 ? ` (${rejected + failed} failed)` : "";
         alert(`Successfully imported ${inserted} entries!${failureNote}`);
+        console.log("✅ Import complete, refreshing entries...");
         fetchEntries();
       } catch (err) {
-        console.error("Error importing Excel:", err);
+        console.error("❌ Error importing Excel:", err);
         alert("Failed to import Excel file. Please check the file format.");
       }
     };

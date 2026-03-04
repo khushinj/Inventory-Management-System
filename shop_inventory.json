@@ -3190,39 +3190,6 @@
     "type": "import"
   },
   {
-    "designNumber": "NEW1",
-    "color": "NEW1",
-    "size": "S",
-    "import": 1,
-    "customerReturn": 0,
-    "stockReturn": 1,
-    "sales": 0,
-    "net": 0,
-    "type": "import"
-  },
-  {
-    "designNumber": "NEW1",
-    "color": "NEW1",
-    "size": "M",
-    "import": 2,
-    "customerReturn": 1,
-    "stockReturn": 3,
-    "sales": 0,
-    "net": 0,
-    "type": "import"
-  },
-  {
-    "designNumber": "NEW1",
-    "color": "NEW1",
-    "size": "L",
-    "import": 8,
-    "customerReturn": 5,
-    "stockReturn": 10,
-    "sales": 0,
-    "net": 3,
-    "type": "import"
-  },
-  {
     "designNumber": "NG-002",
     "color": "OFFWHITE",
     "size": "M",

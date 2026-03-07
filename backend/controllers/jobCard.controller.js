@@ -17,9 +17,21 @@ export const createJobCard = async (req, res) => {
       imageUrl = uploadResult.url;
     }
     
+    // Parse cutting data if it's a JSON string
+    let cuttingData = req.body.cutting;
+    if (typeof cuttingData === 'string') {
+      try {
+        cuttingData = JSON.parse(cuttingData);
+      } catch (e) {
+        console.error('Error parsing cutting data:', e);
+        cuttingData = [];
+      }
+    }
+    
     const jobCardData = {
       ...req.body,
-      image: imageUrl || req.body.image
+      image: imageUrl || req.body.image,
+      cutting: cuttingData || []
     };
     
     const jobCard = await JobCard.create(jobCardData);
@@ -106,9 +118,21 @@ export const updateJobCard = async (req, res) => {
       imageUrl = uploadResult.url;
     }
     
+    // Parse cutting data if it's a JSON string (for FormData)
+    let cuttingData = req.body.cutting;
+    if (typeof cuttingData === 'string') {
+      try {
+        cuttingData = JSON.parse(cuttingData);
+      } catch (e) {
+        console.error('Error parsing cutting data:', e);
+        cuttingData = existingJobCard.cutting || [];
+      }
+    }
+    
     const updateData = {
       ...req.body,
-      image: imageUrl
+      image: imageUrl,
+      cutting: cuttingData !== undefined ? cuttingData : existingJobCard.cutting
     };
     
     const jobCard = await JobCard.findByIdAndUpdate(

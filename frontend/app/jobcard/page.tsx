@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import Image from "next/image";
+
+type CuttingEntry = {
+  id: string;
+  color: string;
+  quantity: string;
+};
 
 type JobCardForm = {
   designNumber: string;
@@ -14,6 +20,7 @@ type JobCardForm = {
   mrp: string;
   imageFile?: File | null;
   imagePreview?: string;
+  cutting?: CuttingEntry[];
 };
 
 type SavedJobCard = {
@@ -25,6 +32,7 @@ type SavedJobCard = {
   gsm: number;
   mrp: number;
   image?: string;
+  cutting?: { color: string; quantity: number }[];
   createdAt: string;
 };
 
@@ -37,6 +45,7 @@ export default function JobCardPage() {
     gsm: "",
     mrp: "",
     imageFile: null,
+    cutting: [],
   });
 
   const [savedJobCards, setSavedJobCards] = useState<SavedJobCard[]>([]);
@@ -45,10 +54,29 @@ export default function JobCardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<SavedJobCard | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchJobCards();
   }, []);
+
+  // Handle Enter key to move to next input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const form = formRef.current;
+      if (!form) return;
+
+      const inputs = Array.from(form.querySelectorAll<HTMLInputElement>(
+        'input[type="text"], input[type="number"]'
+      )).filter(input => !input.disabled && input.type !== 'file');
+
+      const currentIndex = inputs.indexOf(e.currentTarget);
+      if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
+        inputs[currentIndex + 1].focus();
+      }
+    }
+  };
 
   const fetchJobCards = async () => {
     try {
@@ -72,10 +100,38 @@ export default function JobCardPage() {
 
   const updateVariantRow = (
     id: string,
-    field: string,
-    value: string
+    field: string,undefinevalue: string
   ) => {
     // Removed - variants no longer used
+  };
+
+  // Cutting management functions
+  const addCuttingEntry = () => {
+    const newEntry: CuttingEntry = {
+      id: Date.now().toString(),
+      color: "",
+      quantity: "",
+    };
+    setFormData({
+      ...formData,
+      cutting: [...(formData.cutting || []), newEntry],
+    });
+  };
+
+  const deleteCuttingEntry = (id: string) => {
+    setFormData({
+      ...formData,
+      cutting: (formData.cutting || []).filter((entry) => entry.id !== id),
+    });
+  };
+
+  const updateCuttingEntry = (id: string, field: keyof Omit<CuttingEntry, 'id'>, value: string) => {
+    setFormData({
+      ...formData,
+      cutting: (formData.cutting || []).map((entry) =>
+        entry.id === id ? { ...entry, [field]: value } : entry
+      ),
+    });
   };
 
   const updateMainField = (field: keyof JobCardForm, value: string) => {
@@ -123,6 +179,17 @@ export default function JobCardPage() {
       formDataToSend.append('gsm', formData.gsm);
       formDataToSend.append('mrp', formData.mrp);
       
+      // Add cutting data if present
+      if (formData.cutting && formData.cutting.length > 0) {
+        const cuttingData = formData.cutting
+          .filter(entry => entry.color && entry.quantity)
+          .map(entry => ({
+            color: entry.color,
+            quantity: parseInt(entry.quantity) || 0,
+          }));
+        formDataToSend.append('cutting', JSON.stringify(cuttingData));
+      }
+      
       if (formData.imageFile) {
         formDataToSend.append('image', formData.imageFile);
       }
@@ -133,6 +200,7 @@ export default function JobCardPage() {
         },
       });
 
+        cutting: [],
       alert("Job card saved successfully!");
 
       // Reset form
@@ -225,7 +293,7 @@ export default function JobCardPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Entry Form Section */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+        <div ref={formRef} className="bg-white rounded-lg shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-8">Design Info</h2>
 
           {/* Main Product Details */}
@@ -297,6 +365,7 @@ export default function JobCardPage() {
                   onChange={(e) =>
                     updateMainField("designNumber", e.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                   placeholder="Enter design number"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
@@ -311,6 +380,7 @@ export default function JobCardPage() {
                   type="text"
                   value={formData.fabric}
                   onChange={(e) => updateMainField("fabric", e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder="Enter fabric type"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
@@ -327,6 +397,7 @@ export default function JobCardPage() {
                   onChange={(e) =>
                     updateMainField("fabricComposition", e.target.value)
                   }
+                  onKeyDown={handleKeyDown}
                   placeholder="e.g., 100% Cotton"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
@@ -341,6 +412,7 @@ export default function JobCardPage() {
                   type="text"
                   value={formData.brand}
                   onChange={(e) => updateMainField("brand", e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder="Enter brand"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
@@ -355,6 +427,7 @@ export default function JobCardPage() {
                   type="number"
                   value={formData.gsm}
                   onChange={(e) => updateMainField("gsm", e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder="Enter GSM"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
@@ -369,10 +442,84 @@ export default function JobCardPage() {
                   type="number"
                   value={formData.mrp}
                   onChange={(e) => updateMainField("mrp", e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder="Enter MRP"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
                 />
               </div>
+            </div>
+
+            {/* 8. Cutting Section */}
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">8. Cutting Details (Optional)</h3>
+                <button
+                  type="button"
+                  onClick={addCuttingEntry}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Cutting Entry
+                </button>
+              </div>
+
+              {!formData.cutting || formData.cutting.length === 0 ? (
+                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                  <p className="text-gray-600">No cutting entries added yet. Click "Add Cutting Entry" to add color-wise cutting quantities.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {formData.cutting.map((entry, index) => (
+                    <div key={entry.id} className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-semibold">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Color
+                            </label>
+                            <input
+                              type="text"
+                              value={entry.color}
+                              onChange={(e) => updateCuttingEntry(entry.id, 'color', e.target.value)}
+                              onKeyDown={handleKeyDown}
+                              placeholder="e.g., Red, Blue, Green"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Cutting Quantity
+                            </label>
+                            <input
+                              type="number"
+                              value={entry.quantity}
+                              onChange={(e) => updateCuttingEntry(entry.id, 'quantity', e.target.value)}
+                              onKeyDown={handleKeyDown}
+                              placeholder="Enter quantity"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-800"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => deleteCuttingEntry(entry.id)}
+                          className="flex-shrink-0 p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                          title="Delete entry"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -388,6 +535,7 @@ export default function JobCardPage() {
                   gsm: "",
                   mrp: "",
                   imageFile: null,
+                  cutting: [],
                 });
               }}
               className="px-8 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-semibold"

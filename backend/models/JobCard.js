@@ -33,6 +33,17 @@ const jobCardSchema = new mongoose.Schema({
     type: String, // Store Cloudinary URL (or base64 for backwards compatibility)
     required: false,
   },
+  cutting: [{
+    color: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+    }
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -200,7 +200,6 @@ export default function JobCardPage() {
         },
       });
 
-        cutting: [],
       alert("Job card saved successfully!");
 
       // Reset form
@@ -212,6 +211,7 @@ export default function JobCardPage() {
         gsm: "",
         mrp: "",
         imageFile: null,
+        cutting: [],
       });
 
       fetchJobCards();

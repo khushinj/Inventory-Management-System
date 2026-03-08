@@ -383,6 +383,7 @@ export default function StockReturnedPage() {
         "DNO": index === 0 ? row.dno : "",
         "Type": index === 0 ? row.type : "",
         "Color": index === 0 ? row.color : "",
+        "MRP": index === 0 ? row.mrp : "",
         "Date": index === 0 ? row.date : "",
         "Size": size,
         "Quantity": row.sizes[size] || 0,
@@ -397,6 +398,7 @@ export default function StockReturnedPage() {
       { wch: 15 },
       { wch: 15 },
       { wch: 15 },
+      { wch: 12 },
       { wch: 12 },
       { wch: 10 },
       { wch: 12 },
@@ -416,49 +418,191 @@ export default function StockReturnedPage() {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      // Group data by DNO and Color
-      const groupedData: { [key: string]: SampleRow } = {};
+      console.log("📊 Excel data parsed:", jsonData.length, "rows");
+      if (jsonData.length > 0) {
+        console.log("Sample row:", jsonData[0]);
+        console.log("Columns:", Object.keys(jsonData[0] as any));
+      }
 
-      jsonData.forEach((row: any) => {
-        const dno = normalizeDesignNumber(row.DNO?.toString() || "");
-        const type = row.Type?.toString().trim() || "";
-        const color = normalizeColor(row.Color?.toString() || "");
-        const date = row.Date?.toString().trim() || new Date().toISOString().split("T")[0];
-        const size = normalizeSizeKey(row.Size?.toString() || "");
-        const qty = parseInt(row.Quantity) || 0;
+      const groupedData: SampleRow[] = [];
+      let skippedRows = 0;
 
-        if (dno && color && size && qty > 0) {
-          const key = `${dno}_${color}`;
+      // Check if this is wide format (size columns) or long format (Size + Quantity columns)
+      const firstRow = jsonData[0] as any;
+      const hasWideSizeColumns = jsonData.length > 0 && 
+        (firstRow?.hasOwnProperty('S') || firstRow?.hasOwnProperty('s') ||
+         firstRow?.hasOwnProperty('M') || firstRow?.hasOwnProperty('m'));
+
+      if (hasWideSizeColumns) {
+        console.log("✅ Detected WIDE format (size columns: S, M, L, XL, etc.)");
+        
+        // Wide format: One row per item with size columns
+        jsonData.forEach((row: any, index: number) => {
+          const dno = normalizeDesignNumber(
+            row.DNO?.toString() || row.dno?.toString() || row.Dno?.toString() || ""
+          );
+          const type = (
+            row.Type?.toString() || row.type?.toString() || row.TYPE?.toString() || ""
+          ).trim();
+          const color = normalizeColor(
+            row.Color?.toString() || row.color?.toString() || row.COLOR?.toString() || ""
+          );
           
-          if (!groupedData[key]) {
-            groupedData[key] = {
+          // Parse date - handle Excel serial numbers and string dates
+          let date = new Date().toISOString().split("T")[0];
+          const dateValue = row.Date || row.date || row.DATE;
+          if (dateValue) {
+            if (typeof dateValue === 'number') {
+              // Excel serial date number
+              const excelDate = XLSX.SSF.parse_date_code(dateValue);
+              date = `${excelDate.y}-${String(excelDate.m).padStart(2, '0')}-${String(excelDate.d).padStart(2, '0')}`;
+            } else {
+              // Try parsing as string
+              const parsedDate = new Date(dateValue.toString());
+              if (!isNaN(parsedDate.getTime())) {
+                date = parsedDate.toISOString().split("T")[0];
+              } else {
+                date = dateValue.toString().trim();
+              }
+            }
+          }
+          
+          const mrp = parseFloat(
+            row.MRP?.toString() || row.mrp?.toString() || row.Mrp?.toString() || "0"
+          ) || 0;
+
+          // Read size quantities from columns
+          const sizes: SampleRow["sizes"] = {
+            S: parseInt(row.S?.toString() || row.s?.toString() || "0") || 0,
+            M: parseInt(row.M?.toString() || row.m?.toString() || "0") || 0,
+            L: parseInt(row.L?.toString() || row.l?.toString() || "0") || 0,
+            XL: parseInt(row.XL?.toString() || row.xl?.toString() || row.Xl?.toString() || "0") || 0,
+            XXL: parseInt(row.XXL?.toString() || row.xxl?.toString() || row.Xxl?.toString() || row["2XL"]?.toString() || "0") || 0,
+            "3XL": parseInt(row["3XL"]?.toString() || row["3xl"]?.toString() || "0") || 0,
+            "4XL": parseInt(row["4XL"]?.toString() || row["4xl"]?.toString() || "0") || 0,
+            "5XL": parseInt(row["5XL"]?.toString() || row["5xl"]?.toString() || "0") || 0,
+            "6XL": parseInt(row["6XL"]?.toString() || row["6xl"]?.toString() || "0") || 0,
+          };
+
+          const totalQty = Object.values(sizes).reduce((a, b) => a + b, 0);
+
+          console.log(`Row ${index + 1}:`, { dno, type, color, mrp, date, totalQty });
+
+          if (dno && color && totalQty > 0) {
+            groupedData.push({
               dno,
               type,
               color,
               date,
-              mrp: 0,
-              sizes: {
-                S: 0,
-                M: 0,
-                L: 0,
-                XL: 0,
-                XXL: 0,
-                "3XL": 0,
-                "4XL": 0,
-                "5XL": 0,
-                "6XL": 0,
-              },
-            };
+              mrp,
+              sizes,
+            });
+          } else {
+            skippedRows++;
+            console.warn(`⚠️ Skipped row ${index + 1}: missing required fields or no quantities`, { dno, color, totalQty });
           }
+        });
+      } else {
+        console.log("✅ Detected LONG format (Size and Quantity columns)");
+        
+        // Long format: Multiple rows per item with Size and Quantity columns
+        const tempGrouped: { [key: string]: SampleRow } = {};
 
-          if (groupedData[key].sizes.hasOwnProperty(size)) {
-            groupedData[key].sizes[size] = qty;
+        jsonData.forEach((row: any, index: number) => {
+          const dno = normalizeDesignNumber(
+            row.DNO?.toString() || row.dno?.toString() || row.Dno?.toString() || ""
+          );
+          const type = (
+            row.Type?.toString() || row.type?.toString() || row.TYPE?.toString() || ""
+          ).trim();
+          const color = normalizeColor(
+            row.Color?.toString() || row.color?.toString() || row.COLOR?.toString() || ""
+          );
+          
+          // Parse date - handle Excel serial numbers and string dates
+          let date = new Date().toISOString().split("T")[0];
+          const dateValue = row.Date || row.date || row.DATE;
+          if (dateValue) {
+            if (typeof dateValue === 'number') {
+              // Excel serial date number
+              const excelDate = XLSX.SSF.parse_date_code(dateValue);
+              date = `${excelDate.y}-${String(excelDate.m).padStart(2, '0')}-${String(excelDate.d).padStart(2, '0')}`;
+            } else {
+              // Try parsing as string
+              const parsedDate = new Date(dateValue.toString());
+              if (!isNaN(parsedDate.getTime())) {
+                date = parsedDate.toISOString().split("T")[0];
+              } else {
+                date = dateValue.toString().trim();
+              }
+            }
           }
+          
+          const size = normalizeSizeKey(
+            row.Size?.toString() || row.size?.toString() || row.SIZE?.toString() || ""
+          );
+          const qty = parseInt(
+            row.Quantity?.toString() || row.quantity?.toString() || row.QUANTITY?.toString() || 
+            row.Qty?.toString() || row.qty?.toString() || row.QTY?.toString() || "0"
+          ) || 0;
+          const mrp = parseFloat(
+            row.MRP?.toString() || row.mrp?.toString() || row.Mrp?.toString() || "0"
+          ) || 0;
+
+          console.log(`Row ${index + 1}:`, { dno, type, color, size, qty, mrp });
+
+          if (dno && color && size && qty > 0) {
+            const key = `${dno}_${color}`;
+            
+            if (!tempGrouped[key]) {
+              tempGrouped[key] = {
+                dno,
+                type,
+                color,
+                date,
+                mrp: mrp,
+                sizes: {
+                  S: 0,
+                  M: 0,
+                  L: 0,
+                  XL: 0,
+                  XXL: 0,
+                  "3XL": 0,
+                  "4XL": 0,
+                  "5XL": 0,
+                  "6XL": 0,
+                },
+              };
+            } else {
+              if (type && !tempGrouped[key].type) tempGrouped[key].type = type;
+              if (mrp > 0) tempGrouped[key].mrp = mrp;
+            }
+
+            if (tempGrouped[key].sizes.hasOwnProperty(size)) {
+              tempGrouped[key].sizes[size] += qty;
+            }
+          } else {
+            skippedRows++;
+            console.warn(`⚠️ Skipped row ${index + 1}: missing required fields`, { dno, color, size, qty });
+          }
+        });
+
+        groupedData.push(...Object.values(tempGrouped));
+      }
+
+      console.log(`✅ Processed ${groupedData.length} entries`);
+      console.log(`⚠️ Skipped ${skippedRows} rows`);
+
+      if (groupedData.length === 0) {
+        alert(`No valid entries found in Excel file!\n\nRequired columns:\n- Wide format: DNO, Color, and size columns (S, M, L, XL, etc.)\n- Long format: DNO, Color, Size, Quantity\n\nOptional: Type, MRP, Date\n\nSkipped ${skippedRows} rows due to missing data.`);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
         }
-      });
+        return;
+      }
 
       // Save to backend
-      for (const row of Object.values(groupedData)) {
+      for (const row of groupedData) {
         const totalQty = Object.values(row.sizes).reduce((a, b) => a + b, 0);
         
         const dataToSave = {
@@ -480,10 +624,10 @@ export default function StockReturnedPage() {
 
       // Refresh data
       fetchStockReturnEntries();
-      alert(`Successfully imported ${Object.keys(groupedData).length} entries!`);
+      alert(`Successfully imported ${groupedData.length} entries!`);
     } catch (error) {
       console.error("Error importing stock return entries:", error);
-      alert("Failed to import stock return entries");
+      alert(`Failed to import stock return entries: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
     // Reset file input

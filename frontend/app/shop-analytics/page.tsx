@@ -104,6 +104,13 @@ function toIsoDate(value?: string) {
   return value.split("T")[0] || "";
 }
 
+function ensureMinimumRows<T>(rows: T[], minimum: number, fillerFactory: (index: number) => T) {
+  if (rows.length >= minimum) return rows;
+  const missing = minimum - rows.length;
+  const filler = Array.from({ length: missing }, (_, index) => fillerFactory(index));
+  return [...rows, ...filler];
+}
+
 function getPreviousRange(range: DateRange) {
   const periodDays = Math.max(1, Math.round((range.end.getTime() - range.start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
   const previousEnd = new Date(range.start);
@@ -326,7 +333,7 @@ function PaymentPieChart({ values }: { values: { cash: number; upi: number; card
       </svg>
 
       {paths.map((slice) => {
-        const labelRadius = radius + 52;
+        const labelRadius = radius + 40;
         const x = center + labelRadius * Math.cos((Math.PI * slice.midAngle) / 180);
         const y = center + labelRadius * Math.sin((Math.PI * slice.midAngle) / 180);
         return (
@@ -544,7 +551,7 @@ export default function ShopAnalyticsPage() {
       }))
       .filter((item) => item.quantity > 0 && item.sold <= item.quantity * 0.25)
       .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 5);
+      .slice(0, 10);
   }, [inRangeSalesEntries, shopInventory]);
 
   const topArticles = useMemo(() => {
@@ -558,7 +565,7 @@ export default function ShopAnalyticsPage() {
     return Object.entries(grouped)
       .map(([productNo, quantity]) => ({ productNo, quantity }))
       .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 5);
+      .slice(0, 10);
   }, [inRangeSalesEntries]);
 
   const tableRows = useMemo(() => {
@@ -573,14 +580,29 @@ export default function ShopAnalyticsPage() {
     }, {});
 
     return Object.entries(salesByDate)
-      .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
-      .slice(0, 6)
+      .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
+      .slice(0, 10)
       .map(([dateIso, payload]) => ({
         date: new Date(dateIso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
         totalSale: formatINR(payload.value),
         quantity: payload.qty,
       }));
   }, [getUnitAmount, inRangeSalesEntries]);
+
+  const dateTableRows = useMemo(
+    () => ensureMinimumRows(tableRows, 10, () => ({ date: "-", totalSale: formatINR(0), quantity: 0 })),
+    [tableRows]
+  );
+
+  const slowMovingRows = useMemo(
+    () => ensureMinimumRows(slowMoving, 10, () => ({ productNo: "-", quantity: 0, sold: 0 })),
+    [slowMoving]
+  );
+
+  const topArticlesRows = useMemo(
+    () => ensureMinimumRows(topArticles, 10, () => ({ productNo: "-", quantity: 0 })),
+    [topArticles]
+  );
 
   const paymentDistribution = useMemo(() => {
     return filteredReports.reduce(
@@ -653,30 +675,32 @@ export default function ShopAnalyticsPage() {
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Slow Moving Stock</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50">
-                  <tr className="text-base text-slate-600 sm:text-xl">
-                    <th className="px-5 py-4 font-semibold">Product No</th>
-                    <th className="px-5 py-4 font-semibold">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(slowMoving.length > 0 ? slowMoving : [{ productNo: "-", quantity: 0 }]).map((item) => (
-                    <tr key={item.productNo} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
-                      <td className="px-5 py-4">{item.productNo}</td>
-                      <td className="px-5 py-4">{item.quantity}</td>
+              <div className="max-h-[500px] overflow-y-auto">
+                <table className="w-full text-left">
+                  <thead className="sticky top-0 z-10 bg-slate-50">
+                    <tr className="text-base text-slate-600 sm:text-xl">
+                      <th className="px-5 py-4 font-semibold">Product No</th>
+                      <th className="px-5 py-4 font-semibold">Quantity</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {slowMovingRows.map((item, index) => (
+                      <tr key={`${item.productNo}-${index}`} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
+                        <td className="px-5 py-4">{item.productNo}</td>
+                        <td className="px-5 py-4">{item.quantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
         </div>
 
         <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="overflow-x-auto">
+          <div className="max-h-[500px] overflow-y-auto">
             <table className="w-full text-left">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200 text-base text-slate-600 sm:text-xl">
                   <th className="px-5 py-4 font-semibold">Date</th>
                   <th className="px-5 py-4 font-semibold">Total Sale</th>
@@ -684,11 +708,8 @@ export default function ShopAnalyticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {(tableRows.length > 0
-                  ? tableRows
-                  : [{ date: "No data", totalSale: formatINR(0), quantity: 0 }]
-                ).map((row) => (
-                  <tr key={row.date} className="border-b border-slate-200 text-base text-slate-700 last:border-b-0 sm:text-xl">
+                {dateTableRows.map((row, index) => (
+                  <tr key={`${row.date}-${index}`} className="border-b border-slate-200 text-base text-slate-700 last:border-b-0 sm:text-xl">
                     <td className="px-5 py-4">{row.date}</td>
                     <td className="px-5 py-4">{row.totalSale}</td>
                     <td className="px-5 py-4">{row.quantity}</td>
@@ -710,22 +731,24 @@ export default function ShopAnalyticsPage() {
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Top Articles Sold</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50">
-                  <tr className="text-base text-slate-600 sm:text-xl">
-                    <th className="px-5 py-4 font-semibold">Product No</th>
-                    <th className="px-5 py-4 font-semibold">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(topArticles.length > 0 ? topArticles : [{ productNo: "-", quantity: 0 }]).map((item) => (
-                    <tr key={item.productNo} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
-                      <td className="px-5 py-4">{item.productNo}</td>
-                      <td className="px-5 py-4">{item.quantity}</td>
+              <div className="max-h-[500px] overflow-y-auto">
+                <table className="w-full text-left">
+                  <thead className="sticky top-0 z-10 bg-slate-50">
+                    <tr className="text-base text-slate-600 sm:text-xl">
+                      <th className="px-5 py-4 font-semibold">Product No</th>
+                      <th className="px-5 py-4 font-semibold">Quantity</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {topArticlesRows.map((item, index) => (
+                      <tr key={`${item.productNo}-${index}`} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
+                        <td className="px-5 py-4">{item.productNo}</td>
+                        <td className="px-5 py-4">{item.quantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
         </div>

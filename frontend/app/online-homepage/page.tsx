@@ -1,9 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Undo2, ShoppingCart, ArrowRightLeft, ShoppingBag, FileText } from "lucide-react";
+import { Eye, Undo2, ShoppingCart, ArrowRightLeft, ShoppingBag, FileText, BarChart3 } from "lucide-react";
 
 const operations = [
+  {
+    title: "E-Commerce Analytics",
+    description: "View sales trends and insights",
+    icon: BarChart3,
+    href: "/ecommerce-analytics",
+    color: "bg-indigo-500",
+    hoverColor: "hover:bg-indigo-600",
+  },
   {
     title: "View Inventory",
     description: "Browse and search product catalog",

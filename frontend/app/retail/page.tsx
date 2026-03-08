@@ -6,6 +6,7 @@ import {
   FileText,
   Warehouse,
   Undo2,
+  BarChart3,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -61,6 +62,13 @@ const cards: ActionCard[] = [
     icon: Warehouse,
     gradient: "indigo-600",
     href:"/shop-inventory",
+  },
+  {
+    title: "Shop Analytics",
+    description: "View shop sales, expenses, payments, and stock insights",
+    icon: BarChart3,
+    gradient: "rose-600",
+    href: "/shop-analytics",
   },
 ];
 

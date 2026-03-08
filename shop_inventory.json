@@ -5,9 +5,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16,9 +16,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -28,8 +28,8 @@
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -38,9 +38,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -60,9 +60,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -71,9 +71,9 @@
     "size": "XL",
     "import": 3,
     "customerReturn": 1,
-    "stockReturn": 1,
-    "sales": 1,
-    "net": 2,
+    "stockReturn": 3,
+    "sales": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -93,9 +93,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -1289,6 +1289,17 @@
   {
     "designNumber": "AW-95503",
     "color": "MIX COLOUR",
+    "size": "M,",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "AW-95503",
+    "color": "MIX COLOUR",
     "size": "XL",
     "import": 0,
     "customerReturn": 0,
@@ -1312,17 +1323,6 @@
     "designNumber": "AW-95503",
     "color": "MIX COLOUR",
     "size": "3XL",
-    "import": 0,
-    "customerReturn": 0,
-    "stockReturn": 0,
-    "sales": 1,
-    "net": 0,
-    "type": "sales"
-  },
-  {
-    "designNumber": "AW-95503",
-    "color": "MIX COLOUR",
-    "size": "M,",
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,
@@ -2418,6 +2418,402 @@
     "sales": 0,
     "net": 0,
     "type": "return"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "BLACK",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "BLACK",
+    "size": "4XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "BLACK",
+    "size": "5XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "VINTAGE BLUE",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "VINTAGE BLUE",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "VINTAGE BLUE",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "VINTAGE BLUE",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "VINTAGE BLUE",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "VINTAGE BLUE",
+    "size": "4XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0038",
+    "color": "VINTAGE BLUE",
+    "size": "5XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "D.BLUE",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "D.BLUE",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "D.BLUE",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "D.BLUE",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "MID BLUE",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "MID BLUE",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "MID BLUE",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0041",
+    "color": "MID BLUE",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "ONION",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "ONION",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "ONION",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "ONION",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "ONION",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "SAGE",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "SAGE",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "SAGE",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "SAGE",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "WHITE",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "WHITE",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "WHITE",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "WHITE",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "MD-0045",
+    "color": "WHITE",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "MD-0053",
@@ -9374,6 +9770,50 @@
   {
     "designNumber": "NG-19883",
     "color": "L.GREY",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19883",
+    "color": "L.GREY",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19883",
+    "color": "L.GREY",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19883",
+    "color": "L.GREY",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19883",
+    "color": "L.GREY",
     "size": "4XL",
     "import": 0,
     "customerReturn": 0,
@@ -9550,35 +9990,90 @@
   {
     "designNumber": "NG-19886",
     "color": "D.GREY",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19886",
+    "color": "D.GREY",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19886",
+    "color": "D.GREY",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19886",
+    "color": "NAVY",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19886",
+    "color": "NAVY",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-19886",
+    "color": "NAVY",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "NG-19886",
     "color": "NAVY",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "import"
   },
   {
     "designNumber": "NG-19887",
     "color": "CHARCOAL",
     "size": "M",
-    "import": 0,
+    "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "import"
   },
   {
     "designNumber": "NG-19887",
@@ -9617,12 +10112,12 @@
     "designNumber": "NG-19887",
     "color": "L.GREY",
     "size": "XXL",
-    "import": 0,
+    "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "import"
   },
   {
     "designNumber": "NG-19938",
@@ -11044,6 +11539,116 @@
     "type": "return"
   },
   {
+    "designNumber": "NG-20022",
+    "color": "NAVY",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "NAVY",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "NAVY",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "WHITE PRINT-1",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "WHITE PRINT-1",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "WHITE PRINT-1",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "WHITE PRINT-1",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "WHITE PRINT-2",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "WHITE PRINT-2",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20022",
+    "color": "WHITE PRINT-2",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
     "designNumber": "NG-2003",
     "color": "GREY MELANGE",
     "size": "M",
@@ -11163,6 +11768,358 @@
     "sales": 0,
     "net": 1,
     "type": "return"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "D.GREY",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "D.GREY",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "D.GREY",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "D.GREY",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "L.BROWN",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "L.BROWN",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "L.BROWN",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20034",
+    "color": "L.BROWN",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "TEAL",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "TEAL",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "TEAL",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20036",
+    "color": "TEAL",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "BLACK",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "BLACK",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "BLACK",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "BLACK",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "STONE GREY",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "STONE GREY",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "STONE GREY",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "STONE GREY",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "TEAL",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "TEAL",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "TEAL",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-20041",
+    "color": "TEAL",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
   },
   {
     "designNumber": "NG-20043",
@@ -11958,17 +12915,6 @@
   },
   {
     "designNumber": "NG-2101",
-    "color": "BLACK",
-    "size": "XL",
-    "import": 0,
-    "customerReturn": 0,
-    "stockReturn": 0,
-    "sales": 1,
-    "net": 0,
-    "type": "sales"
-  },
-  {
-    "designNumber": "NG-2101",
     "color": "BLUE MELANGE",
     "size": "XL",
     "import": 0,
@@ -11988,17 +12934,6 @@
     "sales": 0,
     "net": 0,
     "type": "stock_return"
-  },
-  {
-    "designNumber": "NG-2101",
-    "color": "GREY",
-    "size": "XL",
-    "import": 0,
-    "customerReturn": 0,
-    "stockReturn": 0,
-    "sales": 1,
-    "net": 0,
-    "type": "sales"
   },
   {
     "designNumber": "NG-2101",
@@ -13893,6 +14828,28 @@
     "type": "return"
   },
   {
+    "designNumber": "NG-91477",
+    "color": "WHITE",
+    "size": "M",
+    "import": 2,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
+    "designNumber": "NG-91477",
+    "color": "WHITE",
+    "size": "L",
+    "import": 2,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 2,
+    "type": "import"
+  },
+  {
     "designNumber": "NG-91502",
     "color": "ANTHRA",
     "size": "M",
@@ -14201,6 +15158,17 @@
     "type": "return"
   },
   {
+    "designNumber": "NG-91503",
+    "color": "NAVY",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
     "designNumber": "NG-95502",
     "color": "MIX COLOUR",
     "size": "XL",
@@ -14215,6 +15183,281 @@
     "designNumber": "NG-W-351144/D",
     "color": "WHITE NAVY",
     "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "COPPER",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "COPPER",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "COPPER",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "COPPER",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "COPPER",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "OFFWHITE",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "OFFWHITE",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "OFFWHITE",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "OFFWHITE",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451149",
+    "color": "OFFWHITE",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451150A",
+    "color": "D.BROWN",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451150A",
+    "color": "D.BROWN",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451150A",
+    "color": "D.BROWN",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451150A",
+    "color": "D.BROWN",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451150A",
+    "color": "D.BROWN",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "COPPER TAN",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "COPPER TAN",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "COPPER TAN",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "COPPER TAN",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "COPPER TAN",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "INDIGO/BLUE",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "INDIGO/BLUE",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "INDIGO/BLUE",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "INDIGO/BLUE",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGRN-451284",
+    "color": "INDIGO/BLUE",
+    "size": "XXL",
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
@@ -14314,6 +15557,204 @@
     "designNumber": "NGS-451101",
     "color": "BLUE",
     "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451234",
+    "color": "MOCHA",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451234",
+    "color": "MOCHA",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451234",
+    "color": "MOCHA",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451234",
+    "color": "MOCHA",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451234",
+    "color": "MOCHA",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451234",
+    "color": "MOCHA",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451235",
+    "color": "S GR",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451235",
+    "color": "S GR",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451235",
+    "color": "S GR",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451235",
+    "color": "S GR",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451235",
+    "color": "S GR",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451235",
+    "color": "S GR",
+    "size": "3XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451236",
+    "color": "MIL",
+    "size": "S",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451236",
+    "color": "MIL",
+    "size": "M",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451236",
+    "color": "MIL",
+    "size": "L",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451236",
+    "color": "MIL",
+    "size": "XL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451236",
+    "color": "MIL",
+    "size": "XXL",
+    "import": 1,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 0,
+    "net": 1,
+    "type": "import"
+  },
+  {
+    "designNumber": "NGS-451236",
+    "color": "MIL",
+    "size": "3XL",
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
@@ -14382,9 +15823,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14393,9 +15834,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -14404,9 +15845,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14415,9 +15856,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14426,9 +15867,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -14437,9 +15878,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14448,9 +15889,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14459,9 +15900,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14470,7 +15911,7 @@
     "size": "L",
     "import": 2,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 2,
     "net": 0,
     "type": "import"
@@ -14481,9 +15922,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14492,9 +15933,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14503,9 +15944,9 @@
     "size": "M",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -14514,9 +15955,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14536,9 +15977,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14569,7 +16010,7 @@
     "size": "L",
     "import": 2,
     "customerReturn": 0,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "import"
@@ -14580,7 +16021,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -14591,7 +16032,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 1,
     "net": 0,
     "type": "return"
@@ -14602,9 +16043,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14613,9 +16054,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -14624,9 +16065,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14635,9 +16076,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14646,7 +16087,7 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -14657,7 +16098,7 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -14668,7 +16109,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -14679,7 +16120,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -14690,9 +16131,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14712,9 +16153,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14723,9 +16164,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14734,9 +16175,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14745,9 +16186,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14756,9 +16197,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14767,9 +16208,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14778,9 +16219,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14789,9 +16230,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14800,9 +16241,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14811,9 +16252,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14822,9 +16263,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14855,9 +16296,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14866,9 +16307,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14877,9 +16318,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14910,9 +16351,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14932,9 +16373,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14943,9 +16384,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14954,9 +16395,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14965,9 +16406,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -14983,24 +16424,13 @@
   },
   {
     "designNumber": "NGW-351112",
-    "color": "BRICK WINE",
-    "size": "L",
-    "import": 1,
-    "customerReturn": 0,
-    "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
-    "type": "import"
-  },
-  {
-    "designNumber": "NGW-351112",
     "color": "BRICK/WINE",
     "size": "S",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15009,9 +16439,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 2,
+    "net": 1,
     "type": "return"
   },
   {
@@ -15020,9 +16450,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15031,9 +16461,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15042,9 +16472,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15053,9 +16483,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15108,7 +16538,7 @@
     "size": "S",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "import"
@@ -15119,7 +16549,7 @@
     "size": "M",
     "import": 3,
     "customerReturn": 0,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -15141,7 +16571,7 @@
     "size": "XL",
     "import": 3,
     "customerReturn": 0,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 2,
     "net": 0,
     "type": "import"
@@ -15152,7 +16582,7 @@
     "size": "XXL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -15163,7 +16593,7 @@
     "size": "3XL",
     "import": 2,
     "customerReturn": 0,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -15196,7 +16626,7 @@
     "size": "S",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -15218,7 +16648,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -15229,7 +16659,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -15240,7 +16670,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 1,
     "net": 0,
     "type": "return"
@@ -15251,7 +16681,7 @@
     "size": "3XL",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 2,
     "net": 0,
     "type": "import"
@@ -15262,9 +16692,9 @@
     "size": "S",
     "import": 1,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15273,7 +16703,7 @@
     "size": "M",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 2,
     "net": 0,
     "type": "import"
@@ -15284,7 +16714,7 @@
     "size": "L",
     "import": 1,
     "customerReturn": 2,
-    "stockReturn": 3,
+    "stockReturn": 6,
     "sales": 0,
     "net": 0,
     "type": "import"
@@ -15306,9 +16736,9 @@
     "size": "XXL",
     "import": 1,
     "customerReturn": 2,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15317,9 +16747,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15328,7 +16758,7 @@
     "size": "S",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -15350,7 +16780,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -15361,7 +16791,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -15372,9 +16802,9 @@
     "size": "XXL",
     "import": 1,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15383,7 +16813,7 @@
     "size": "3XL",
     "import": 1,
     "customerReturn": 2,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 2,
     "net": 0,
     "type": "import"
@@ -15394,9 +16824,9 @@
     "size": "S",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15405,9 +16835,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15416,9 +16846,9 @@
     "size": "L",
     "import": 2,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 2,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15427,9 +16857,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15438,9 +16868,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 3,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 1,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15449,9 +16879,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15565,14 +16995,69 @@
     "type": "stock_return"
   },
   {
+    "designNumber": "NGW-351137",
+    "color": "CHARCOAL",
+    "size": "S",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351137",
+    "color": "CHARCOAL",
+    "size": "L",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351137",
+    "color": "CHARCOAL",
+    "size": "XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351137",
+    "color": "CHARCOAL",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351137",
+    "color": "CHARCOAL",
+    "size": "3XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
     "designNumber": "NGW-351138",
     "color": "BEIGE",
     "size": "M",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15581,9 +17066,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15592,9 +17077,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 1,
-    "net": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15603,9 +17088,9 @@
     "size": "XXL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15625,9 +17110,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15636,9 +17121,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15647,9 +17132,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15658,9 +17143,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15669,9 +17154,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15680,9 +17165,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15702,10 +17187,10 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "NGW-351140",
@@ -15713,9 +17198,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15724,9 +17209,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15735,9 +17220,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15746,9 +17231,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15757,9 +17242,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15834,10 +17319,21 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
+  },
+  {
+    "designNumber": "NGW-351144/A",
+    "color": "(A)BURNT BRICK",
+    "size": "L",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
   },
   {
     "designNumber": "NGW-351144/A",
@@ -15856,9 +17352,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15867,9 +17363,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15878,9 +17374,9 @@
     "size": "4XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15889,9 +17385,9 @@
     "size": "5XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15951,6 +17447,50 @@
   },
   {
     "designNumber": "NGW-351144/C",
+    "color": "(C)HAZELNUT",
+    "size": "M",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "(C)HAZELNUT",
+    "size": "XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "(C)HAZELNUT",
+    "size": "3XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "(C)HAZELNUT",
+    "size": "4XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
     "color": "©HAZELNUT",
     "size": "S",
     "import": 0,
@@ -16058,6 +17598,149 @@
     "sales": 0,
     "net": 1,
     "type": "import"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "HAZEL NUT(C)",
+    "size": "3XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "HAZEL NUT(C)",
+    "size": "5XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "HAZELNUT(C)",
+    "size": "S",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 2,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "HAZELNUT(C)",
+    "size": "L",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/C",
+    "color": "HAZELNUT(C)",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 2,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE NAVY",
+    "size": "XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE NAVY",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE NAVY",
+    "size": "4XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 2,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE NAVY",
+    "size": "5XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 2,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE/NAVY",
+    "size": "S",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE/NAVY",
+    "size": "L",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE/NAVY",
+    "size": "XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351144/D",
+    "color": "(D) WHITE/NAVY",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
   },
   {
     "designNumber": "NGW-351144/D",
@@ -16219,9 +17902,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16252,9 +17935,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16263,9 +17946,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16285,9 +17968,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16296,9 +17979,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16307,9 +17990,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16329,9 +18012,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16340,9 +18023,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16351,9 +18034,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16362,9 +18045,9 @@
     "size": "S",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16373,9 +18056,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16384,9 +18067,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16406,9 +18089,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16417,9 +18100,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16494,9 +18177,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16505,9 +18188,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16527,9 +18210,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16538,9 +18221,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16549,9 +18232,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -16582,7 +18265,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16593,7 +18276,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16604,7 +18287,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16681,7 +18364,7 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16736,7 +18419,7 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16747,7 +18430,7 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "import"
@@ -16758,7 +18441,7 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16769,7 +18452,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16780,7 +18463,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16791,7 +18474,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16802,7 +18485,7 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16813,7 +18496,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16824,7 +18507,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16835,7 +18518,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16846,7 +18529,7 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16857,7 +18540,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16868,7 +18551,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16879,7 +18562,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -16909,12 +18592,34 @@
   {
     "designNumber": "NGW-351192",
     "color": "BOTTLE GREEN",
+    "size": "S",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351192",
+    "color": "BOTTLE GREEN",
+    "size": "M",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351192",
+    "color": "BOTTLE GREEN",
     "size": "L",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16923,9 +18628,9 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16945,9 +18650,9 @@
     "size": "3XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16956,9 +18661,9 @@
     "size": "S",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16967,9 +18672,9 @@
     "size": "M",
     "import": 2,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16978,9 +18683,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16989,9 +18694,9 @@
     "size": "XL",
     "import": 2,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17000,9 +18705,9 @@
     "size": "XXL",
     "import": 2,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17011,9 +18716,9 @@
     "size": "3XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17022,7 +18727,7 @@
     "size": "M",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -17033,7 +18738,7 @@
     "size": "L",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "import"
@@ -17044,7 +18749,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17055,7 +18760,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17066,7 +18771,7 @@
     "size": "M",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -17077,7 +18782,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17088,7 +18793,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17099,7 +18804,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17110,7 +18815,7 @@
     "size": "L",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "import"
@@ -17121,7 +18826,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17132,7 +18837,7 @@
     "size": "XXL",
     "import": 1,
     "customerReturn": 1,
-    "stockReturn": 2,
+    "stockReturn": 4,
     "sales": 0,
     "net": 0,
     "type": "import"
@@ -17165,7 +18870,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17176,7 +18881,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17187,7 +18892,7 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17198,7 +18903,7 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17209,7 +18914,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17242,7 +18947,7 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17253,7 +18958,7 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17264,7 +18969,7 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 1,
+    "stockReturn": 2,
     "sales": 0,
     "net": 0,
     "type": "return"
@@ -17338,12 +19043,23 @@
   {
     "designNumber": "NGW-351202",
     "color": "CORNSTALK",
+    "size": "S",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "NGW-351202",
+    "color": "CORNSTALK",
     "size": "M",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17352,9 +19068,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17363,7 +19079,7 @@
     "size": "XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -17374,9 +19090,9 @@
     "size": "XXL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17385,7 +19101,7 @@
     "size": "3XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
     "type": "import"
@@ -17396,9 +19112,9 @@
     "size": "S",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17407,9 +19123,9 @@
     "size": "M",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17418,9 +19134,9 @@
     "size": "L",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17429,9 +19145,9 @@
     "size": "XL",
     "import": 2,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17440,9 +19156,9 @@
     "size": "XXL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17451,9 +19167,9 @@
     "size": "3XL",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -17473,9 +19189,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17484,9 +19200,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17495,9 +19211,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17506,9 +19222,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17517,9 +19233,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17528,9 +19244,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17539,9 +19255,9 @@
     "size": "S",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17550,9 +19266,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17561,9 +19277,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17572,9 +19288,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17583,9 +19299,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17594,9 +19310,9 @@
     "size": "3XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17616,9 +19332,9 @@
     "size": "M",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17627,9 +19343,9 @@
     "size": "L",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17638,9 +19354,9 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 1,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 0,
-    "net": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -17649,9 +19365,9 @@
     "size": "XXL",
     "import": 0,
     "customerReturn": 2,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 0,
-    "net": 2,
+    "net": 0,
     "type": "return"
   },
   {

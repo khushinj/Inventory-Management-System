@@ -477,6 +477,7 @@ export default function DomesticAnalyticsPage() {
     // Count dispatch frequency per article
     const dispatchCount = new Map<string, number>();
     dispatches.forEach((t) => {
+      if (!t.dno || !t.dno.trim()) return; // Skip empty DNOs
       const key = normalizeDno(t.dno);
       dispatchCount.set(key, (dispatchCount.get(key) || 0) + t.qty);
     });
@@ -484,6 +485,7 @@ export default function DomesticAnalyticsPage() {
     // Sum inventory per article
     const inventoryByArticle = new Map<string, number>();
     inventory.forEach((item) => {
+      if (!item.dno || !item.dno.trim()) return; // Skip empty DNOs
       const key = normalizeDno(item.dno);
       inventoryByArticle.set(key, (inventoryByArticle.get(key) || 0) + item.stock);
     });
@@ -491,22 +493,21 @@ export default function DomesticAnalyticsPage() {
     // Calculate slow and fast moving
     const articles: MovingItem[] = [];
     inventoryByArticle.forEach((quantity, articleNo) => {
-      articles.push({
-        articleNo,
-        quantity,
-        dispatchCount: dispatchCount.get(articleNo) || 0,
-      });
+      if (articleNo && articleNo.trim()) { // Only include valid article numbers
+        articles.push({
+          articleNo,
+          quantity,
+          dispatchCount: dispatchCount.get(articleNo) || 0,
+        });
+      }
     });
 
-    // Slow moving: High inventory, low dispatch (sorted by inventory desc)
+    // Slow moving: Max quantity in inventory with very less sales
+    // Sorted in descending order by quantity (highest inventory first)
     const slow = articles
-      .filter((a) => a.quantity > 0)
-      .sort((a, b) => {
-        const ratioA = a.quantity / Math.max(1, a.dispatchCount);
-        const ratioB = b.quantity / Math.max(1, b.dispatchCount);
-        return ratioB - ratioA;
-      })
-      .slice(0, 5);
+      .filter((a) => a.quantity > 0 && a.dispatchCount <= a.quantity * 0.2) // Less than 20% of inventory sold
+      .sort((a, b) => b.quantity - a.quantity) // Descending order by quantity
+      .slice(0, 10);
 
     // Fast moving: High dispatch relative to inventory (sorted by dispatch desc)
     const fast = articles
@@ -516,7 +517,7 @@ export default function DomesticAnalyticsPage() {
         const ratioB = b.dispatchCount / Math.max(1, b.quantity);
         return ratioB - ratioA;
       })
-      .slice(0, 5);
+      .slice(0, 10);
 
     setSlowMovingArticles(slow);
     setFastMovingArticles(fast);
@@ -546,7 +547,7 @@ export default function DomesticAnalyticsPage() {
         orderValue: formatINR(data.value),
       }))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 6);
+      .slice(0, 10);
 
     setOrderTable(rows.length > 0 ? rows : [
       { date: "No orders", orderCount: 0, orderValue: "₹0" }

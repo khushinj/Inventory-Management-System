@@ -1256,6 +1256,17 @@
   {
     "designNumber": "AW-95503",
     "color": "MIX COLOUR",
+    "size": "M,",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "AW-95503",
+    "color": "MIX COLOUR",
     "size": "S",
     "import": 0,
     "customerReturn": 0,
@@ -1285,17 +1296,6 @@
     "sales": 12,
     "net": 0,
     "type": "customer_return"
-  },
-  {
-    "designNumber": "AW-95503",
-    "color": "MIX COLOUR",
-    "size": "M,",
-    "import": 0,
-    "customerReturn": 0,
-    "stockReturn": 0,
-    "sales": 1,
-    "net": 0,
-    "type": "sales"
   },
   {
     "designNumber": "AW-95503",
@@ -1689,7 +1689,7 @@
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 2,
+    "sales": 3,
     "net": 0,
     "type": "sales"
   },
@@ -19870,11 +19870,11 @@
     "color": "AOP",
     "size": "3XL",
     "import": 0,
-    "customerReturn": 0,
+    "customerReturn": 1,
     "stockReturn": 0,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "customer_return"
   },
   {
     "designNumber": "S-479A",

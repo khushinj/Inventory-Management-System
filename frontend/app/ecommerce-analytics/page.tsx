@@ -124,11 +124,11 @@ function pickDatesForChart(dates: string[], maxPoints: number) {
 
 function Card({ title, value, trend }: { title: string; value: string; trend?: string }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <p className="text-lg font-semibold text-slate-600 sm:text-2xl">{title}</p>
+    <section className="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur">
+      <p className="text-sm font-semibold uppercase tracking-wide text-slate-500 sm:text-base">{title}</p>
       <div className="mt-4 flex items-end gap-3">
-        <p className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl">{value}</p>
-        {trend ? <span className="pb-1 text-lg font-medium text-emerald-600 sm:text-2xl">{trend}</span> : null}
+        <p className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{value}</p>
+        {trend ? <span className="pb-1 text-sm font-medium text-emerald-600 sm:text-base">{trend}</span> : null}
       </div>
     </section>
   );
@@ -631,7 +631,7 @@ export default function EcommerceAnalyticsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-100 px-6 py-8">
+      <main className="min-h-screen bg-slate-50 px-5 py-8 sm:px-6">
         <div className="flex h-96 items-center justify-center">
           <div className="text-center">
             <div className="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-slate-800" />
@@ -643,21 +643,21 @@ export default function EcommerceAnalyticsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-8">
-      <div className="mx-auto w-full max-w-[1400px]">
+    <main className="min-h-screen bg-slate-50 px-5 py-8 sm:px-6">
+      <div className="mx-auto w-full max-w-[1320px]">
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <h1 className="text-3xl font-bold text-slate-900 sm:text-5xl">E-Commerce Inventory</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">E-Commerce Inventory</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-slate-600 shadow-sm">
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
               <CalendarDays className="h-5 w-5" />
-              <span className="text-sm sm:text-xl">
+              <span className="text-sm sm:text-base">
                 {range.start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} - {" "}
                 {range.end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
               </span>
             </div>
             <select
-              className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm text-slate-600 shadow-sm outline-none sm:text-xl"
+              className="rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] outline-none sm:text-base"
               value={period}
               onChange={(event) => setPeriod(event.target.value as Period)}
             >
@@ -679,27 +679,27 @@ export default function EcommerceAnalyticsPage() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Sale vs Returns</h2>
+          <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Sale vs Returns</h2>
             <div className="mt-6">
               <SalesReturnsChart points={trendSeries} />
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Slow Moving Stock</h2>
+          <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Slow Moving Stock</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
               <div className="max-h-[500px] overflow-y-auto">
                 <table className="w-full text-left">
                   <thead className="sticky top-0 z-10 bg-slate-50">
-                    <tr className="text-base text-slate-600 sm:text-xl">
+                    <tr className="text-sm text-slate-600 sm:text-base">
                       <th className="px-5 py-4 font-semibold">Product No</th>
                       <th className="px-5 py-4 font-semibold">Quantity</th>
                     </tr>
                   </thead>
                   <tbody>
                     {slowMoving.map((item, index) => (
-                      <tr key={`${item.productNo}-${index}`} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
+                      <tr key={`${item.productNo}-${index}`} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
                         <td className="px-5 py-4">{item.productNo}</td>
                         <td className="px-5 py-4">{item.quantity}</td>
                       </tr>
@@ -711,11 +711,11 @@ export default function EcommerceAnalyticsPage() {
           </section>
         </div>
 
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="mt-6 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
           <div className="max-h-[500px] overflow-y-auto">
             <table className="w-full text-left">
               <thead className="sticky top-0 z-10 bg-white">
-                <tr className="border-b border-slate-200 text-base text-slate-600 sm:text-xl">
+                <tr className="border-b border-slate-200 text-sm text-slate-600 sm:text-base">
                   <th className="px-5 py-4 font-semibold">Date</th>
                   <th className="px-5 py-4 font-semibold">Total Sale</th>
                   <th className="px-5 py-4 font-semibold">Qty</th>
@@ -724,7 +724,7 @@ export default function EcommerceAnalyticsPage() {
               </thead>
               <tbody>
                 {tableRows.map((row, index) => (
-                  <tr key={`${row.date}-${index}`} className="border-b border-slate-200 text-base text-slate-700 last:border-b-0 sm:text-xl">
+                  <tr key={`${row.date}-${index}`} className="border-b border-slate-200 text-sm text-slate-700 last:border-b-0 sm:text-base">
                     <td className="px-5 py-4">{row.date}</td>
                     <td className="px-5 py-4">{row.totalSale}</td>
                     <td className="px-5 py-4">{row.quantity}</td>
@@ -737,27 +737,27 @@ export default function EcommerceAnalyticsPage() {
         </section>
 
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Platform Distribution</h2>
+          <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Platform Distribution</h2>
             <div className="mt-4">
               <PlatformPieChart values={platformDistribution} />
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Top Articles Sold</h2>
+          <section className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Top Articles Sold</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
               <div className="max-h-[500px] overflow-y-auto">
                 <table className="w-full text-left">
                   <thead className="sticky top-0 z-10 bg-slate-50">
-                    <tr className="text-base text-slate-600 sm:text-xl">
+                    <tr className="text-sm text-slate-600 sm:text-base">
                       <th className="px-5 py-4 font-semibold">Product No</th>
                       <th className="px-5 py-4 font-semibold">Quantity</th>
                     </tr>
                   </thead>
                   <tbody>
                     {topArticles.map((item, index) => (
-                      <tr key={`${item.productNo}-${index}`} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
+                      <tr key={`${item.productNo}-${index}`} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
                         <td className="px-5 py-4">{item.productNo}</td>
                         <td className="px-5 py-4">{item.quantity}</td>
                       </tr>

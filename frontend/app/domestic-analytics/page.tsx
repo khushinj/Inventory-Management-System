@@ -91,7 +91,13 @@ function normalizeDno(dno?: string) {
 }
 
 function DashboardCard({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ${className}`}>{children}</section>;
+  return (
+    <section
+      className={`rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur ${className}`}
+    >
+      {children}
+    </section>
+  );
 }
 
 function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
@@ -601,7 +607,7 @@ export default function DomesticAnalyticsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
@@ -613,15 +619,15 @@ export default function DomesticAnalyticsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-[1300px]">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <h1 className="text-3xl font-bold text-slate-900 sm:text-5xl">Domestic Inventory</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Domestic Inventory</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-600 shadow-sm">
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
               <CalendarDays className="h-5 w-5" />
-              <span className="text-sm font-medium sm:text-xl">
+              <span className="text-sm font-medium sm:text-base">
                 {new Date(dateRange.start).toLocaleDateString("en-IN", {
                   day: "numeric",
                   month: "short",
@@ -636,7 +642,7 @@ export default function DomesticAnalyticsPage() {
               </span>
             </div>
             <select
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 shadow-sm outline-none sm:text-xl"
+              className="rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] outline-none sm:text-base"
               value={period}
               onChange={(e) => setPeriod(e.target.value as typeof period)}
             >
@@ -651,10 +657,10 @@ export default function DomesticAnalyticsPage() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {metricCards.map((card) => (
             <DashboardCard key={card.title}>
-              <p className="text-lg font-semibold text-slate-500">{card.title}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{card.title}</p>
               <div className="mt-4 flex items-end gap-3">
-                <p className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{card.value}</p>
-                {card.trend ? <span className="pb-1 text-lg font-medium text-green-600 sm:text-2xl">{card.trend}</span> : null}
+                <p className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{card.value}</p>
+                {card.trend ? <span className="pb-1 text-sm font-medium text-green-600 sm:text-base">{card.trend}</span> : null}
               </div>
             </DashboardCard>
           ))}
@@ -662,42 +668,44 @@ export default function DomesticAnalyticsPage() {
 
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
           <DashboardCard>
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Sales vs Orders</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Sales vs Orders</h2>
             <div className="mt-6">
               <SalesOrdersChart data={salesOrderSeries} />
             </div>
           </DashboardCard>
 
           <DashboardCard>
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Slow Moving Article</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Slow Moving Article</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
+              <div className="max-h-[420px] overflow-auto">
               <table className="w-full text-left">
-                <thead className="bg-slate-50">
-                  <tr className="text-base text-slate-500 sm:text-lg">
+                <thead className="sticky top-0 z-10 bg-slate-50">
+                  <tr className="text-sm text-slate-500 sm:text-base">
                     <th className="px-5 py-4 font-semibold">Article No</th>
                     <th className="px-5 py-4 font-semibold">Quantity</th>
                   </tr>
                 </thead>
                 <tbody>
                   {slowMovingArticles.map((item) => (
-                    <tr key={item.articleNo} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
+                    <tr key={item.articleNo} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
                       <td className="px-5 py-4">{item.articleNo}</td>
                       <td className="px-5 py-4">{item.quantity}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </DashboardCard>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1fr]">
           <DashboardCard>
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl mb-4">Order Summary</h2>
-            <div className="overflow-x-auto">
+            <h2 className="mb-4 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Order Summary</h2>
+            <div className="max-h-[420px] overflow-auto rounded-xl border border-slate-200">
               <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-slate-200 text-base text-slate-500 sm:text-xl">
+                <thead className="sticky top-0 z-10 bg-slate-50">
+                  <tr className="border-b border-slate-200 text-sm text-slate-500 sm:text-base">
                     <th className="px-5 py-4 font-semibold">Date</th>
                     <th className="px-5 py-4 font-semibold">No of Order</th>
                     <th className="px-5 py-4 font-semibold">Value of Order</th>
@@ -705,7 +713,7 @@ export default function DomesticAnalyticsPage() {
                 </thead>
                 <tbody>
                   {orderTable.map((row, idx) => (
-                    <tr key={idx} className="border-b border-slate-200 text-base text-slate-700 last:border-b-0 sm:text-xl">
+                    <tr key={idx} className="border-b border-slate-200 text-sm text-slate-700 last:border-b-0 sm:text-base">
                       <td className="px-5 py-4">{row.date}</td>
                       <td className="px-5 py-4">{row.orderCount}</td>
                       <td className="px-5 py-4">{row.orderValue}</td>
@@ -717,31 +725,33 @@ export default function DomesticAnalyticsPage() {
           </DashboardCard>
 
           <DashboardCard>
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Fast Moving Article</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Fast Moving Article</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
+              <div className="max-h-[420px] overflow-auto">
               <table className="w-full text-left">
-                <thead className="bg-slate-50">
-                  <tr className="text-base text-slate-500 sm:text-lg">
+                <thead className="sticky top-0 z-10 bg-slate-50">
+                  <tr className="text-sm text-slate-500 sm:text-base">
                     <th className="px-5 py-4 font-semibold">Article No</th>
                     <th className="px-5 py-4 font-semibold">Sold</th>
                   </tr>
                 </thead>
                 <tbody>
                   {fastMovingArticles.map((item) => (
-                    <tr key={item.articleNo} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
+                    <tr key={item.articleNo} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
                       <td className="px-5 py-4">{item.articleNo}</td>
                       <td className="px-5 py-4">{item.dispatchCount}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </DashboardCard>
         </div>
 
         <div className="mt-6">
           <DashboardCard>
-            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Region Wise Distribution</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Region Wise Distribution</h2>
             <RegionPieChart data={regionDistribution} />
           </DashboardCard>
         </div>

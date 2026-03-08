@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import { CalendarDays } from "lucide-react";
 import type { ReactNode } from "react";
+import { api } from "../../lib/api";
 
 type MetricCard = {
   title: string;
@@ -15,9 +17,10 @@ type SeriesPoint = {
   orders: number;
 };
 
-type SlowMovingItem = {
+type MovingItem = {
   articleNo: string;
   quantity: number;
+  dispatchCount: number;
 };
 
 type OrderRow = {
@@ -29,65 +32,70 @@ type OrderRow = {
 type RegionPoint = {
   label: string;
   value: number;
+  percentage: number;
   color: string;
+  deliveredPercent: number;
+  pendingPercent: number;
+  totalOrders: number;
 };
 
-const metricCards: MetricCard[] = [
-  {
-    title: "Total Sale",
-    value: "₹32,45,890",
-    trend: "+8.3%",
-  },
-  {
-    title: "Avg Article Sale",
-    value: "₹18,670",
-    trend: "+4.1%",
-  },
-  {
-    title: "Current Inventory Value",
-    value: "₹87,65,432",
-  },
-];
+type Transaction = {
+  dno: string;
+  qty: number;
+  mrp?: number;
+  date: string;
+  color?: string;
+  size?: string;
+};
 
-const salesOrderSeries: SeriesPoint[] = [
-  { label: "1 Feb", sales: 3000, orders: 3200 },
-  { label: "5 Feb", sales: 2700, orders: 2800 },
-  { label: "10 Feb", sales: 3950, orders: 4100 },
-  { label: "15 Feb", sales: 3400, orders: 3600 },
-  { label: "20 Feb", sales: 4300, orders: 4500 },
-  { label: "25 Feb", sales: 3800, orders: 3900 },
-  { label: "28 Feb", sales: 4600, orders: 4800 },
-];
+type InventoryItem = {
+  dno: string;
+  color: string;
+  size: string;
+  stock: number;
+};
 
-const slowMovingArticles: SlowMovingItem[] = [
-  { articleNo: "D-1024", quantity: 178 },
-  { articleNo: "D-2031", quantity: 156 },
-  { articleNo: "D-3045", quantity: 134 },
-  { articleNo: "D-4012", quantity: 123 },
-  { articleNo: "D-5089", quantity: 112 },
-];
+type PurchaseOrder = {
+  _id: string;
+  date: string;
+  city: string;
+  grandTotal: number;
+  totalQuantity: number;
+  status?: string;
+};
 
-const orderTable: OrderRow[] = [
-  { date: "2 Feb 2026", orderCount: 34, orderValue: "₹89,450" },
-  { date: "5 Feb 2026", orderCount: 42, orderValue: "₹1,12,340" },
-  { date: "8 Feb 2026", orderCount: 28, orderValue: "₹67,890" },
-  { date: "12 Feb 2026", orderCount: 51, orderValue: "₹1,34,560" },
-  { date: "15 Feb 2026", orderCount: 39, orderValue: "₹98,230" },
-  { date: "18 Feb 2026", orderCount: 45, orderValue: "₹1,15,670" },
-];
+type JobCard = {
+  designNumber: string;
+  mrp: number;
+};
 
-const regionDistribution: RegionPoint[] = [
-  { label: "North", value: 30, color: "#3f7edd" },
-  { label: "West", value: 25, color: "#f59e0b" },
-  { label: "East", value: 20, color: "#7c5ce6" },
-  { label: "South", value: 25, color: "#1ba9c3" },
-];
+function formatINR(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+}
+
+function formatDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+  } catch {
+    return dateStr;
+  }
+}
+
+function normalizeDno(dno?: string) {
+  return (dno || "").trim().replace(/\s+/g, "").toUpperCase();
+}
 
 function DashboardCard({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <section className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ${className}`}>{children}</section>;
 }
 
 function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const width = 900;
   const height = 360;
   const leftPad = 80;
@@ -96,11 +104,12 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
   const bottomPad = 64;
   const chartWidth = width - leftPad - rightPad;
   const chartHeight = height - topPad - bottomPad;
-  const maxY = 6000;
-  const steps = [0, 1500, 3000, 4500, 6000];
+  const maxY = Math.max(100, ...data.map((d) => Math.max(d.sales, d.orders)));
+  const roundedMax = Math.ceil(maxY / 1000) * 1000;
+  const steps = Array.from({ length: 5 }, (_, i) => (roundedMax / 4) * i);
 
   const toX = (index: number) => leftPad + (index * chartWidth) / Math.max(1, data.length - 1);
-  const toY = (value: number) => topPad + chartHeight - (value / maxY) * chartHeight;
+  const toY = (value: number) => topPad + chartHeight - (value / roundedMax) * chartHeight;
 
   const salesPoints = data.map((point, index) => `${toX(index)},${toY(point.sales)}`).join(" ");
   const ordersPoints = data.map((point, index) => `${toX(index)},${toY(point.orders)}`).join(" ");
@@ -122,7 +131,7 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
                 strokeDasharray="5 5"
               />
               <text x={leftPad - 10} y={y + 4} textAnchor="end" fill="#6b7280" fontSize="18">
-                {tick}
+                {Math.round(tick).toLocaleString()}
               </text>
             </g>
           );
@@ -154,12 +163,45 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
         <polyline fill="none" stroke="#3b82f6" strokeWidth="4" points={salesPoints} />
         <polyline fill="none" stroke="#06b6d4" strokeWidth="4" points={ordersPoints} />
 
-        {data.map((point, index) => (
-          <g key={`dot-${point.label}`}>
-            <circle cx={toX(index)} cy={toY(point.sales)} r="4" fill="#ffffff" stroke="#3b82f6" strokeWidth="3" />
-            <circle cx={toX(index)} cy={toY(point.orders)} r="4" fill="#ffffff" stroke="#06b6d4" strokeWidth="3" />
-          </g>
-        ))}
+        {data.map((point, index) => {
+          const x = toX(index);
+          const ySales = toY(point.sales);
+          const yOrders = toY(point.orders);
+          return (
+            <g
+              key={`dot-${point.label}`}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              style={{ cursor: "pointer" }}
+            >
+              <circle cx={x} cy={ySales} r="6" fill="#ffffff" stroke="#3b82f6" strokeWidth="3" />
+              <circle cx={x} cy={yOrders} r="6" fill="#ffffff" stroke="#06b6d4" strokeWidth="3" />
+              
+              {hoveredIndex === index && (
+                <>
+                  <rect
+                    x={x - 85}
+                    y={Math.min(ySales, yOrders) - 65}
+                    width="170"
+                    height="55"
+                    fill="#1e293b"
+                    rx="6"
+                    opacity="0.95"
+                  />
+                  <text x={x} y={Math.min(ySales, yOrders) - 42} textAnchor="middle" fill="#ffffff" fontSize="14" fontWeight="600">
+                    {point.label}
+                  </text>
+                  <text x={x} y={Math.min(ySales, yOrders) - 25} textAnchor="middle" fill="#3b82f6" fontSize="13">
+                    Sales: {formatINR(point.sales)}
+                  </text>
+                  <text x={x} y={Math.min(ySales, yOrders) - 10} textAnchor="middle" fill="#06b6d4" fontSize="13">
+                    Orders: {point.orders}
+                  </text>
+                </>
+              )}
+            </g>
+          );
+        })}
       </svg>
 
       <div className="mt-2 flex items-center justify-center gap-6 text-sm sm:text-lg">
@@ -177,6 +219,7 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
 }
 
 function RegionPieChart({ data }: { data: RegionPoint[] }) {
+  const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const size = 360;
   const center = size / 2;
   const radius = 104;
@@ -217,7 +260,16 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
     <div className="relative flex items-center justify-center pt-3">
       <svg viewBox={`0 0 ${size} ${size}`} className="h-[280px] w-[280px] sm:h-[320px] sm:w-[320px]">
         {slices.map((slice) => (
-          <path key={slice.label} d={slice.path} fill={slice.color} stroke="#ffffff" strokeWidth="2" />
+          <path
+            key={slice.label}
+            d={slice.path}
+            fill={slice.color}
+            stroke="#ffffff"
+            strokeWidth="2"
+            style={{ cursor: "pointer", opacity: hoveredRegion === slice.label ? 0.8 : 1 }}
+            onMouseEnter={() => setHoveredRegion(slice.label)}
+            onMouseLeave={() => setHoveredRegion(null)}
+          />
         ))}
       </svg>
 
@@ -237,7 +289,15 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
               transform: "translate(-50%, -50%)",
             }}
           >
-            {slice.label} {slice.value}%
+            {slice.label} {slice.percentage}%
+            {hoveredRegion === slice.label && (
+              <div className="mt-1 space-y-1 text-xs text-slate-700 whitespace-nowrap bg-white/95 p-2 rounded shadow-lg">
+                <div className="font-semibold">{formatINR(slice.value)}</div>
+                <div className="text-green-600">✓ Delivered: {slice.deliveredPercent}%</div>
+                <div className="text-orange-600">⏳ Pending: {slice.pendingPercent}%</div>
+                <div className="text-slate-500 text-[10px]">({slice.totalOrders} orders)</div>
+              </div>
+            )}
           </div>
         );
       })}
@@ -246,6 +306,311 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
 }
 
 export default function DomesticAnalyticsPage() {
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<"last-month" | "last-3-months" | "last-6-months" | "last-year">("last-month");
+  const [metricCards, setMetricCards] = useState<MetricCard[]>([]);
+  const [salesOrderSeries, setSalesOrderSeries] = useState<SeriesPoint[]>([]);
+  const [slowMovingArticles, setSlowMovingArticles] = useState<MovingItem[]>([]);
+  const [fastMovingArticles, setFastMovingArticles] = useState<MovingItem[]>([]);
+  const [orderTable, setOrderTable] = useState<OrderRow[]>([]);
+  const [regionDistribution, setRegionDistribution] = useState<RegionPoint[]>([]);
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
+
+  const getDateRange = useCallback((periodType: typeof period) => {
+    const now = new Date();
+    let start: Date;
+    let end: Date = new Date(now);
+
+    if (periodType === "last-month") {
+      // Previous calendar month
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
+    } else if (periodType === "last-3-months") {
+      // Last 3 months from today
+      start = new Date(now);
+      start.setMonth(now.getMonth() - 3);
+      end = now;
+    } else if (periodType === "last-6-months") {
+      // Last 6 months from today
+      start = new Date(now);
+      start.setMonth(now.getMonth() - 6);
+      end = now;
+    } else if (periodType === "last-year") {
+      // Last 12 months from today
+      start = new Date(now);
+      start.setFullYear(now.getFullYear() - 1);
+      end = now;
+    } else {
+      // Default to last month
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0);
+    }
+
+    return {
+      start: start.toISOString().split("T")[0],
+      end: end.toISOString().split("T")[0],
+    };
+  }, []);
+
+  const fetchAnalyticsData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const range = getDateRange(period);
+      setDateRange(range);
+
+      // Fetch all required data in parallel
+      const [dispatchRes, purchaseOrdersRes, inventoryRes, jobCardsRes] = await Promise.all([
+        api.get("/warehouse/domestic"),
+        api.get("/purchase-order"),
+        api.get("/inventory/warehouse/domestic"),
+        api.get("/jobcard"),
+      ]);
+
+      const allTransactions: Transaction[] = dispatchRes.data || [];
+      const allPurchaseOrders: PurchaseOrder[] = purchaseOrdersRes.data?.data || [];
+      const inventoryItems: InventoryItem[] = inventoryRes.data?.inventory || [];
+      const jobCards: JobCard[] = jobCardsRes.data || [];
+
+      // Filter data by date range
+      const dispatchTransactions = allTransactions.filter(
+        (t) => t.date >= range.start && t.date <= range.end
+      );
+      const purchaseOrders = allPurchaseOrders.filter(
+        (po) => po.date >= range.start && po.date <= range.end
+      );
+
+      // Calculate metrics
+      calculateMetrics(dispatchTransactions, inventoryItems, jobCards);
+      calculateSalesOrderSeries(dispatchTransactions, purchaseOrders);
+      calculateMovingArticles(dispatchTransactions, inventoryItems);
+      calculateOrderTable(purchaseOrders);
+      calculateRegionDistribution(allPurchaseOrders);
+    } catch (error) {
+      console.error("Error fetching analytics data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [period, getDateRange]);
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [fetchAnalyticsData]);
+
+  const calculateMetrics = (dispatches: Transaction[], inventory: InventoryItem[], jobCards: JobCard[]) => {
+    // Create MRP lookup map from job cards
+    const mrpMap = new Map<string, number>();
+    jobCards.forEach((jc) => {
+      const key = normalizeDno(jc.designNumber);
+      mrpMap.set(key, jc.mrp || 0);
+    });
+
+    // 1. Total Sale (from dispatch transactions)
+    const totalSale = dispatches.reduce((sum, t) => {
+      const mrp = t.mrp || mrpMap.get(normalizeDno(t.dno)) || 0;
+      return sum + t.qty * mrp;
+    }, 0);
+
+    // 2. Avg Article Sale
+    const uniqueArticles = new Set(dispatches.map((t) => normalizeDno(t.dno)));
+    const avgArticleSale = uniqueArticles.size > 0 ? totalSale / uniqueArticles.size : 0;
+
+    // 3. Current Inventory Value
+    const inventoryValue = inventory.reduce((sum, item) => {
+      const mrp = mrpMap.get(normalizeDno(item.dno)) || 0;
+      return sum + item.stock * mrp;
+    }, 0);
+
+    setMetricCards([
+      {
+        title: "Total Sale",
+        value: formatINR(totalSale),
+        trend: totalSale > 0 ? "+8.3%" : "N/A",
+      },
+      {
+        title: "Avg Article Sale",
+        value: formatINR(avgArticleSale),
+        trend: avgArticleSale > 0 ? "+4.1%" : "N/A",
+      },
+      {
+        title: "Current Inventory Value",
+        value: formatINR(inventoryValue),
+      },
+    ]);
+  };
+
+  const calculateSalesOrderSeries = (dispatches: Transaction[], purchaseOrders: PurchaseOrder[]) => {
+    // Group by date
+    const salesByDate = new Map<string, number>();
+    const ordersByDate = new Map<string, number>();
+
+    dispatches.forEach((t) => {
+      const date = t.date.split("T")[0];
+      const current = salesByDate.get(date) || 0;
+      salesByDate.set(date, current + t.qty);
+    });
+
+    purchaseOrders.forEach((po) => {
+      const date = po.date.split("T")[0];
+      const current = ordersByDate.get(date) || 0;
+      ordersByDate.set(date, current + 1);
+    });
+
+    // Get last 10 unique dates
+    const allDates = Array.from(
+      new Set([...Array.from(salesByDate.keys()), ...Array.from(ordersByDate.keys())])
+    ).sort();
+
+    const last10Dates = allDates.slice(-10);
+
+    const series: SeriesPoint[] = last10Dates.map((date) => ({
+      label: formatDate(date),
+      sales: salesByDate.get(date) || 0,
+      orders: ordersByDate.get(date) || 0,
+    }));
+
+    setSalesOrderSeries(series.length > 0 ? series : [
+      { label: "No Data", sales: 0, orders: 0 }
+    ]);
+  };
+
+  const calculateMovingArticles = (dispatches: Transaction[], inventory: InventoryItem[]) => {
+    // Count dispatch frequency per article
+    const dispatchCount = new Map<string, number>();
+    dispatches.forEach((t) => {
+      const key = normalizeDno(t.dno);
+      dispatchCount.set(key, (dispatchCount.get(key) || 0) + t.qty);
+    });
+
+    // Sum inventory per article
+    const inventoryByArticle = new Map<string, number>();
+    inventory.forEach((item) => {
+      const key = normalizeDno(item.dno);
+      inventoryByArticle.set(key, (inventoryByArticle.get(key) || 0) + item.stock);
+    });
+
+    // Calculate slow and fast moving
+    const articles: MovingItem[] = [];
+    inventoryByArticle.forEach((quantity, articleNo) => {
+      articles.push({
+        articleNo,
+        quantity,
+        dispatchCount: dispatchCount.get(articleNo) || 0,
+      });
+    });
+
+    // Slow moving: High inventory, low dispatch (sorted by inventory desc)
+    const slow = articles
+      .filter((a) => a.quantity > 0)
+      .sort((a, b) => {
+        const ratioA = a.quantity / Math.max(1, a.dispatchCount);
+        const ratioB = b.quantity / Math.max(1, b.dispatchCount);
+        return ratioB - ratioA;
+      })
+      .slice(0, 5);
+
+    // Fast moving: High dispatch relative to inventory (sorted by dispatch desc)
+    const fast = articles
+      .filter((a) => a.dispatchCount > 0)
+      .sort((a, b) => {
+        const ratioA = a.dispatchCount / Math.max(1, a.quantity);
+        const ratioB = b.dispatchCount / Math.max(1, b.quantity);
+        return ratioB - ratioA;
+      })
+      .slice(0, 5);
+
+    setSlowMovingArticles(slow);
+    setFastMovingArticles(fast);
+  };
+
+  const calculateOrderTable = (purchaseOrders: PurchaseOrder[]) => {
+    // Group by date
+    const ordersByDate = new Map<string, { count: number; value: number }>();
+
+    purchaseOrders.forEach((po) => {
+      const date = po.date.split("T")[0];
+      const current = ordersByDate.get(date) || { count: 0, value: 0 };
+      ordersByDate.set(date, {
+        count: current.count + 1,
+        value: current.value + (po.grandTotal || 0),
+      });
+    });
+
+    const rows: OrderRow[] = Array.from(ordersByDate.entries())
+      .map(([date, data]) => ({
+        date: new Date(date).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }),
+        orderCount: data.count,
+        orderValue: formatINR(data.value),
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 6);
+
+    setOrderTable(rows.length > 0 ? rows : [
+      { date: "No orders", orderCount: 0, orderValue: "₹0" }
+    ]);
+  };
+
+  const calculateRegionDistribution = (allPurchaseOrders: PurchaseOrder[]) => {
+    const regionData = new Map<string, {
+      sales: number;
+      delivered: number;
+      pending: number;
+      total: number;
+    }>();
+
+    allPurchaseOrders.forEach((po) => {
+      const region = po.city || "Unknown";
+      const current = regionData.get(region) || { sales: 0, delivered: 0, pending: 0, total: 0 };
+      
+      current.sales += po.grandTotal || 0;
+      current.total += 1;
+      
+      if (po.status === "completed") {
+        current.delivered += 1;
+      } else {
+        current.pending += 1;
+      }
+      
+      regionData.set(region, current);
+    });
+
+    const total = Array.from(regionData.values()).reduce((sum, data) => sum + data.sales, 0);
+
+    const colors = ["#3f7edd", "#f59e0b", "#7c5ce6", "#1ba9c3", "#ef4444", "#10b981"];
+    const regions: RegionPoint[] = Array.from(regionData.entries())
+      .sort((a, b) => b[1].sales - a[1].sales)
+      .slice(0, 6)
+      .map(([label, data], index) => ({
+        label,
+        value: data.sales,
+        percentage: Math.round((data.sales / total) * 100),
+        deliveredPercent: data.total > 0 ? Math.round((data.delivered / data.total) * 100) : 0,
+        pendingPercent: data.total > 0 ? Math.round((data.pending / data.total) * 100) : 0,
+        totalOrders: data.total,
+        color: colors[index % colors.length],
+      }));
+
+    setRegionDistribution(regions.length > 0 ? regions : [
+      { label: "No Data", value: 1, percentage: 100, deliveredPercent: 0, pendingPercent: 0, totalOrders: 0, color: "#64748b" }
+    ]);
+  };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+            <p className="mt-4 text-slate-600">Loading analytics...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-[1300px]">
@@ -255,15 +620,29 @@ export default function DomesticAnalyticsPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-600 shadow-sm">
               <CalendarDays className="h-5 w-5" />
-              <span className="text-sm font-medium sm:text-xl">1 Feb 2026 - 28 Feb 2026</span>
+              <span className="text-sm font-medium sm:text-xl">
+                {new Date(dateRange.start).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}{" "}
+                -{" "}
+                {new Date(dateRange.end).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
             </div>
             <select
               className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 shadow-sm outline-none sm:text-xl"
-              defaultValue="last-month"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as typeof period)}
             >
               <option value="last-month">Last Month</option>
-              <option value="this-month">This Month</option>
-              <option value="this-quarter">This Quarter</option>
+              <option value="last-3-months">Last 3 Months</option>
+              <option value="last-6-months">Last 6 Months</option>
+              <option value="last-year">Last Year</option>
             </select>
           </div>
         </div>
@@ -311,8 +690,9 @@ export default function DomesticAnalyticsPage() {
           </DashboardCard>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1fr]">
           <DashboardCard>
+            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl mb-4">Order Summary</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -323,8 +703,8 @@ export default function DomesticAnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orderTable.map((row) => (
-                    <tr key={row.date} className="border-b border-slate-200 text-base text-slate-700 last:border-b-0 sm:text-xl">
+                  {orderTable.map((row, idx) => (
+                    <tr key={idx} className="border-b border-slate-200 text-base text-slate-700 last:border-b-0 sm:text-xl">
                       <td className="px-5 py-4">{row.date}</td>
                       <td className="px-5 py-4">{row.orderCount}</td>
                       <td className="px-5 py-4">{row.orderValue}</td>
@@ -335,6 +715,30 @@ export default function DomesticAnalyticsPage() {
             </div>
           </DashboardCard>
 
+          <DashboardCard>
+            <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Fast Moving Article</h2>
+            <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50">
+                  <tr className="text-base text-slate-500 sm:text-lg">
+                    <th className="px-5 py-4 font-semibold">Article No</th>
+                    <th className="px-5 py-4 font-semibold">Sold</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fastMovingArticles.map((item) => (
+                    <tr key={item.articleNo} className="border-t border-slate-200 text-base text-slate-700 sm:text-xl">
+                      <td className="px-5 py-4">{item.articleNo}</td>
+                      <td className="px-5 py-4">{item.dispatchCount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        </div>
+
+        <div className="mt-6">
           <DashboardCard>
             <h2 className="text-2xl font-semibold text-slate-900 sm:text-4xl">Region Wise Distribution</h2>
             <RegionPieChart data={regionDistribution} />

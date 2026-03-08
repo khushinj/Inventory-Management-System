@@ -58,7 +58,7 @@ const transactionSchema = new mongoose.Schema({
   },
   platform: {
     type: String,
-    enum: ["amazon", "flipkart", "myntra", "ajio"],
+    enum: ["amazon", "flipkart", "myntra", "ajio", "snapdeal"],
   },
   createdAt: {
     type: Date,

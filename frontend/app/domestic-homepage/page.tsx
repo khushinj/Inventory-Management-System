@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,11 +13,9 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   FileText,
-  Calendar,
-  User,
+  BarChart3,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
-import { api } from "../../lib/api";
 
 type OperationCard = {
   title: string;
@@ -26,17 +23,6 @@ type OperationCard = {
   icon: LucideIcon;
   bgColor: string;
   href?: string;
-};
-
-type PurchaseOrder = {
-  _id: string;
-  buyerName: string;
-  dealerName: string;
-  date: string;
-  city: string;
-  totalQuantity: number;
-  grandTotal: number;
-  createdAt: string;
 };
 
 const operations: OperationCard[] = [
@@ -74,6 +60,13 @@ const operations: OperationCard[] = [
     icon: ShoppingBag,
     bgColor: "bg-indigo-500",
     href: "/domestic?formType=purchase&locked=true",
+  },
+  {
+    title: "Analytics",
+    description: "View domestic warehouse analytics dashboard",
+    icon: BarChart3,
+    bgColor: "bg-violet-500",
+    href: "/domestic-analytics",
   },
   {
     title: "Purchase Order",
@@ -114,25 +107,6 @@ const operations: OperationCard[] = [
 
 export default function DomesticOperationsPage() {
   const router = useRouter();
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchPurchaseOrders();
-  }, []);
-
-  const fetchPurchaseOrders = async () => {
-    try {
-      const response = await api.get("/purchase-order");
-      if (response.data.success) {
-        setPurchaseOrders(response.data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching purchase orders:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">

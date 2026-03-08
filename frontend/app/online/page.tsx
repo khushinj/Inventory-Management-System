@@ -128,6 +128,7 @@ function OnlineDashboard() {
     "flipkart",
     "myntra",
     "ajio",
+    "snapdeal",
   ]);
   const [transferOptions] = useState<string[]>([
     "inwards",

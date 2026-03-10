@@ -53,6 +53,7 @@ export default function OnlineInventoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     initializeInventory();
@@ -164,7 +165,7 @@ export default function OnlineInventoryPage() {
               placeholder="Search by Design Number (e.g., DN-2025-001)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-gray-800 text-lg bg-gray-50"
+              className="w-full px-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent text-gray-800 text-sm sm:text-lg bg-gray-50"
             />
             <svg
               className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -184,10 +185,22 @@ export default function OnlineInventoryPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Mobile Filter Toggle */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center justify-between w-full px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm text-gray-800 font-semibold"
+          >
+            <span>Filters</span>
+            <svg className={`w-5 h-5 transition-transform ${showFilters ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 lg:gap-8">
           {/* Filters Sidebar */}
-          <aside className="bg-white border rounded-lg shadow-sm p-6 h-fit sticky top-20 self-start">
+          <aside className={`bg-white border rounded-lg shadow-sm p-6 h-fit lg:sticky top-20 self-start ${showFilters ? "block" : "hidden lg:block"}`}>
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Filters
             </h2>
@@ -251,7 +264,7 @@ export default function OnlineInventoryPage() {
           </aside>
 
           {/* Products List */}
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             {loading ? (
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800"></div>
@@ -349,10 +362,10 @@ function ProductCard({ designNumber, items }: ProductCardProps) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-      <div className="md:flex md:gap-10 p-6">
+      <div className="md:flex md:gap-10 p-4 sm:p-6">
         {/* Product Image */}
         <div className="md:w-1/2 w-full">
-          <div className="relative w-full h-[520px] bg-gray-100 rounded-lg overflow-hidden">
+          <div className="relative w-full h-[240px] sm:h-[400px] md:h-[520px] bg-gray-100 rounded-lg overflow-hidden">
             {productDetails?.image ? (
               <Image
                 src={productDetails.image}

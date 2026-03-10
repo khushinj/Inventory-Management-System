@@ -144,6 +144,9 @@ function SalesExpenseChart({ points }: { points: TrendPoint[] }) {
   const maxY = Math.max(100, ...points.flatMap((item) => [item.sales, item.expense]));
   const roundedMax = Math.ceil(maxY / 1000) * 1000;
   const steps = Array.from({ length: 5 }, (_, idx) => (roundedMax / 4) * idx);
+  const dotR = points.length > 20 ? 3 : 5;
+  const maxLabels = 8;
+  const labelStep = Math.max(1, Math.ceil(points.length / maxLabels));
 
   const toX = (index: number) => leftPad + (index * chartWidth) / Math.max(1, points.length - 1);
   const toY = (value: number) => topPad + chartHeight - (value / roundedMax) * chartHeight;
@@ -176,18 +179,22 @@ function SalesExpenseChart({ points }: { points: TrendPoint[] }) {
           strokeWidth="2"
         />
 
-        {points.map((item, index) => (
-          <text
-            key={`label-${item.label}-${index}`}
-            x={toX(index)}
-            y={topPad + chartHeight + 25}
-            textAnchor="middle"
-            fill="#6b7280"
-            fontSize="17"
-          >
-            {item.label}
-          </text>
-        ))}
+        {points.map((item, index) => {
+          const showLabel = index % labelStep === 0 || index === points.length - 1;
+          if (!showLabel) return null;
+          return (
+            <text
+              key={`label-${item.label}-${index}`}
+              x={toX(index)}
+              y={topPad + chartHeight + 25}
+              textAnchor="middle"
+              fill="#6b7280"
+              fontSize="17"
+            >
+              {item.label}
+            </text>
+          );
+        })}
 
         <polyline fill="none" stroke="#3b82f6" strokeWidth="4" points={salesPolyline} />
         <polyline fill="none" stroke="#ef4444" strokeWidth="4" points={expensePolyline} />
@@ -205,36 +212,34 @@ function SalesExpenseChart({ points }: { points: TrendPoint[] }) {
               style={{ cursor: "pointer" }}
             >
               <line x1={x} y1={topPad} x2={x} y2={topPad + chartHeight} stroke="#cbd5e1" strokeDasharray="4 4" opacity={hoveredIndex === index ? 1 : 0} />
-              <circle cx={x} cy={ySales} r="5" fill="#fff" stroke="#3b82f6" strokeWidth="3" />
-              <circle cx={x} cy={yExpense} r="5" fill="#fff" stroke="#ef4444" strokeWidth="3" />
-              <circle cx={x} cy={ySales} r="15" fill="transparent" />
-              <circle cx={x} cy={yExpense} r="15" fill="transparent" />
+              <circle cx={x} cy={ySales} r={dotR} fill="#fff" stroke="#3b82f6" strokeWidth="3" />
+              <circle cx={x} cy={yExpense} r={dotR} fill="#fff" stroke="#ef4444" strokeWidth="3" />
+              <rect x={x - 10} y={topPad} width="20" height={chartHeight} fill="transparent" />
 
-              {hoveredIndex === index ? (
-                <>
-                  <rect
-                    x={Math.max(leftPad + 6, Math.min(width - rightPad - 206, x - 102))}
-                    y={Math.max(topPad + 4, topY - 84)}
-                    width="206"
-                    height="74"
-                    rx="8"
-                    fill="#0f172a"
-                    opacity="0.96"
-                  />
-                  <text x={x} y={Math.max(topPad + 24, topY - 62)} textAnchor="middle" fill="#e2e8f0" fontSize="12" fontWeight="600">
-                    {item.label}
-                  </text>
-                  <text x={x} y={Math.max(topPad + 40, topY - 46)} textAnchor="middle" fill="#60a5fa" fontSize="12">
-                    Sales: {formatINR(item.sales)}
-                  </text>
-                  <text x={x} y={Math.max(topPad + 56, topY - 30)} textAnchor="middle" fill="#f87171" fontSize="12">
-                    Expenses: {formatINR(item.expense)}
-                  </text>
-                  <text x={x} y={Math.max(topPad + 70, topY - 16)} textAnchor="middle" fill="#cbd5e1" fontSize="11">
-                    Qty: {item.qty} | Orders: {item.orders}
-                  </text>
-                </>
-              ) : null}
+              {hoveredIndex === index ? (() => {
+                  const bw = 230;
+                  const bh = 90;
+                  const bx = Math.max(leftPad + 4, Math.min(width - rightPad - bw - 4, x - bw / 2));
+                  const by = Math.max(topPad + 4, topY - bh - 10);
+                  const cx2 = bx + bw / 2;
+                  return (
+                    <>
+                      <rect x={bx} y={by} width={bw} height={bh} rx="8" fill="#0f172a" opacity="0.96" />
+                      <text x={cx2} y={by + 20} textAnchor="middle" fill="#e2e8f0" fontSize="12" fontWeight="600">
+                        {item.label}
+                      </text>
+                      <text x={cx2} y={by + 38} textAnchor="middle" fill="#60a5fa" fontSize="12">
+                        Sales: {formatINR(item.sales)}
+                      </text>
+                      <text x={cx2} y={by + 56} textAnchor="middle" fill="#f87171" fontSize="12">
+                        Expenses: {formatINR(item.expense)}
+                      </text>
+                      <text x={cx2} y={by + 74} textAnchor="middle" fill="#cbd5e1" fontSize="11">
+                        Qty: {item.qty} | Orders: {item.orders}
+                      </text>
+                    </>
+                  );
+                })() : null}
             </g>
           );
         })}
@@ -486,45 +491,48 @@ export default function ShopAnalyticsPage() {
   }, [dateRange.end, dateRange.start, getUnitAmount, filteredReports, shopInventory]);
 
   const trendSeries = useMemo(() => {
-    const salesByDate = new Map<string, { value: number; qty: number; orders: number }>();
-    inRangeSalesEntries.forEach((entry) => {
-      const dateIso = toIsoDate(entry.date);
-      if (!dateIso) return;
-      const existing = salesByDate.get(dateIso) || { value: 0, qty: 0, orders: 0 };
-      const qty = entry.qty || 0;
-      const mrp = getUnitAmount(entry.dno);
-      salesByDate.set(dateIso, {
-        value: existing.value + qty * mrp,
-        qty: existing.qty + qty,
-        orders: existing.orders + 1,
-      });
-    });
-
+    const saleByDate = new Map<string, number>();
     const expenseByDate = new Map<string, number>();
     filteredReports.forEach((report) => {
       const dateIso = toIsoDate(report.date);
       if (!dateIso) return;
+      saleByDate.set(dateIso, (saleByDate.get(dateIso) || 0) + (report.totalSale || 0));
       expenseByDate.set(dateIso, (expenseByDate.get(dateIso) || 0) + (report.expense || 0));
     });
 
-    const allDates = Array.from(new Set([...salesByDate.keys(), ...expenseByDate.keys()])).sort();
+    const qtyByDate = new Map<string, { qty: number; orders: number }>();
+    inRangeSalesEntries.forEach((entry) => {
+      const dateIso = toIsoDate(entry.date);
+      if (!dateIso) return;
+      const existing = qtyByDate.get(dateIso) || { qty: 0, orders: 0 };
+      qtyByDate.set(dateIso, { qty: existing.qty + (entry.qty || 0), orders: existing.orders + 1 });
+    });
+
+    // Generate every date in the selected range
+    const allDates: string[] = [];
+    const cursor = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+    while (cursor <= endDate) {
+      allDates.push(cursor.toISOString().split("T")[0]);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
     if (allDates.length === 0) {
       return [{ dateIso: "", label: "No Data", sales: 0, expense: 0, qty: 0, orders: 0 }];
     }
 
-    const selectedDates = pickDatesForChart(allDates, 7);
-    return selectedDates.map((dateIso) => {
-      const sales = salesByDate.get(dateIso) || { value: 0, qty: 0, orders: 0 };
+    return allDates.map((dateIso) => {
+      const q = qtyByDate.get(dateIso) || { qty: 0, orders: 0 };
       return {
         dateIso,
         label: formatDateLabel(dateIso),
-        sales: Math.round(sales.value),
+        sales: Math.round(saleByDate.get(dateIso) || 0),
         expense: Math.round(expenseByDate.get(dateIso) || 0),
-        qty: sales.qty,
-        orders: sales.orders,
+        qty: q.qty,
+        orders: q.orders,
       };
     });
-  }, [filteredReports, getUnitAmount, inRangeSalesEntries]);
+  }, [dateRange.end, dateRange.start, filteredReports, inRangeSalesEntries]);
 
   const slowMoving = useMemo(() => {
     const stockByDesign = shopInventory.reduce<Record<string, number>>((acc, item) => {

@@ -459,7 +459,12 @@ export default function ShopAnalyticsPage() {
   const metrics = useMemo(() => {
     const totalSale = filteredReports.reduce((sum, report) => sum + (report.totalSale || 0), 0);
     const totalQtySold = filteredReports.reduce((sum, report) => sum + (report.qty || 0), 0);
-    const avgSale = totalQtySold > 0 ? totalSale / totalQtySold : 0;
+    const avgSellingPrice = totalQtySold > 0 ? totalSale / totalQtySold : 0;
+
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+    const numDays = Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    const avgSalePerDay = totalSale / numDays;
 
     const reportsByDate = [...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const latestDaySale = reportsByDate[0]?.totalSale || 0;
@@ -473,11 +478,12 @@ export default function ShopAnalyticsPage() {
 
     return {
       totalSale,
-      avgSale,
+      avgSellingPrice,
+      avgSalePerDay,
       totalSaleChange: pctChange(latestDaySale, previousDaySale),
       inventoryValue,
     };
-  }, [getUnitAmount, filteredReports, shopInventory]);
+  }, [dateRange.end, dateRange.start, getUnitAmount, filteredReports, shopInventory]);
 
   const trendSeries = useMemo(() => {
     const salesByDate = new Map<string, { value: number; qty: number; orders: number }>();
@@ -578,8 +584,7 @@ export default function ShopAnalyticsPage() {
     const allDates = Array.from(new Set([...Object.keys(saleByDate), ...Object.keys(qtyByDate)]));
 
     return allDates
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-      .slice(0, 10)
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
       .map((dateIso) => ({
         date: new Date(dateIso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
         totalSale: formatINR(saleByDate[dateIso] || 0),
@@ -587,10 +592,7 @@ export default function ShopAnalyticsPage() {
       }));
   }, [filteredReports, inRangeSalesEntries]);
 
-  const dateTableRows = useMemo(
-    () => ensureMinimumRows(tableRows, 10, () => ({ date: "-", totalSale: formatINR(0), quantity: 0 })),
-    [tableRows]
-  );
+  const dateTableRows = tableRows;
 
   const slowMovingRows = useMemo(
     () => ensureMinimumRows(slowMoving, 10, () => ({ productNo: "-", quantity: 0, sold: 0 })),
@@ -690,10 +692,11 @@ export default function ShopAnalyticsPage() {
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <Card title="Total Sale" value={formatINR(metrics.totalSale)} trend={`${metrics.totalSaleChange >= 0 ? "+" : ""}${metrics.totalSaleChange.toFixed(1)}%`} />
-          <Card title="Avg Sale" value={formatINR(metrics.avgSale)} />
+          <Card title="Avg Selling Price Per Article" value={formatINR(metrics.avgSellingPrice)} />
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-1">
+        <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+          <Card title="Avg Sale" value={formatINR(metrics.avgSalePerDay)} />
           <Card title="Current Inventory Value" value={formatINR(metrics.inventoryValue)} />
         </div>
 

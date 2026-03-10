@@ -561,25 +561,31 @@ export default function ShopAnalyticsPage() {
   }, [inRangeSalesEntries]);
 
   const tableRows = useMemo(() => {
-    const salesByDate = inRangeSalesEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
-      const dateIso = toIsoDate(entry.date);
+    const saleByDate = filteredReports.reduce<Record<string, number>>((acc, report) => {
+      const dateIso = toIsoDate(report.date);
       if (!dateIso) return acc;
-      const mrp = getUnitAmount(entry.dno);
-      if (!acc[dateIso]) acc[dateIso] = { value: 0, qty: 0 };
-      acc[dateIso].value += (entry.qty || 0) * mrp;
-      acc[dateIso].qty += entry.qty || 0;
+      acc[dateIso] = (acc[dateIso] || 0) + (report.totalSale || 0);
       return acc;
     }, {});
 
-    return Object.entries(salesByDate)
-      .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime())
+    const qtyByDate = inRangeSalesEntries.reduce<Record<string, number>>((acc, entry) => {
+      const dateIso = toIsoDate(entry.date);
+      if (!dateIso) return acc;
+      acc[dateIso] = (acc[dateIso] || 0) + (entry.qty || 0);
+      return acc;
+    }, {});
+
+    const allDates = Array.from(new Set([...Object.keys(saleByDate), ...Object.keys(qtyByDate)]));
+
+    return allDates
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
       .slice(0, 10)
-      .map(([dateIso, payload]) => ({
+      .map((dateIso) => ({
         date: new Date(dateIso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-        totalSale: formatINR(payload.value),
-        quantity: payload.qty,
+        totalSale: formatINR(saleByDate[dateIso] || 0),
+        quantity: qtyByDate[dateIso] || 0,
       }));
-  }, [getUnitAmount, inRangeSalesEntries]);
+  }, [filteredReports, inRangeSalesEntries]);
 
   const dateTableRows = useMemo(
     () => ensureMinimumRows(tableRows, 10, () => ({ date: "-", totalSale: formatINR(0), quantity: 0 })),

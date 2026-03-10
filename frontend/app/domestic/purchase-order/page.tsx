@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { api } from "../../../lib/api";
+import { INDIA_CITIES } from "../../../lib/indiaCities";
 
 type PurchaseOrderItem = {
   id: number;
@@ -85,6 +86,8 @@ export default function PurchaseOrderEntryForm() {
     deadline: "",
     city: "",
   });
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const cityInputRef = useRef<HTMLDivElement | null>(null);
 
   const [items, setItems] = useState<PurchaseOrderItem[]>([
     {
@@ -120,6 +123,10 @@ export default function PurchaseOrderEntryForm() {
     termsCondition: "Certified that the particulars given above are true and correct and the amount indicated represents the price actually charged and that there is no flow of additional consideration directly or indirectly from the buyer.",
   });
 
+  const filteredCities = headerInfo.city.trim()
+    ? INDIA_CITIES.filter((city) => city.toLowerCase().includes(headerInfo.city.trim().toLowerCase()))
+    : [];
+
   const handleHeaderChange = (field: string, value: string) => {
     setHeaderInfo((prev) => ({ ...prev, [field]: value }));
   };
@@ -141,6 +148,28 @@ export default function PurchaseOrderEntryForm() {
       termsCondition: "Certified that the particulars given above are true and correct and the amount indicated represents the price actually charged and that there is no flow of additional consideration directly or indirectly from the buyer.",
     });
   }, [items]);
+
+  useEffect(() => {
+    if (!showCitySuggestions) {
+      return;
+    }
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!cityInputRef.current) {
+        return;
+      }
+
+      const target = event.target as Node;
+      if (!cityInputRef.current.contains(target)) {
+        setShowCitySuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showCitySuggestions]);
 
   const calculateItemValues = (item: PurchaseOrderItem): PurchaseOrderItem => {
     // Calculate QTY: sum of all sizes
@@ -573,17 +602,45 @@ export default function PurchaseOrderEntryForm() {
               />
             </div>
             
-            <div>
+            <div ref={cityInputRef} className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 City
               </label>
               <input
                 type="text"
                 value={headerInfo.city}
-                onChange={(e) => handleHeaderChange("city", e.target.value)}
+                onChange={(e) => {
+                  handleHeaderChange("city", e.target.value);
+                  setShowCitySuggestions(true);
+                }}
+                onFocus={() => {
+                  if (headerInfo.city.trim()) {
+                    setShowCitySuggestions(true);
+                  }
+                }}
                 onKeyDown={handleKeyDown}
+                placeholder="Type city name"
+                autoComplete="off"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
+
+              {showCitySuggestions && filteredCities.length > 0 ? (
+                <div className="absolute z-20 mt-2 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg" style={{ maxHeight: "220px" }}>
+                  {filteredCities.map((city) => (
+                    <button
+                      key={city}
+                      type="button"
+                      onMouseDown={() => {
+                        handleHeaderChange("city", city);
+                        setShowCitySuggestions(false);
+                      }}
+                      className="block w-full border-b border-gray-100 px-4 py-2 text-left text-sm text-gray-700 last:border-b-0 hover:bg-blue-50"
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

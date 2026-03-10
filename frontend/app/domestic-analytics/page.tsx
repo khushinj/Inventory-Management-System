@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { CalendarDays } from "lucide-react";
 import type { ReactNode } from "react";
 import { api } from "../../lib/api";
@@ -69,11 +69,22 @@ type JobCard = {
   mrp: number;
 };
 
+type PeriodType = "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
+
 function formatINR(value: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
+  }).format(value || 0);
+}
+
+function formatINRWithPaise(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value || 0);
 }
 
@@ -88,6 +99,42 @@ function formatDate(dateStr: string) {
 
 function normalizeDno(dno?: string) {
   return (dno || "").trim().replace(/\s+/g, "").toUpperCase();
+}
+
+function getLastMonthDateRange() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const end = new Date(now.getFullYear(), now.getMonth(), 0);
+
+  return {
+    start: start.toISOString().split("T")[0],
+    end: end.toISOString().split("T")[0],
+  };
+}
+
+function getDateRangeByPeriod(periodType: Exclude<PeriodType, "custom">) {
+  const now = new Date();
+  let start: Date;
+  let end: Date = new Date(now);
+
+  if (periodType === "last-month") {
+    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    end = new Date(now.getFullYear(), now.getMonth(), 0);
+  } else if (periodType === "last-3-months") {
+    start = new Date(now);
+    start.setMonth(now.getMonth() - 3);
+  } else if (periodType === "last-6-months") {
+    start = new Date(now);
+    start.setMonth(now.getMonth() - 6);
+  } else {
+    start = new Date(now);
+    start.setFullYear(now.getFullYear() - 1);
+  }
+
+  return {
+    start: start.toISOString().split("T")[0],
+    end: end.toISOString().split("T")[0],
+  };
 }
 
 function DashboardCard({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -313,56 +360,44 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
 
 export default function DomesticAnalyticsPage() {
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<"last-month" | "last-3-months" | "last-6-months" | "last-year">("last-month");
+  const [period, setPeriod] = useState<PeriodType>("last-month");
   const [metricCards, setMetricCards] = useState<MetricCard[]>([]);
   const [salesOrderSeries, setSalesOrderSeries] = useState<SeriesPoint[]>([]);
   const [slowMovingArticles, setSlowMovingArticles] = useState<MovingItem[]>([]);
   const [fastMovingArticles, setFastMovingArticles] = useState<MovingItem[]>([]);
   const [orderTable, setOrderTable] = useState<OrderRow[]>([]);
   const [regionDistribution, setRegionDistribution] = useState<RegionPoint[]>([]);
-  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => getLastMonthDateRange());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const datePickerRef = useRef<HTMLDivElement | null>(null);
 
-  const getDateRange = useCallback((periodType: typeof period) => {
-    const now = new Date();
-    let start: Date;
-    let end: Date = new Date(now);
+  useEffect(() => {
+    if (period === "custom") return;
+    setDateRange(getDateRangeByPeriod(period));
+  }, [period]);
 
-    if (periodType === "last-month") {
-      // Previous calendar month
-      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      end = new Date(now.getFullYear(), now.getMonth(), 0);
-    } else if (periodType === "last-3-months") {
-      // Last 3 months from today
-      start = new Date(now);
-      start.setMonth(now.getMonth() - 3);
-      end = now;
-    } else if (periodType === "last-6-months") {
-      // Last 6 months from today
-      start = new Date(now);
-      start.setMonth(now.getMonth() - 6);
-      end = now;
-    } else if (periodType === "last-year") {
-      // Last 12 months from today
-      start = new Date(now);
-      start.setFullYear(now.getFullYear() - 1);
-      end = now;
-    } else {
-      // Default to last month
-      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      end = new Date(now.getFullYear(), now.getMonth(), 0);
-    }
+  useEffect(() => {
+    if (!showDatePicker) return;
 
-    return {
-      start: start.toISOString().split("T")[0],
-      end: end.toISOString().split("T")[0],
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!datePickerRef.current) return;
+
+      const target = event.target as Node;
+      if (!datePickerRef.current.contains(target)) {
+        setShowDatePicker(false);
+      }
     };
-  }, []);
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showDatePicker]);
 
   const fetchAnalyticsData = useCallback(async () => {
     try {
       setLoading(true);
-      const range = getDateRange(period);
-      setDateRange(range);
+      const range = dateRange;
 
       // Fetch all required data in parallel
       const [dispatchRes, purchaseOrdersRes, inventoryRes, jobCardsRes] = await Promise.all([
@@ -386,7 +421,7 @@ export default function DomesticAnalyticsPage() {
       );
 
       // Calculate metrics
-      calculateMetrics(dispatchTransactions, inventoryItems, jobCards);
+      calculateMetrics(dispatchTransactions, inventoryItems, jobCards, allPurchaseOrders);
       calculateSalesOrderSeries(dispatchTransactions, purchaseOrders);
       calculateMovingArticles(dispatchTransactions, inventoryItems);
       calculateOrderTable(purchaseOrders);
@@ -396,13 +431,18 @@ export default function DomesticAnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [period, getDateRange]);
+  }, [dateRange]);
 
   useEffect(() => {
     fetchAnalyticsData();
   }, [fetchAnalyticsData]);
 
-  const calculateMetrics = (dispatches: Transaction[], inventory: InventoryItem[], jobCards: JobCard[]) => {
+  const calculateMetrics = (
+    dispatches: Transaction[],
+    inventory: InventoryItem[],
+    jobCards: JobCard[],
+    allPurchaseOrders: PurchaseOrder[]
+  ) => {
     // Create MRP lookup map from job cards
     const mrpMap = new Map<string, number>();
     jobCards.forEach((jc) => {
@@ -416,9 +456,9 @@ export default function DomesticAnalyticsPage() {
       return sum + t.qty * mrp;
     }, 0);
 
-    // 2. Avg Article Sale
-    const uniqueArticles = new Set(dispatches.map((t) => normalizeDno(t.dno)));
-    const avgArticleSale = uniqueArticles.size > 0 ? totalSale / uniqueArticles.size : 0;
+    // 2. Avg Order Value (same basis as purchase-order dashboard)
+    const totalOrderValue = allPurchaseOrders.reduce((sum, po) => sum + (po.grandTotal || 0), 0);
+    const avgOrderValue = allPurchaseOrders.length > 0 ? totalOrderValue / allPurchaseOrders.length : 0;
 
     // 3. Current Inventory Value
     const inventoryValue = inventory.reduce((sum, item) => {
@@ -430,12 +470,10 @@ export default function DomesticAnalyticsPage() {
       {
         title: "Total Sale",
         value: formatINR(totalSale),
-        trend: totalSale > 0 ? "+8.3%" : "N/A",
       },
       {
-        title: "Avg Article Sale",
-        value: formatINR(avgArticleSale),
-        trend: avgArticleSale > 0 ? "+4.1%" : "N/A",
+        title: "Avg Order Value",
+        value: formatINRWithPaise(avgOrderValue),
       },
       {
         title: "Current Inventory Value",
@@ -625,31 +663,66 @@ export default function DomesticAnalyticsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Domestic Inventory</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
-              <CalendarDays className="h-5 w-5" />
-              <span className="text-sm font-medium sm:text-base">
-                {new Date(dateRange.start).toLocaleDateString("en-IN", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}{" "}
-                -{" "}
-                {new Date(dateRange.end).toLocaleDateString("en-IN", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </span>
+            <div ref={datePickerRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowDatePicker((prev) => !prev)}
+                className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]"
+              >
+                <CalendarDays className="h-5 w-5" />
+                <span className="text-sm font-medium sm:text-base">
+                  {new Date(dateRange.start).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}{" "}
+                  -{" "}
+                  {new Date(dateRange.end).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+              </button>
+
+              {showDatePicker ? (
+                <div className="absolute right-0 z-20 mt-2 w-[320px] rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <input
+                      type="date"
+                      value={dateRange.start}
+                      max={dateRange.end || undefined}
+                      onChange={(e) => {
+                        setPeriod("custom");
+                        setDateRange((prev) => ({ ...prev, start: e.target.value }));
+                      }}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none"
+                    />
+                    <input
+                      type="date"
+                      value={dateRange.end}
+                      min={dateRange.start || undefined}
+                      onChange={(e) => {
+                        setPeriod("custom");
+                        setDateRange((prev) => ({ ...prev, end: e.target.value }));
+                      }}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none"
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
+
             <select
               className="rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] outline-none sm:text-base"
               value={period}
-              onChange={(e) => setPeriod(e.target.value as typeof period)}
+              onChange={(e) => setPeriod(e.target.value as PeriodType)}
             >
               <option value="last-month">Last Month</option>
               <option value="last-3-months">Last 3 Months</option>
               <option value="last-6-months">Last 6 Months</option>
               <option value="last-year">Last Year</option>
+              <option value="custom">Custom</option>
             </select>
           </div>
         </div>

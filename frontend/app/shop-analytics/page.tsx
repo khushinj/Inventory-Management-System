@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { api } from "../../lib/api";
 
-type Period = "last-month" | "last-3-months" | "last-6-months" | "last-year";
+type Period = "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
 
 type DailyReport = {
   date: string;
@@ -43,10 +43,8 @@ type TrendPoint = {
 };
 
 type DateRange = {
-  start: Date;
-  end: Date;
-  startIso: string;
-  endIso: string;
+  start: string;
+  end: string;
 };
 
 function formatINR(value: number) {
@@ -63,7 +61,7 @@ function formatDateLabel(value: string) {
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-function getDateRange(period: Period) {
+function getDateRangeByPeriod(period: Exclude<Period, "custom">): DateRange {
   const now = new Date();
   let start: Date;
   let end: Date = new Date(now);
@@ -83,10 +81,8 @@ function getDateRange(period: Period) {
   }
 
   return {
-    start,
-    end,
-    startIso: start.toISOString().split("T")[0],
-    endIso: end.toISOString().split("T")[0],
+    start: start.toISOString().split("T")[0],
+    end: end.toISOString().split("T")[0],
   };
 }
 
@@ -109,20 +105,6 @@ function ensureMinimumRows<T>(rows: T[], minimum: number, fillerFactory: (index:
   const missing = minimum - rows.length;
   const filler = Array.from({ length: missing }, (_, index) => fillerFactory(index));
   return [...rows, ...filler];
-}
-
-function getPreviousRange(range: DateRange) {
-  const periodDays = Math.max(1, Math.round((range.end.getTime() - range.start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-  const previousEnd = new Date(range.start);
-  previousEnd.setDate(previousEnd.getDate() - 1);
-  const previousStart = new Date(previousEnd);
-  previousStart.setDate(previousStart.getDate() - periodDays + 1);
-  return {
-    start: previousStart,
-    end: previousEnd,
-    startIso: previousStart.toISOString().split("T")[0],
-    endIso: previousEnd.toISOString().split("T")[0],
-  };
 }
 
 function pickDatesForChart(dates: string[], maxPoints: number) {
@@ -315,9 +297,11 @@ function PaymentPieChart({ values }: { values: { cash: number; upi: number; card
     )
     .items;
 
+  const activeSlice = paths.find((slice) => slice.label === hoveredSlice) ?? null;
+
   return (
-    <div className="relative flex items-center justify-center">
-      <svg viewBox={`0 0 ${size} ${size}`} className="h-[340px] w-[340px]">
+    <div className="relative flex items-center justify-center px-2 pb-16 pt-2 sm:px-4 sm:pb-20">
+      <svg viewBox={`0 0 ${size} ${size}`} className="h-[320px] w-[320px] overflow-visible sm:h-[340px] sm:w-[340px]">
         {paths.map((slice) => (
           <path
             key={`${slice.label}-${slice.color}`}
@@ -330,36 +314,54 @@ function PaymentPieChart({ values }: { values: { cash: number; upi: number; card
             onMouseLeave={() => setHoveredSlice(null)}
           />
         ))}
+
+        {paths.map((slice) => {
+          const angle = (Math.PI * slice.midAngle) / 180;
+          const connectorStartRadius = radius + 6;
+          const connectorEndRadius = radius + 24;
+          const textRadius = radius + 30;
+          const startX = center + connectorStartRadius * Math.cos(angle);
+          const startY = center + connectorStartRadius * Math.sin(angle);
+          const endX = center + connectorEndRadius * Math.cos(angle);
+          const endY = center + connectorEndRadius * Math.sin(angle);
+          const labelX = Math.min(size - 28, Math.max(28, center + textRadius * Math.cos(angle)));
+          const labelY = Math.min(size - 24, Math.max(24, center + textRadius * Math.sin(angle)));
+          const isRightSide = Math.cos(angle) >= 0;
+
+          return (
+            <g key={`label-${slice.label}`} className="pointer-events-none">
+              <line x1={startX} y1={startY} x2={endX} y2={endY} stroke={slice.color} strokeWidth="1.5" opacity="0.75" />
+              <text
+                x={labelX}
+                y={labelY - 2}
+                textAnchor={isRightSide ? "start" : "end"}
+                fill="#0f172a"
+                fontSize="11"
+                fontWeight="600"
+              >
+                {slice.label}
+              </text>
+              <text
+                x={labelX}
+                y={labelY + 12}
+                textAnchor={isRightSide ? "start" : "end"}
+                fill={slice.color}
+                fontSize="10"
+                fontWeight="600"
+              >
+                {slice.pct}%
+              </text>
+            </g>
+          );
+        })}
       </svg>
 
-      {paths.map((slice) => {
-        const labelRadius = radius + 40;
-        const x = center + labelRadius * Math.cos((Math.PI * slice.midAngle) / 180);
-        const y = center + labelRadius * Math.sin((Math.PI * slice.midAngle) / 180);
-        return (
-          <p
-            key={`label-${slice.label}`}
-            className="pointer-events-none absolute text-base font-medium sm:text-2xl"
-            style={{
-              left: `${(x / size) * 100}%`,
-              top: `${(y / size) * 100}%`,
-              color: slice.color,
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            {slice.label} {slice.pct}%
-          </p>
-        );
-      })}
-
-      {hoveredSlice ? (
-        <div className="absolute bottom-1 rounded-lg bg-slate-900/95 px-3 py-2 text-xs text-white sm:text-sm">
-          {(() => {
-            const current = paths.find((slice) => slice.label === hoveredSlice);
-            if (!current) return null;
-            const amount = slices.find((slice) => slice.label === hoveredSlice)?.value || 0;
-            return `${hoveredSlice}: ${formatINR(amount)} (${current.pct}%)`;
-          })()}
+      {activeSlice ? (
+        <div className="absolute bottom-1 left-1/2 min-w-[170px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs text-slate-700 shadow-lg backdrop-blur-sm sm:text-[13px]">
+          <div className="font-semibold text-slate-900">
+            {activeSlice.label}: {formatINR(slices.find((slice) => slice.label === activeSlice.label)?.value || 0)}
+          </div>
+          <div className="mt-1 text-[11px] text-slate-500 sm:text-xs">Share: {activeSlice.pct}%</div>
         </div>
       ) : null}
     </div>
@@ -368,14 +370,18 @@ function PaymentPieChart({ values }: { values: { cash: number; upi: number; card
 
 export default function ShopAnalyticsPage() {
   const [period, setPeriod] = useState<Period>("last-month");
+  const [dateRange, setDateRange] = useState<DateRange>(() => getDateRangeByPeriod("last-month"));
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [shopEntries, setShopEntries] = useState<ShopEntry[]>([]);
   const [shopInventory, setShopInventory] = useState<ShopInventoryItem[]>([]);
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
 
-  const range = useMemo(() => getDateRange(period), [period]);
-  const previousRange = useMemo(() => getPreviousRange(range), [range]);
+  useEffect(() => {
+    if (period === "custom") return;
+    setDateRange(getDateRangeByPeriod(period));
+  }, [period]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -410,10 +416,10 @@ export default function ShopAnalyticsPage() {
     return reports
       .filter((report) => {
         const date = toIsoDate(report.date);
-        return date >= range.startIso && date <= range.endIso;
+        return date >= dateRange.start && date <= dateRange.end;
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [reports, range.endIso, range.startIso]);
+  }, [dateRange.end, dateRange.start, reports]);
 
   const mrpByDesign = useMemo(() => {
     const map = new Map<string, number>();
@@ -446,16 +452,16 @@ export default function ShopAnalyticsPage() {
     return shopEntries.filter((entry) => {
       if (entry.formType !== "sales") return false;
       const date = toIsoDate(entry.date);
-      return date >= range.startIso && date <= range.endIso;
+      return date >= dateRange.start && date <= dateRange.end;
     });
-  }, [shopEntries, range.endIso, range.startIso]);
+  }, [dateRange.end, dateRange.start, shopEntries]);
 
   const metrics = useMemo(() => {
-    const totalSale = reports.reduce((sum, report) => sum + (report.totalSale || 0), 0);
-    const totalQtySold = reports.reduce((sum, report) => sum + (report.qty || 0), 0);
+    const totalSale = filteredReports.reduce((sum, report) => sum + (report.totalSale || 0), 0);
+    const totalQtySold = filteredReports.reduce((sum, report) => sum + (report.qty || 0), 0);
     const avgSale = totalQtySold > 0 ? totalSale / totalQtySold : 0;
 
-    const reportsByDate = [...reports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const reportsByDate = [...filteredReports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const latestDaySale = reportsByDate[0]?.totalSale || 0;
     const previousDaySale = reportsByDate[1]?.totalSale || 0;
 
@@ -471,7 +477,7 @@ export default function ShopAnalyticsPage() {
       totalSaleChange: pctChange(latestDaySale, previousDaySale),
       inventoryValue,
     };
-  }, [getUnitAmount, reports, shopInventory]);
+  }, [getUnitAmount, filteredReports, shopInventory]);
 
   const trendSeries = useMemo(() => {
     const salesByDate = new Map<string, { value: number; qty: number; orders: number }>();
@@ -621,13 +627,47 @@ export default function ShopAnalyticsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Shop Dashboard</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
-              <CalendarDays className="h-5 w-5" />
-              <span className="text-sm sm:text-base">
-                {range.start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} - {" "}
-                {range.end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-              </span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowDatePicker((prev) => !prev)}
+                className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]"
+              >
+                <CalendarDays className="h-5 w-5" />
+                <span className="text-sm sm:text-base">
+                  {new Date(dateRange.start).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} - {" "}
+                  {new Date(dateRange.end).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+              </button>
+
+              {showDatePicker ? (
+                <div className="absolute right-0 z-20 mt-2 w-[320px] rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <input
+                      type="date"
+                      value={dateRange.start}
+                      max={dateRange.end || undefined}
+                      onChange={(e) => {
+                        setPeriod("custom");
+                        setDateRange((prev) => ({ ...prev, start: e.target.value }));
+                      }}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none"
+                    />
+                    <input
+                      type="date"
+                      value={dateRange.end}
+                      min={dateRange.start || undefined}
+                      onChange={(e) => {
+                        setPeriod("custom");
+                        setDateRange((prev) => ({ ...prev, end: e.target.value }));
+                      }}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none"
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
+
             <select
               className="rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] outline-none sm:text-base"
               value={period}
@@ -637,6 +677,7 @@ export default function ShopAnalyticsPage() {
               <option value="last-3-months">Last 3 Months</option>
               <option value="last-6-months">Last 6 Months</option>
               <option value="last-year">Last Year</option>
+              <option value="custom">Custom</option>
             </select>
           </div>
         </div>

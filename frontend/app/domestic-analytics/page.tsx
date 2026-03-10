@@ -447,7 +447,7 @@ export default function DomesticAnalyticsPage() {
       );
 
       // Calculate metrics
-      calculateMetrics(dispatchTransactions, inventoryItems, jobCards, allPurchaseOrders);
+      calculateMetrics(dispatchTransactions, inventoryItems, jobCards, purchaseOrders);
       calculateSalesOrderSeries(dispatchTransactions, purchaseOrders);
       calculateMovingArticles(dispatchTransactions, inventoryItems);
       calculateOrderTable(purchaseOrders);

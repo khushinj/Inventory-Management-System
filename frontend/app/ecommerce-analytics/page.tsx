@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { api } from "../../lib/api";
 
-type Period = "last-month" | "last-3-months" | "last-6-months" | "last-year";
+type Period = "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
 
 type OnlineEntry = {
   dno?: string;
@@ -35,10 +35,8 @@ type TrendPoint = {
 };
 
 type DateRange = {
-  start: Date;
-  end: Date;
-  startIso: string;
-  endIso: string;
+  start: string;
+  end: string;
 };
 
 function formatINR(value: number) {
@@ -55,7 +53,7 @@ function formatDateLabel(value: string) {
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-function getDateRange(period: Period) {
+function getDateRangeByPeriod(period: Exclude<Period, "custom">): DateRange {
   const now = new Date();
   let start: Date;
   let end: Date = new Date(now);
@@ -75,10 +73,8 @@ function getDateRange(period: Period) {
   }
 
   return {
-    start,
-    end,
-    startIso: start.toISOString().split("T")[0],
-    endIso: end.toISOString().split("T")[0],
+    start: start.toISOString().split("T")[0],
+    end: end.toISOString().split("T")[0],
   };
 }
 
@@ -94,20 +90,6 @@ function normalizeDno(dno?: string) {
 function toIsoDate(value?: string) {
   if (!value) return "";
   return value.split("T")[0] || "";
-}
-
-function getPreviousRange(range: DateRange) {
-  const periodDays = Math.max(1, Math.round((range.end.getTime() - range.start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-  const previousEnd = new Date(range.start);
-  previousEnd.setDate(previousEnd.getDate() - 1);
-  const previousStart = new Date(previousEnd);
-  previousStart.setDate(previousStart.getDate() - periodDays + 1);
-  return {
-    start: previousStart,
-    end: previousEnd,
-    startIso: previousStart.toISOString().split("T")[0],
-    endIso: previousEnd.toISOString().split("T")[0],
-  };
 }
 
 function pickDatesForChart(dates: string[], maxPoints: number) {
@@ -393,13 +375,17 @@ function PlatformPieChart({ values }: { values: { amazon: number; flipkart: numb
 
 export default function EcommerceAnalyticsPage() {
   const [period, setPeriod] = useState<Period>("last-month");
+  const [dateRange, setDateRange] = useState<DateRange>(() => getDateRangeByPeriod("last-month"));
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(true);
   const [onlineEntries, setOnlineEntries] = useState<OnlineEntry[]>([]);
   const [onlineInventory, setOnlineInventory] = useState<OnlineInventoryItem[]>([]);
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
 
-  const range = useMemo(() => getDateRange(period), [period]);
-  const previousRange = useMemo(() => getPreviousRange(range), [range]);
+  useEffect(() => {
+    if (period === "custom") return;
+    setDateRange(getDateRangeByPeriod(period));
+  }, [period]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -455,25 +441,21 @@ export default function EcommerceAnalyticsPage() {
     return onlineEntries.filter((entry) => {
       if (entry.formType !== "sales") return false;
       const dateIso = toIsoDate(entry.date);
-      return dateIso >= range.startIso && dateIso <= range.endIso;
+      return dateIso >= dateRange.start && dateIso <= dateRange.end;
     });
-  }, [onlineEntries, range]);
+  }, [dateRange.end, dateRange.start, onlineEntries]);
 
   const inRangeReturnEntries = useMemo(() => {
     return onlineEntries.filter((entry) => {
       if (entry.formType !== "return") return false;
       const dateIso = toIsoDate(entry.date);
-      return dateIso >= range.startIso && dateIso <= range.endIso;
+      return dateIso >= dateRange.start && dateIso <= dateRange.end;
     });
-  }, [onlineEntries, range]);
+  }, [dateRange.end, dateRange.start, onlineEntries]);
 
-  const previousSalesEntries = useMemo(() => {
-    return onlineEntries.filter((entry) => {
-      if (entry.formType !== "sales") return false;
-      const dateIso = toIsoDate(entry.date);
-      return dateIso >= previousRange.startIso && dateIso <= previousRange.endIso;
-    });
-  }, [onlineEntries, previousRange]);
+  const allSalesEntries = useMemo(() => {
+    return onlineEntries.filter((entry) => entry.formType === "sales");
+  }, [onlineEntries]);
 
   const metrics = useMemo(() => {
     const totalSale = inRangeSalesEntries.reduce((sum, entry) => {
@@ -484,16 +466,18 @@ export default function EcommerceAnalyticsPage() {
     const totalQty = inRangeSalesEntries.reduce((sum, entry) => sum + (entry.qty || 0), 0);
     const avgSale = totalQty > 0 ? totalSale / totalQty : 0;
 
-    const previousTotalSale = previousSalesEntries.reduce((sum, entry) => {
+    const salesByDate = inRangeSalesEntries.reduce<Record<string, number>>((acc, entry) => {
+      const dateIso = toIsoDate(entry.date);
+      if (!dateIso) return acc;
       const mrp = getUnitAmount(entry.dno);
-      return sum + (entry.qty || 0) * mrp;
-    }, 0);
+      acc[dateIso] = (acc[dateIso] || 0) + (entry.qty || 0) * mrp;
+      return acc;
+    }, {});
 
-    const totalSaleChange = pctChange(totalSale, previousTotalSale);
-
-    const previousQty = previousSalesEntries.reduce((sum, entry) => sum + (entry.qty || 0), 0);
-    const previousAvgSale = previousQty > 0 ? previousTotalSale / previousQty : 0;
-    const avgSaleChange = pctChange(avgSale, previousAvgSale);
+    const sortedDates = Object.keys(salesByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    const latestDaySale = sortedDates.length > 0 ? salesByDate[sortedDates[0]] : 0;
+    const previousDaySale = sortedDates.length > 1 ? salesByDate[sortedDates[1]] : 0;
+    const totalSaleChange = pctChange(latestDaySale, previousDaySale);
 
     const inventoryValue = onlineInventory.reduce((sum, item) => {
       const mrp = getUnitAmount(item.designNumber);
@@ -504,10 +488,9 @@ export default function EcommerceAnalyticsPage() {
       totalSale,
       avgSale,
       totalSaleChange,
-      avgSaleChange,
       inventoryValue,
     };
-  }, [inRangeSalesEntries, previousSalesEntries, onlineInventory, getUnitAmount]);
+  }, [inRangeSalesEntries, onlineInventory, getUnitAmount]);
 
   const trendSeries = useMemo<TrendPoint[]>(() => {
     const salesByDate = inRangeSalesEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
@@ -649,13 +632,47 @@ export default function EcommerceAnalyticsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">E-Commerce Inventory</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
-              <CalendarDays className="h-5 w-5" />
-              <span className="text-sm sm:text-base">
-                {range.start.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} - {" "}
-                {range.end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-              </span>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowDatePicker((prev) => !prev)}
+                className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)]"
+              >
+                <CalendarDays className="h-5 w-5" />
+                <span className="text-sm sm:text-base">
+                  {new Date(dateRange.start).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} - {" "}
+                  {new Date(dateRange.end).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+              </button>
+
+              {showDatePicker ? (
+                <div className="absolute right-0 z-20 mt-2 w-[320px] rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <input
+                      type="date"
+                      value={dateRange.start}
+                      max={dateRange.end || undefined}
+                      onChange={(e) => {
+                        setPeriod("custom");
+                        setDateRange((prev) => ({ ...prev, start: e.target.value }));
+                      }}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none"
+                    />
+                    <input
+                      type="date"
+                      value={dateRange.end}
+                      min={dateRange.start || undefined}
+                      onChange={(e) => {
+                        setPeriod("custom");
+                        setDateRange((prev) => ({ ...prev, end: e.target.value }));
+                      }}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none"
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
+
             <select
               className="rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] outline-none sm:text-base"
               value={period}
@@ -665,13 +682,14 @@ export default function EcommerceAnalyticsPage() {
               <option value="last-3-months">Last 3 Months</option>
               <option value="last-6-months">Last 6 Months</option>
               <option value="last-year">Last Year</option>
+              <option value="custom">Custom</option>
             </select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <Card title="Total Sale" value={formatINR(metrics.totalSale)} trend={`${metrics.totalSaleChange >= 0 ? "+" : ""}${metrics.totalSaleChange.toFixed(1)}%`} />
-          <Card title="Avg Product Sold" value={formatINR(metrics.avgSale)} trend={`${metrics.avgSaleChange >= 0 ? "+" : ""}${metrics.avgSaleChange.toFixed(1)}%`} />
+          <Card title="Avg Product Sold" value={formatINR(metrics.avgSale)} />
         </div>
 
         <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-1">

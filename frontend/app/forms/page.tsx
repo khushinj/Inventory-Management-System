@@ -20,7 +20,13 @@ const formTypes = [
     description: "Manage online warehouse transactions",
     href: "/online-homepage",
     color: "bg-orange-500",
-  }
+  },
+  {
+    title: "Job Card",
+    description: "Create and manage job cards and view the dashboard",
+    href: "/jobcard-forms",
+    color: "bg-purple-500",
+  },
 ];
 
 export default function FormsPage() {

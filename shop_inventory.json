@@ -698,10 +698,10 @@
     "size": "M",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95501",
@@ -772,10 +772,21 @@
   {
     "designNumber": "AW-95501",
     "color": "MIX",
+    "size": "S",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 1,
+    "sales": 0,
+    "net": 0,
+    "type": "stock_return"
+  },
+  {
+    "designNumber": "AW-95501",
+    "color": "MIX",
     "size": "M",
     "import": 1,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 8,
     "net": 0,
     "type": "import"
@@ -786,10 +797,10 @@
     "size": "L",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 2,
     "sales": 4,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95501",
@@ -797,10 +808,10 @@
     "size": "XL",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95501",
@@ -830,10 +841,10 @@
     "size": "M",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 3,
     "sales": 4,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95501",
@@ -863,10 +874,10 @@
     "size": "M",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95501",
@@ -896,10 +907,10 @@
     "size": "M",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95501",
@@ -1028,10 +1039,10 @@
     "size": "M",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 5,
     "sales": 2,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95502",
@@ -1039,10 +1050,10 @@
     "size": "L",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 4,
     "sales": 8,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95502",
@@ -1127,10 +1138,10 @@
     "size": "M",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95503",
@@ -1358,10 +1369,10 @@
     "size": "M",
     "import": 0,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 1,
     "sales": 1,
     "net": 0,
-    "type": "sales"
+    "type": "stock_return"
   },
   {
     "designNumber": "AW-95503",
@@ -1468,7 +1479,7 @@
     "size": "M",
     "import": 8,
     "customerReturn": 0,
-    "stockReturn": 0,
+    "stockReturn": 3,
     "sales": 13,
     "net": 0,
     "type": "import"
@@ -8089,10 +8100,10 @@
     "color": "NAVY",
     "size": "M",
     "import": 0,
-    "customerReturn": 1,
+    "customerReturn": 2,
     "stockReturn": 0,
     "sales": 1,
-    "net": 0,
+    "net": 1,
     "type": "return"
   },
   {
@@ -11611,8 +11622,8 @@
     "import": 1,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 2,
+    "sales": 1,
+    "net": 1,
     "type": "import"
   },
   {
@@ -14350,8 +14361,8 @@
     "import": 0,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15494,8 +15505,8 @@
     "import": 2,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 2,
+    "sales": 1,
+    "net": 1,
     "type": "import"
   },
   {
@@ -26414,6 +26425,50 @@
     "designNumber": "TP-1044",
     "color": "BRICK-24",
     "size": "4XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "TP-1121",
+    "color": "BLUE-2",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "TP-1352",
+    "color": "ASH GRAY-39",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "TP-1427",
+    "color": "B.GREEN-23",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "TP-1443",
+    "color": "MD.RUST-18",
+    "size": "XXL",
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,

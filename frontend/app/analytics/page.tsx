@@ -35,7 +35,7 @@ const analyticsCards: CardItem[] = [
     iconColor: "text-white",
   },
   {
-    title: "Hybrid/AR",
+    title: "Export/FOB",
     href: "/forms",
     icon: Zap,
     iconBg: "bg-orange-500",

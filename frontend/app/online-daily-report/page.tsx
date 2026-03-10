@@ -295,7 +295,7 @@ export default function OnlineDailyReportPage() {
         Date: new Date(report.date).toLocaleDateString("en-GB"),
         "Total Qty": totalQty,
         "Total Amount Received": totalAmt.toFixed(2),
-        "Total Returns": totalRet.toFixed(2),
+        "Total Returns": totalRet,
       };
     });
 
@@ -311,7 +311,7 @@ export default function OnlineDailyReportPage() {
         Date: "Total",
         "Total Qty": totalQty,
         "Total Amount Received": totalAmt.toFixed(2),
-        "Total Returns": totalRet.toFixed(2),
+        "Total Returns": totalRet,
       });
     }
 
@@ -560,9 +560,9 @@ export default function OnlineDailyReportPage() {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
-                    step="0.01"
+                    step="1"
                     className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder="0"
                   />
                 </div>
 
@@ -579,9 +579,9 @@ export default function OnlineDailyReportPage() {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
-                    step="0.01"
+                    step="1"
                     className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder="0"
                   />
                 </div>
 
@@ -598,9 +598,9 @@ export default function OnlineDailyReportPage() {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
-                    step="0.01"
+                    step="1"
                     className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder="0"
                   />
                 </div>
 
@@ -617,9 +617,9 @@ export default function OnlineDailyReportPage() {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
-                    step="0.01"
+                    step="1"
                     className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder="0"
                   />
                 </div>
 
@@ -636,9 +636,9 @@ export default function OnlineDailyReportPage() {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
-                    step="0.01"
+                    step="1"
                     className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder="0"
                   />
                 </div>
 
@@ -655,9 +655,9 @@ export default function OnlineDailyReportPage() {
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onFocus={(e) => e.target.select()}
-                    step="0.01"
+                    step="1"
                     className="w-full px-4 py-2.5 bg-gray-50 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder="0"
                   />
                 </div>
               </div>
@@ -861,8 +861,8 @@ export default function OnlineDailyReportPage() {
                       <td className="px-4 py-3 text-sm text-gray-900 text-right">
                         ₹{totalAmount.toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                        ₹{totalReturns.toFixed(2)}
+                      <td className="px-4 py-3 text-sm font-semibold text-orange-600 text-right">
+                        {totalReturns}
                       </td>
                     </tr>
                   );
@@ -878,8 +878,8 @@ export default function OnlineDailyReportPage() {
                     <td className="px-4 py-3 text-sm text-gray-900 text-right">
                       ₹{(totals.myntraAmountReceived + totals.ajioAmountReceived + totals.amazonAmountReceived + totals.flipkartAmountReceived + totals.snapdealAmountReceived + totals.websiteAmountReceived).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      ₹{(totals.myntraPrice + totals.ajioPrice + totals.amazonPrice + totals.flipkartPrice + totals.snapdealPrice + totals.websitePrice).toFixed(2)}
+                    <td className="px-4 py-3 text-sm text-orange-600 text-right">
+                      {totals.myntraPrice + totals.ajioPrice + totals.amazonPrice + totals.flipkartPrice + totals.snapdealPrice + totals.websitePrice}
                     </td>
                   </tr>
                 )}

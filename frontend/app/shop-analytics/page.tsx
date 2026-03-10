@@ -450,28 +450,14 @@ export default function ShopAnalyticsPage() {
     });
   }, [shopEntries, range.endIso, range.startIso]);
 
-  const previousRangeSalesEntries = useMemo(() => {
-    return shopEntries.filter((entry) => {
-      if (entry.formType !== "sales") return false;
-      const date = toIsoDate(entry.date);
-      return date >= previousRange.startIso && date <= previousRange.endIso;
-    });
-  }, [shopEntries, previousRange.endIso, previousRange.startIso]);
-
   const metrics = useMemo(() => {
-    const totalSale = inRangeSalesEntries.reduce((sum, item) => {
-      const qty = item.qty || 0;
-      const mrp = getUnitAmount(item.dno);
-      return sum + qty * mrp;
-    }, 0);
+    const totalSale = reports.reduce((sum, report) => sum + (report.totalSale || 0), 0);
+    const totalQtySold = reports.reduce((sum, report) => sum + (report.qty || 0), 0);
+    const avgSale = totalQtySold > 0 ? totalSale / totalQtySold : 0;
 
-    const previousTotalSale = previousRangeSalesEntries.reduce((sum, item) => {
-      const qty = item.qty || 0;
-      const mrp = getUnitAmount(item.dno);
-      return sum + qty * mrp;
-    }, 0);
-
-    const avgSale = inRangeSalesEntries.length > 0 ? totalSale / inRangeSalesEntries.length : 0;
+    const reportsByDate = [...reports].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const latestDaySale = reportsByDate[0]?.totalSale || 0;
+    const previousDaySale = reportsByDate[1]?.totalSale || 0;
 
     const inventoryValue = shopInventory.reduce((sum, item) => {
       const qty = item.net || 0;
@@ -482,10 +468,10 @@ export default function ShopAnalyticsPage() {
     return {
       totalSale,
       avgSale,
-      totalSaleChange: pctChange(totalSale, previousTotalSale),
+      totalSaleChange: pctChange(latestDaySale, previousDaySale),
       inventoryValue,
     };
-  }, [getUnitAmount, inRangeSalesEntries, previousRangeSalesEntries, shopInventory]);
+  }, [getUnitAmount, reports, shopInventory]);
 
   const trendSeries = useMemo(() => {
     const salesByDate = new Map<string, { value: number; qty: number; orders: number }>();
@@ -657,7 +643,7 @@ export default function ShopAnalyticsPage() {
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <Card title="Total Sale" value={formatINR(metrics.totalSale)} trend={`${metrics.totalSaleChange >= 0 ? "+" : ""}${metrics.totalSaleChange.toFixed(1)}%`} />
-          <Card title="Avg Sale" value={formatINR(metrics.avgSale)} trend={metrics.avgSale > 0 ? "+3.7%" : undefined} />
+          <Card title="Avg Sale" value={formatINR(metrics.avgSale)} />
         </div>
 
         <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-1">

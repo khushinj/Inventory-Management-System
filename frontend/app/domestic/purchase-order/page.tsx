@@ -82,6 +82,7 @@ export default function PurchaseOrderEntryForm() {
   const [headerInfo, setHeaderInfo] = useState({
     dealerName: "",
     buyerName: "",
+    poc: "",
     date: "",
     deadline: "",
     city: "",
@@ -264,7 +265,7 @@ export default function PurchaseOrderEntryForm() {
     try {
       // Validate required fields
       if (!headerInfo.dealerName || !headerInfo.buyerName || !headerInfo.date || !headerInfo.city) {
-        alert("Please fill in all header fields (Dealer Name, Buyer Name, Date, City)");
+        alert("Please fill in all required header fields (Dealer Name, Buyer Name, Date, City)");
         return;
       }
 
@@ -282,6 +283,7 @@ export default function PurchaseOrderEntryForm() {
       const purchaseOrderData = {
         dealerName: headerInfo.dealerName,
         buyerName: headerInfo.buyerName,
+        poc: headerInfo.poc,
         date: headerInfo.date,
         deadline: headerInfo.deadline,
         city: headerInfo.city,
@@ -344,10 +346,15 @@ export default function PurchaseOrderEntryForm() {
     doc.text("Name of Buyer:", 14, 56);
     doc.setFont("helvetica", "normal");
     doc.text(headerInfo.buyerName || "-", 50, 56);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("POC:", 14, 63);
+    doc.setFont("helvetica", "normal");
+    doc.text(headerInfo.poc || "-", 50, 63);
     
     // Divider line
     doc.setDrawColor(200, 200, 200);
-    doc.line(14, 62, pageWidth - 14, 62);
+    doc.line(14, 69, pageWidth - 14, 69);
     
     // Items Table
     const tableData = items.map((item, index) => [
@@ -371,7 +378,7 @@ export default function PurchaseOrderEntryForm() {
     ]);
     
     autoTable(doc, {
-      startY: 68,
+      startY: 75,
       head: [[
         'SL\\nNo.', 'Description of Goods\\n& HSN/SAC', 'Color', 'S', 'M', 'L', 'XL', 
         'XXL', '3XL', 'Quantity', 'Rate\\nper PC', 'Disc\\n%', 'Net\\nRate', 'Amount', 
@@ -571,6 +578,19 @@ export default function PurchaseOrderEntryForm() {
                 type="text"
                 value={headerInfo.buyerName}
                 onChange={(e) => handleHeaderChange("buyerName", e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                POC (Point of Contact) - Optional
+              </label>
+              <input
+                type="text"
+                value={headerInfo.poc}
+                onChange={(e) => handleHeaderChange("poc", e.target.value)}
                 onKeyDown={handleKeyDown}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />

@@ -117,6 +117,11 @@ const PurchaseOrderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    poc: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     date: {
       type: Date,
       required: true,

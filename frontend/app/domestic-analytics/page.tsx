@@ -275,17 +275,19 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const size = 360;
   const center = size / 2;
-  const radius = 104;
+  const radius = 108;
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
-  const slices = data
+  const chartData = total > 0 ? data : [{ label: "No Data", value: 1, percentage: 0, color: "#94a3b8", deliveredPercent: 0, pendingPercent: 0, totalOrders: 0 }];
+
+  const slices = chartData
     .reduce<{
       nextAngle: number;
       items: Array<RegionPoint & { path: string; midAngle: number }>;
     }>(
       (acc, item) => {
         const startAngle = acc.nextAngle;
-        const sliceAngle = (item.value / total) * 360;
+        const sliceAngle = (item.value / Math.max(total, 1)) * 360;
         const endAngle = startAngle + sliceAngle;
         const x1 = center + radius * Math.cos((Math.PI * startAngle) / 180);
         const y1 = center + radius * Math.sin((Math.PI * startAngle) / 180);
@@ -309,9 +311,11 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
     )
     .items;
 
+  const activeSlice = slices.find((slice) => slice.label === hoveredRegion) ?? null;
+
   return (
-    <div className="relative flex items-center justify-center pt-3">
-      <svg viewBox={`0 0 ${size} ${size}`} className="h-[280px] w-[280px] sm:h-[320px] sm:w-[320px]">
+    <div className="relative flex items-center justify-center px-2 pb-16 pt-2 sm:px-4 sm:pb-20">
+      <svg viewBox={`0 0 ${size} ${size}`} className="h-[300px] w-[300px] overflow-visible sm:h-[340px] sm:w-[340px]">
         {slices.map((slice) => (
           <path
             key={slice.label}
@@ -324,36 +328,58 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
             onMouseLeave={() => setHoveredRegion(null)}
           />
         ))}
+
+        {slices.map((slice) => {
+          const angle = (Math.PI * slice.midAngle) / 180;
+          const connectorStartRadius = radius + 6;
+          const connectorEndRadius = radius + 24;
+          const textRadius = radius + 30;
+          const startX = center + connectorStartRadius * Math.cos(angle);
+          const startY = center + connectorStartRadius * Math.sin(angle);
+          const endX = center + connectorEndRadius * Math.cos(angle);
+          const endY = center + connectorEndRadius * Math.sin(angle);
+          const labelX = Math.min(size - 28, Math.max(28, center + textRadius * Math.cos(angle)));
+          const labelY = Math.min(size - 24, Math.max(24, center + textRadius * Math.sin(angle)));
+          const isRightSide = Math.cos(angle) >= 0;
+
+          return (
+            <g key={`label-${slice.label}`} className="pointer-events-none">
+              <line x1={startX} y1={startY} x2={endX} y2={endY} stroke={slice.color} strokeWidth="1.5" opacity="0.75" />
+              <text
+                x={labelX}
+                y={labelY - 2}
+                textAnchor={isRightSide ? "start" : "end"}
+                fill="#0f172a"
+                fontSize="11"
+                fontWeight="600"
+              >
+                {slice.label}
+              </text>
+              <text
+                x={labelX}
+                y={labelY + 12}
+                textAnchor={isRightSide ? "start" : "end"}
+                fill={slice.color}
+                fontSize="10"
+                fontWeight="600"
+              >
+                {slice.percentage}%
+              </text>
+            </g>
+          );
+        })}
       </svg>
 
-      {slices.map((slice) => {
-        const labelRadius = radius + 52;
-        const x = center + labelRadius * Math.cos((Math.PI * slice.midAngle) / 180);
-        const y = center + labelRadius * Math.sin((Math.PI * slice.midAngle) / 180);
-
-        return (
-          <div
-            key={`label-${slice.label}`}
-            className="pointer-events-none absolute text-base font-medium sm:text-2xl"
-            style={{
-              left: `${(x / size) * 100}%`,
-              top: `${(y / size) * 100}%`,
-              color: slice.color,
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            {slice.label} {slice.percentage}%
-            {hoveredRegion === slice.label && (
-              <div className="mt-1 space-y-1 text-xs text-slate-700 whitespace-nowrap bg-white/95 p-2 rounded shadow-lg">
-                <div className="font-semibold">{formatINR(slice.value)}</div>
-                <div className="text-green-600">✓ Delivered: {slice.deliveredPercent}%</div>
-                <div className="text-orange-600">⏳ Pending: {slice.pendingPercent}%</div>
-                <div className="text-slate-500 text-[10px]">({slice.totalOrders} orders)</div>
-              </div>
-            )}
+      {activeSlice ? (
+        <div className="absolute bottom-1 left-1/2 min-w-[180px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs text-slate-700 shadow-lg backdrop-blur-sm sm:text-[13px]">
+          <div className="font-semibold text-slate-900">{activeSlice.label}: {formatINR(activeSlice.value)}</div>
+          <div className="mt-1 flex items-center justify-between gap-3 text-[11px] sm:text-xs">
+            <span className="text-green-600">Delivered {activeSlice.deliveredPercent}%</span>
+            <span className="text-orange-600">Pending {activeSlice.pendingPercent}%</span>
           </div>
-        );
-      })}
+          <div className="mt-1 text-[10px] text-slate-500 sm:text-[11px]">{activeSlice.totalOrders} orders</div>
+        </div>
+      ) : null}
     </div>
   );
 }

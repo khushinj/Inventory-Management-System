@@ -47,8 +47,13 @@ type JobCard = {
 };
 
 type OnlineInventoryItem = {
-  designNumber: string;
-  net?: number;
+  dno: string;
+  color: string;
+  size: string;
+  stock: number;
+  inbound: number;
+  outbound: number;
+  
 };
 
 type TrendPoint = {
@@ -476,7 +481,7 @@ export default function EcommerceAnalyticsPage() {
   }, [fetchData]);
 
   const inventoryDesignSet = useMemo(() => {
-    return new Set(onlineInventory.map((item) => normalizeDno(item.designNumber)));
+    return new Set(onlineInventory.map((item) => normalizeDno(item.dno)));
   }, [onlineInventory]);
 
   const mrpMap = useMemo(() => {
@@ -533,9 +538,21 @@ export default function EcommerceAnalyticsPage() {
     const totalQty = filteredReports.reduce((sum, r) => sum + getReportTotalQty(r), 0);
     const avgSale = totalQty > 0 ? totalSale / totalQty : 0;
 
-    const inventoryValue = onlineInventory.reduce((sum, item) => {
-      const mrp = getUnitAmount(item.designNumber);
-      return sum + (item.net || 0) * mrp;
+    // Aggregate inventory by design number and calculate total value
+    const designQuantityMap = new Map<string, number>();
+    
+    onlineInventory.forEach((item) => {
+      if (item.dno && item.stock > 0) {
+        const normalizedDno = normalizeDno(item.dno);
+        const currentQty = designQuantityMap.get(normalizedDno) || 0;
+        designQuantityMap.set(normalizedDno, currentQty + item.stock);
+      }
+    });
+
+    // Calculate inventory value by multiplying aggregated qty with MRP from job cards
+    const inventoryValue = Array.from(designQuantityMap.entries()).reduce((sum, [dno, quantity]) => {
+      const mrp = mrpMap.get(dno) || 0;
+      return sum + quantity * mrp;
     }, 0);
 
     return {
@@ -543,7 +560,7 @@ export default function EcommerceAnalyticsPage() {
       avgSale,
       inventoryValue,
     };
-  }, [filteredReports, onlineInventory, getUnitAmount]);
+  }, [filteredReports, onlineInventory, mrpMap]);
 
   const trendSeries = useMemo<TrendPoint[]>(() => {
     const returnsByDate = inRangeReturnEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
@@ -612,6 +629,17 @@ export default function EcommerceAnalyticsPage() {
   }, [filteredReports]);
 
   const slowMoving = useMemo(() => {
+    // Aggregate inventory by design number
+    const inventoryByDesign = new Map<string, number>();
+    onlineInventory.forEach((item) => {
+      if (item.dno && item.stock > 0) {
+        const key = normalizeDno(item.dno);
+        const current = inventoryByDesign.get(key) || 0;
+        inventoryByDesign.set(key, current + item.stock);
+      }
+    });
+
+    // Count sales by design number
     const salesCount = inRangeSalesEntries.reduce<Record<string, number>>((acc, entry) => {
       if (!entry.dno) return acc;
       const key = normalizeDno(entry.dno);
@@ -619,14 +647,12 @@ export default function EcommerceAnalyticsPage() {
       return acc;
     }, {});
 
-    return onlineInventory
-      .filter((item) => (item.net || 0) > 0)
-      .map((item) => {
-        const key = normalizeDno(item.designNumber);
-        const sold = salesCount[key] || 0;
-        const stock = item.net || 0;
+    // Calculate slow moving items
+    return Array.from(inventoryByDesign.entries())
+      .map(([dno, stock]) => {
+        const sold = salesCount[dno] || 0;
         const ratio = sold > 0 ? stock / sold : stock * 1000;
-        return { productNo: item.designNumber, quantity: stock, ratio };
+        return { productNo: dno, quantity: stock, ratio };
       })
       .sort((a, b) => b.ratio - a.ratio)
       .slice(0, 10);

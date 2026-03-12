@@ -708,12 +708,16 @@ function OnlineDashboard() {
         const entriesToDelete = entries.filter(e => 
           e.formType === "purchase" && e.dno === dno && e.color === color
         );
-        
-        const deletePromises = entriesToDelete.map(entry => 
-          api.delete(`/warehouse/online/${entry._id}`)
+
+        const deleteResults = await Promise.allSettled(
+          entriesToDelete.map((entry) => api.delete(`/warehouse/online/${entry._id}`))
         );
-        
-        await Promise.all(deletePromises);
+
+        const failedDeletes = deleteResults.filter((result) => result.status === "rejected");
+        if (failedDeletes.length > 0 && failedDeletes.length === entriesToDelete.length) {
+          throw new Error("All delete requests failed");
+        }
+
         fetchEntries();
       } catch (err: unknown) {
         console.error("Error deleting purchase entries:", err);

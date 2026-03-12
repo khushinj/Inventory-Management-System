@@ -22,17 +22,26 @@ export const createOnlineEntry = async (req, res) => {
 };
 
 export const getOnlineEntries = async (req, res) => {
-  const collections = await Promise.all(
-    allowedOnlineForms.map((form) =>
-      getTransactionModel("warehouse", "online", form)
-        .find()
-        .sort({ date: -1 })
-        .lean()
-    )
-  );
+  try {
+    const collections = await Promise.all(
+      allowedOnlineForms.map((form) =>
+        getTransactionModel("warehouse", "online", form)
+          .find()
+          .sort({ date: -1 })
+          .lean()
+          .catch((err) => {
+            console.error(`Error fetching online form collection '${form}':`, err.message);
+            return [];
+          })
+      )
+    );
 
-  const combined = collections.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(combined);
+    const combined = collections.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(combined);
+  } catch (err) {
+    console.error("Error fetching online entries:", err);
+    res.status(500).json({ error: err.message || "Failed to fetch online entries" });
+  }
 };
 
 export const updateOnlineEntry = async (req, res) => {

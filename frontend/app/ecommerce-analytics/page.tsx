@@ -15,6 +15,32 @@ type OnlineEntry = {
   mrp?: number;
 };
 
+type OnlineDailyReport = {
+  date: string;
+  totalSale?: number;
+  totalReturns?: number;
+  totalQuantity?: number;
+  amountReceived?: number;
+  myntraQty?: number;
+  ajioQty?: number;
+  amazonQty?: number;
+  flipkartQty?: number;
+  snapdealQty?: number;
+  websiteQty?: number;
+  myntraPrice?: number;
+  ajioPrice?: number;
+  amazonPrice?: number;
+  flipkartPrice?: number;
+  snapdealPrice?: number;
+  websitePrice?: number;
+  myntraAmountReceived?: number;
+  ajioAmountReceived?: number;
+  amazonAmountReceived?: number;
+  flipkartAmountReceived?: number;
+  snapdealAmountReceived?: number;
+  websiteAmountReceived?: number;
+};
+
 type JobCard = {
   designNumber?: string;
   mrp?: number;
@@ -78,11 +104,6 @@ function getDateRangeByPeriod(period: Exclude<Period, "custom">): DateRange {
   };
 }
 
-function pctChange(current: number, previous: number) {
-  if (previous <= 0) return 0;
-  return ((current - previous) / previous) * 100;
-}
-
 function normalizeDno(dno?: string) {
   return (dno || "").trim().replace(/\s+/g, "").toUpperCase();
 }
@@ -90,6 +111,43 @@ function normalizeDno(dno?: string) {
 function toIsoDate(value?: string) {
   if (!value) return "";
   return value.split("T")[0] || "";
+}
+
+function getReportTotalAmountReceived(report: OnlineDailyReport) {
+  return (
+    (report.myntraAmountReceived || 0) +
+    (report.ajioAmountReceived || 0) +
+    (report.amazonAmountReceived || 0) +
+    (report.flipkartAmountReceived || 0) +
+    (report.snapdealAmountReceived || 0) +
+    (report.websiteAmountReceived || 0)
+  );
+}
+
+function getReportTotalQty(report: OnlineDailyReport) {
+  const qtyFromPlatforms =
+    (report.myntraQty || 0) +
+    (report.ajioQty || 0) +
+    (report.amazonQty || 0) +
+    (report.flipkartQty || 0) +
+    (report.snapdealQty || 0) +
+    (report.websiteQty || 0);
+
+  if (qtyFromPlatforms > 0) return qtyFromPlatforms;
+  return report.totalQuantity || 0;
+}
+
+function getReportTotalReturns(report: OnlineDailyReport) {
+  const returnsFromPlatforms =
+    (report.myntraPrice || 0) +
+    (report.ajioPrice || 0) +
+    (report.amazonPrice || 0) +
+    (report.flipkartPrice || 0) +
+    (report.snapdealPrice || 0) +
+    (report.websitePrice || 0);
+
+  if (returnsFromPlatforms > 0) return returnsFromPlatforms;
+  return report.totalReturns || 0;
 }
 
 function pickDatesForChart(dates: string[], maxPoints: number) {
@@ -379,6 +437,7 @@ export default function EcommerceAnalyticsPage() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(true);
   const [onlineEntries, setOnlineEntries] = useState<OnlineEntry[]>([]);
+  const [onlineDailyReports, setOnlineDailyReports] = useState<OnlineDailyReport[]>([]);
   const [onlineInventory, setOnlineInventory] = useState<OnlineInventoryItem[]>([]);
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
 
@@ -390,20 +449,23 @@ export default function EcommerceAnalyticsPage() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [onlineRes, inventoryRes, jobCardRes] = await Promise.all([
+      const [onlineRes, inventoryRes, jobCardRes, dailyReportRes] = await Promise.all([
         api.get("/warehouse/online"),
         api.get("/inventory/warehouse/online"),
         api.get("/jobcard"),
+        api.get("/online-daily-report"),
       ]);
 
       setOnlineEntries(Array.isArray(onlineRes.data) ? onlineRes.data : []);
       setOnlineInventory(Array.isArray(inventoryRes.data?.inventory) ? inventoryRes.data.inventory : []);
       setJobCards(Array.isArray(jobCardRes.data) ? jobCardRes.data : []);
+      setOnlineDailyReports(Array.isArray(dailyReportRes.data?.data) ? dailyReportRes.data.data : []);
     } catch (error) {
       console.error("Error loading ecommerce analytics:", error);
       setOnlineEntries([]);
       setOnlineInventory([]);
       setJobCards([]);
+      setOnlineDailyReports([]);
     } finally {
       setLoading(false);
     }
@@ -457,27 +519,19 @@ export default function EcommerceAnalyticsPage() {
     return onlineEntries.filter((entry) => entry.formType === "sales");
   }, [onlineEntries]);
 
+  const filteredReports = useMemo(() => {
+    return onlineDailyReports
+      .filter((r) => {
+        const d = toIsoDate(r.date);
+        return d >= dateRange.start && d <= dateRange.end;
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [onlineDailyReports, dateRange.start, dateRange.end]);
+
   const metrics = useMemo(() => {
-    const totalSale = inRangeSalesEntries.reduce((sum, entry) => {
-      const mrp = getUnitAmount(entry.dno);
-      return sum + (entry.qty || 0) * mrp;
-    }, 0);
-
-    const totalQty = inRangeSalesEntries.reduce((sum, entry) => sum + (entry.qty || 0), 0);
+    const totalSale = filteredReports.reduce((sum, r) => sum + getReportTotalAmountReceived(r), 0);
+    const totalQty = filteredReports.reduce((sum, r) => sum + getReportTotalQty(r), 0);
     const avgSale = totalQty > 0 ? totalSale / totalQty : 0;
-
-    const salesByDate = inRangeSalesEntries.reduce<Record<string, number>>((acc, entry) => {
-      const dateIso = toIsoDate(entry.date);
-      if (!dateIso) return acc;
-      const mrp = getUnitAmount(entry.dno);
-      acc[dateIso] = (acc[dateIso] || 0) + (entry.qty || 0) * mrp;
-      return acc;
-    }, {});
-
-    const sortedDates = Object.keys(salesByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-    const latestDaySale = sortedDates.length > 0 ? salesByDate[sortedDates[0]] : 0;
-    const previousDaySale = sortedDates.length > 1 ? salesByDate[sortedDates[1]] : 0;
-    const totalSaleChange = pctChange(latestDaySale, previousDaySale);
 
     const inventoryValue = onlineInventory.reduce((sum, item) => {
       const mrp = getUnitAmount(item.designNumber);
@@ -487,22 +541,11 @@ export default function EcommerceAnalyticsPage() {
     return {
       totalSale,
       avgSale,
-      totalSaleChange,
       inventoryValue,
     };
-  }, [inRangeSalesEntries, onlineInventory, getUnitAmount]);
+  }, [filteredReports, onlineInventory, getUnitAmount]);
 
   const trendSeries = useMemo<TrendPoint[]>(() => {
-    const salesByDate = inRangeSalesEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
-      const dateIso = toIsoDate(entry.date);
-      if (!dateIso) return acc;
-      const mrp = getUnitAmount(entry.dno);
-      if (!acc[dateIso]) acc[dateIso] = { value: 0, qty: 0 };
-      acc[dateIso].value += (entry.qty || 0) * mrp;
-      acc[dateIso].qty += entry.qty || 0;
-      return acc;
-    }, {});
-
     const returnsByDate = inRangeReturnEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
       const dateIso = toIsoDate(entry.date);
       if (!dateIso) return acc;
@@ -513,50 +556,60 @@ export default function EcommerceAnalyticsPage() {
       return acc;
     }, {});
 
-    const allDates = new Set([...Object.keys(salesByDate), ...Object.keys(returnsByDate)]);
-    const sorted = Array.from(allDates).sort();
+    // Generate every date in range
+    const allDates: string[] = [];
+    const cursor = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+    while (cursor <= endDate) {
+      allDates.push(cursor.toISOString().split("T")[0]);
+      cursor.setDate(cursor.getDate() + 1);
+    }
 
-    return sorted.map((dateIso) => ({
-      dateIso,
-      label: dateIso,
-      sales: salesByDate[dateIso]?.value || 0,
-      returns: returnsByDate[dateIso]?.value || 0,
-      qty: salesByDate[dateIso]?.qty || 0,
-      returnQty: returnsByDate[dateIso]?.qty || 0,
-    }));
-  }, [inRangeSalesEntries, inRangeReturnEntries, getUnitAmount]);
+    if (allDates.length === 0) {
+      return [{ dateIso: "", label: "No Data", sales: 0, returns: 0, qty: 0, returnQty: 0 }];
+    }
+
+    const saleByDate = new Map<string, { totalSale: number; totalQuantity: number }>();
+    filteredReports.forEach((r) => {
+      const d = toIsoDate(r.date);
+      if (d) saleByDate.set(d, { totalSale: getReportTotalAmountReceived(r), totalQuantity: getReportTotalQty(r) });
+    });
+
+    return allDates.map((dateIso) => {
+      const report = saleByDate.get(dateIso);
+      const ret = returnsByDate[dateIso];
+      return {
+        dateIso,
+        label: formatDateLabel(dateIso),
+        sales: Math.round(report?.totalSale || 0),
+        returns: Math.round(ret?.value || 0),
+        qty: report?.totalQuantity || 0,
+        returnQty: ret?.qty || 0,
+      };
+    });
+  }, [dateRange.start, dateRange.end, filteredReports, inRangeReturnEntries, getUnitAmount]);
 
   const tableRows = useMemo(() => {
-    const salesByDate = inRangeSalesEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
-      const dateIso = toIsoDate(entry.date);
+    const reportByDate = filteredReports.reduce<Record<string, { amountReceived: number; totalQuantity: number; totalReturns: number }>>((acc, report) => {
+      const dateIso = toIsoDate(report.date);
       if (!dateIso) return acc;
-      const mrp = getUnitAmount(entry.dno);
-      if (!acc[dateIso]) acc[dateIso] = { value: 0, qty: 0 };
-      acc[dateIso].value += (entry.qty || 0) * mrp;
-      acc[dateIso].qty += entry.qty || 0;
+      acc[dateIso] = {
+        amountReceived: getReportTotalAmountReceived(report),
+        totalQuantity: getReportTotalQty(report),
+        totalReturns: getReportTotalReturns(report),
+      };
       return acc;
     }, {});
 
-    const returnsByDate = inRangeReturnEntries.reduce<Record<string, { qty: number }>>((acc, entry) => {
-      const dateIso = toIsoDate(entry.date);
-      if (!dateIso) return acc;
-      if (!acc[dateIso]) acc[dateIso] = { qty: 0 };
-      acc[dateIso].qty += entry.qty || 0;
-      return acc;
-    }, {});
-
-    const allDates = new Set([...Object.keys(salesByDate), ...Object.keys(returnsByDate)]);
-    const sorted = Array.from(allDates)
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-      .slice(0, 20);
+    const sorted = Object.keys(reportByDate).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
     return sorted.map((dateIso) => ({
       date: new Date(dateIso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-      totalSale: formatINR(salesByDate[dateIso]?.value || 0),
-      quantity: salesByDate[dateIso]?.qty || 0,
-      returnQty: returnsByDate[dateIso]?.qty || 0,
+      totalSale: formatINR(reportByDate[dateIso]?.amountReceived || 0),
+      quantity: reportByDate[dateIso]?.totalQuantity || 0,
+      returnQty: reportByDate[dateIso]?.totalReturns || 0,
     }));
-  }, [inRangeSalesEntries, inRangeReturnEntries, getUnitAmount]);
+  }, [filteredReports]);
 
   const slowMoving = useMemo(() => {
     const salesCount = inRangeSalesEntries.reduce<Record<string, number>>((acc, entry) => {
@@ -688,7 +741,7 @@ export default function EcommerceAnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <Card title="Total Sale" value={formatINR(metrics.totalSale)} trend={`${metrics.totalSaleChange >= 0 ? "+" : ""}${metrics.totalSaleChange.toFixed(1)}%`} />
+          <Card title="Total Sale" value={formatINR(metrics.totalSale)} />
           <Card title="Avg Product Sold" value={formatINR(metrics.avgSale)} />
         </div>
 

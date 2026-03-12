@@ -616,8 +616,7 @@ export default function DomesticAnalyticsPage() {
         orderCount: data.count,
         orderValue: formatINR(data.value),
       }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 10);
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     setOrderTable(rows.length > 0 ? rows : [
       { date: "No orders", orderCount: 0, orderValue: "₹0" }

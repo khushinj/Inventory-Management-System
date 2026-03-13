@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { CalendarDays } from "lucide-react";
 import type { ReactNode } from "react";
 import { api } from "../../lib/api";
@@ -26,6 +26,7 @@ type MovingItem = {
 type OrderRow = {
   date: string;
   orderCount: number;
+  orderValueAmount: number;
   orderValue: string;
 };
 
@@ -614,14 +615,25 @@ export default function DomesticAnalyticsPage() {
           year: "numeric",
         }),
         orderCount: data.count,
+        orderValueAmount: data.value,
         orderValue: formatINR(data.value),
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     setOrderTable(rows.length > 0 ? rows : [
-      { date: "No orders", orderCount: 0, orderValue: "₹0" }
+      { date: "No orders", orderCount: 0, orderValueAmount: 0, orderValue: "₹0" }
     ]);
   };
+
+  const orderTableTotals = useMemo(() => {
+    return orderTable.reduce(
+      (acc, row) => ({
+        orderCount: acc.orderCount + row.orderCount,
+        orderValueAmount: acc.orderValueAmount + row.orderValueAmount,
+      }),
+      { orderCount: 0, orderValueAmount: 0 }
+    );
+  }, [orderTable]);
 
   const calculateRegionDistribution = (allPurchaseOrders: PurchaseOrder[]) => {
     const regionData = new Map<string, {
@@ -817,6 +829,11 @@ export default function DomesticAnalyticsPage() {
                       <td className="px-5 py-4">{row.orderValue}</td>
                     </tr>
                   ))}
+                  <tr className="border-t-2 border-slate-300 text-sm font-semibold text-slate-800 sm:text-base">
+                    <td className="sticky bottom-0 bg-slate-50 px-5 py-4">Total</td>
+                    <td className="sticky bottom-0 bg-slate-50 px-5 py-4">{orderTableTotals.orderCount}</td>
+                    <td className="sticky bottom-0 bg-slate-50 px-5 py-4">{formatINR(orderTableTotals.orderValueAmount)}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>

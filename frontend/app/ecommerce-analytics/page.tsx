@@ -84,6 +84,15 @@ function formatDateLabel(value: string) {
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
+function getInclusiveDays(start: string, end: string) {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return 1;
+  const diffMs = endDate.getTime() - startDate.getTime();
+  if (diffMs < 0) return 1;
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+}
+
 function getDateRangeByPeriod(period: Exclude<Period, "custom">): DateRange {
   const now = new Date();
   let start: Date;
@@ -536,14 +545,15 @@ export default function EcommerceAnalyticsPage() {
   const metrics = useMemo(() => {
     const totalSale = filteredReports.reduce((sum, r) => sum + getReportTotalAmountReceived(r), 0);
     const totalQty = filteredReports.reduce((sum, r) => sum + getReportTotalQty(r), 0);
-    const avgSale = totalQty > 0 ? totalSale / totalQty : 0;
+    const selectedDays = getInclusiveDays(dateRange.start, dateRange.end);
+    const avgDailySalesQty = totalQty / selectedDays;
 
     // Aggregate inventory by design number and calculate total value
     const designQuantityMap = new Map<string, number>();
     
     onlineInventory.forEach((item) => {
       if (item.dno && item.stock > 0) {
-        const normalizedDno = normalizeDno(item.dno);
+        const normalizedDno = normalizeDno(item.dno); 
         const currentQty = designQuantityMap.get(normalizedDno) || 0;
         designQuantityMap.set(normalizedDno, currentQty + item.stock);
       }
@@ -557,10 +567,10 @@ export default function EcommerceAnalyticsPage() {
 
     return {
       totalSale,
-      avgSale,
+      avgDailySalesQty,
       inventoryValue,
     };
-  }, [filteredReports, onlineInventory, mrpMap]);
+  }, [filteredReports, onlineInventory, mrpMap, dateRange.start, dateRange.end]);
 
   const trendSeries = useMemo<TrendPoint[]>(() => {
     const returnsByDate = inRangeReturnEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
@@ -622,11 +632,23 @@ export default function EcommerceAnalyticsPage() {
 
     return sorted.map((dateIso) => ({
       date: new Date(dateIso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+      totalSaleAmount: reportByDate[dateIso]?.amountReceived || 0,
       totalSale: formatINR(reportByDate[dateIso]?.amountReceived || 0),
       quantity: reportByDate[dateIso]?.totalQuantity || 0,
       returnQty: reportByDate[dateIso]?.totalReturns || 0,
     }));
   }, [filteredReports]);
+
+  const tableTotals = useMemo(() => {
+    return tableRows.reduce(
+      (acc, row) => ({
+        totalSaleAmount: acc.totalSaleAmount + row.totalSaleAmount,
+        quantity: acc.quantity + row.quantity,
+        returnQty: acc.returnQty + row.returnQty,
+      }),
+      { totalSaleAmount: 0, quantity: 0, returnQty: 0 }
+    );
+  }, [tableRows]);
 
   const slowMoving = useMemo(() => {
     // Aggregate inventory by design number
@@ -767,8 +789,8 @@ export default function EcommerceAnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <Card title="Total Sale" value={formatINR(metrics.totalSale)} />
-          <Card title="Avg Product Sold" value={formatINR(metrics.avgSale)} />
+          <Card title="Total Amount Received" value={formatINR(metrics.totalSale)} />
+          <Card title="Avg Daily sales(Qty)" value={`${Math.round(metrics.avgDailySalesQty)} pcs`} />
         </div>
 
         <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-1">
@@ -814,7 +836,7 @@ export default function EcommerceAnalyticsPage() {
               <thead className="sticky top-0 z-10 bg-white">
                 <tr className="border-b border-slate-200 text-sm text-slate-600 sm:text-base">
                   <th className="px-5 py-4 font-semibold">Date</th>
-                  <th className="px-5 py-4 font-semibold">Total Sale</th>
+                  <th className="px-5 py-4 font-semibold">Total Amount Received</th>
                   <th className="px-5 py-4 font-semibold">Qty</th>
                   <th className="px-5 py-4 font-semibold">Return Qty</th>
                 </tr>
@@ -828,6 +850,12 @@ export default function EcommerceAnalyticsPage() {
                     <td className="px-5 py-4">{row.returnQty}</td>
                   </tr>
                 ))}
+                <tr className="border-t-2 border-slate-300 text-sm font-semibold text-slate-800 sm:text-base">
+                  <td className="sticky bottom-0 bg-slate-50 px-5 py-4">Total</td>
+                  <td className="sticky bottom-0 bg-slate-50 px-5 py-4">{formatINR(tableTotals.totalSaleAmount)}</td>
+                  <td className="sticky bottom-0 bg-slate-50 px-5 py-4">{tableTotals.quantity}</td>
+                  <td className="sticky bottom-0 bg-slate-50 px-5 py-4">{tableTotals.returnQty}</td>
+                </tr>
               </tbody>
             </table>
           </div>

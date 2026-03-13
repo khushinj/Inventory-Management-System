@@ -595,12 +595,23 @@ export default function ShopAnalyticsPage() {
       .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
       .map((dateIso) => ({
         date: new Date(dateIso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+        totalSaleAmount: saleByDate[dateIso] || 0,
         totalSale: formatINR(saleByDate[dateIso] || 0),
         quantity: qtyByDate[dateIso] || 0,
       }));
   }, [filteredReports, inRangeSalesEntries]);
 
   const dateTableRows = tableRows;
+
+  const dateTableTotals = useMemo(() => {
+    return dateTableRows.reduce(
+      (acc, row) => ({
+        totalSaleAmount: acc.totalSaleAmount + row.totalSaleAmount,
+        quantity: acc.quantity + row.quantity,
+      }),
+      { totalSaleAmount: 0, quantity: 0 }
+    );
+  }, [dateTableRows]);
 
   const slowMovingRows = useMemo(
     () => ensureMinimumRows(slowMoving, 10, () => ({ productNo: "-", quantity: 0, sold: 0 })),
@@ -759,6 +770,11 @@ export default function ShopAnalyticsPage() {
                     <td className="px-5 py-4">{row.quantity}</td>
                   </tr>
                 ))}
+                <tr className="border-t-2 border-slate-300 text-sm font-semibold text-slate-800 sm:text-base">
+                  <td className="sticky bottom-0 bg-slate-50 px-5 py-4">Total</td>
+                  <td className="sticky bottom-0 bg-slate-50 px-5 py-4">{formatINR(dateTableTotals.totalSaleAmount)}</td>
+                  <td className="sticky bottom-0 bg-slate-50 px-5 py-4">{dateTableTotals.quantity}</td>
+                </tr>
               </tbody>
             </table>
           </div>

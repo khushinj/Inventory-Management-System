@@ -420,6 +420,16 @@ export default function PurchaseOrdersPage() {
     }
   };
 
+  const getStatCardClassName = (filterValue: StatusFilter) => {
+    const isActive = statusFilter === filterValue;
+
+    return `bg-white rounded-lg shadow p-6 text-left transition-all ${
+      isActive
+        ? "ring-2 ring-blue-500 shadow-md"
+        : "hover:shadow-md hover:-translate-y-0.5"
+    }`;
+  };
+
   const stats = getStatusCounts();
   const totalValue = getTotalOrderValue();
 
@@ -447,22 +457,38 @@ export default function PurchaseOrdersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <button
+          type="button"
+          onClick={() => setStatusFilter("all")}
+          className={getStatCardClassName("all")}
+        >
           <p className="text-gray-600 text-sm mb-1">Total Orders</p>
           <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusFilter("pending")}
+          className={getStatCardClassName("pending")}
+        >
           <p className="text-gray-600 text-sm mb-1">Pending</p>
           <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusFilter("partially pending")}
+          className={getStatCardClassName("partially pending")}
+        >
           <p className="text-gray-600 text-sm mb-1">Partially Pending</p>
           <p className="text-3xl font-bold text-purple-600">{stats.partiallyPending}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        </button>
+        <button
+          type="button"
+          onClick={() => setStatusFilter("completed")}
+          className={getStatCardClassName("completed")}
+        >
           <p className="text-gray-600 text-sm mb-1">Completed</p>
           <p className="text-3xl font-bold text-green-600">{stats.completed}</p>
-        </div>
+        </button>
       </div>
 
       {/* Total Order Value */}

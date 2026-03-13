@@ -536,7 +536,7 @@ export default function ShopAnalyticsPage() {
 
   const slowMoving = useMemo(() => {
     const stockByDesign = shopInventory.reduce<Record<string, number>>((acc, item) => {
-      const key = (item.designNumber || "").trim();
+      const key = normalizeDno(item.designNumber);
       if (!key) return acc;
       acc[key] = (acc[key] || 0) + (item.net || 0);
       return acc;
@@ -549,7 +549,11 @@ export default function ShopAnalyticsPage() {
       return acc;
     }, {});
 
+    const activeDesigns = new Set(Object.keys(soldByDesign));
+    if (activeDesigns.size === 0) return [];
+
     return Object.entries(stockByDesign)
+      .filter(([productNo]) => activeDesigns.has(productNo))
       .map(([productNo, quantity]) => ({
         productNo,
         quantity,

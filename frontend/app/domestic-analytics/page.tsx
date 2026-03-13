@@ -564,7 +564,7 @@ export default function DomesticAnalyticsPage() {
     // Calculate slow and fast moving
     const articles: MovingItem[] = [];
     inventoryByArticle.forEach((quantity, articleNo) => {
-      if (articleNo && articleNo.trim()) { // Only include valid article numbers
+      if (articleNo && articleNo.trim() && dispatchCount.has(articleNo)) {
         articles.push({
           articleNo,
           quantity,

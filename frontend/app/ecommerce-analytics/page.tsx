@@ -669,8 +669,12 @@ export default function EcommerceAnalyticsPage() {
       return acc;
     }, {});
 
+    const activeDesigns = new Set(Object.keys(salesCount));
+    if (activeDesigns.size === 0) return [];
+
     // Calculate slow moving items
     return Array.from(inventoryByDesign.entries())
+      .filter(([dno]) => activeDesigns.has(dno))
       .map(([dno, stock]) => {
         const sold = salesCount[dno] || 0;
         const ratio = sold > 0 ? stock / sold : stock * 1000;

@@ -102,6 +102,11 @@ function normalizeDno(dno?: string) {
   return (dno || "").trim().replace(/\s+/g, "").toUpperCase();
 }
 
+function toIsoDate(value?: string) {
+  if (!value) return "";
+  return value.split("T")[0] || "";
+}
+
 function getLastMonthDateRange() {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -440,12 +445,14 @@ export default function DomesticAnalyticsPage() {
       const jobCards: JobCard[] = jobCardsRes.data || [];
 
       // Filter data by date range
-      const dispatchTransactions = allTransactions.filter(
-        (t) => t.date >= range.start && t.date <= range.end
-      );
-      const purchaseOrders = allPurchaseOrders.filter(
-        (po) => po.date >= range.start && po.date <= range.end
-      );
+      const dispatchTransactions = allTransactions.filter((t) => {
+        const dateIso = toIsoDate(t.date);
+        return dateIso >= range.start && dateIso <= range.end;
+      });
+      const purchaseOrders = allPurchaseOrders.filter((po) => {
+        const dateIso = toIsoDate(po.date);
+        return dateIso >= range.start && dateIso <= range.end;
+      });
 
       // Calculate metrics
       calculateMetrics(dispatchTransactions, inventoryItems, jobCards, purchaseOrders);

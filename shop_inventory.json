@@ -2244,6 +2244,17 @@
     "type": "sales"
   },
   {
+    "designNumber": "KL-1399",
+    "color": "FUCHSIA-3",
+    "size": "L",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
     "designNumber": "KL-1456",
     "color": "WINE-37",
     "size": "XXL",
@@ -10599,8 +10610,8 @@
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -23579,8 +23590,8 @@
     "import": 13,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 13,
+    "sales": 1,
+    "net": 12,
     "type": "import"
   },
   {
@@ -25248,6 +25259,17 @@
     "designNumber": "TB-011",
     "color": "BEIGE",
     "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "TB-011",
+    "color": "NAVY",
+    "size": "M",
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,

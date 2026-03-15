@@ -56,5 +56,6 @@ export const config = {
     "/online/:path*",
     "/online-inventory/:path*",
     "/online-daily-report/:path*",
+    "/inventory-po-access/:path*",
   ],
 };

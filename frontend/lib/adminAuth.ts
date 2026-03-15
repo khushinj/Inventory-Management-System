@@ -1,7 +1,7 @@
 export const AUTH_COOKIE_NAME = "ims_admin_auth";
 export const AUTH_ROLE_COOKIE_NAME = "ims_user_role";
 
-export type UserRole = "admin" | "shop" | "domestic" | "ecommerce";
+export type UserRole = "admin" | "shop" | "domestic" | "ecommerce" | "inventoryPo";
 
 type PortalUser = {
   emailId: string;
@@ -35,6 +35,12 @@ const PORTAL_USERS: PortalUser[] = [
     role: "ecommerce",
     defaultRoute: "/online-homepage",
   },
+  {
+    emailId: "inventory.po@gmail.com",
+    password: "inventory#123",
+    role: "inventoryPo",
+    defaultRoute: "/inventory-po-access",
+  },
 ];
 
 const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
@@ -49,6 +55,14 @@ const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
     "/purchase-order-dashboard",
   ],
   ecommerce: ["/online-homepage", "/online", "/online-inventory", "/online-daily-report", "/ecommerce-analytics"],
+  inventoryPo: [
+    "/inventory-po-access",
+    "/shop-inventory",
+    "/domestic-inventory",
+    "/online-inventory",
+    "/domestic/purchase-order",
+    "/purchase-order-dashboard",
+  ],
 };
 
 export const ACCESS_CONTROLLED_ROUTE_PREFIXES = Array.from(
@@ -67,7 +81,13 @@ export function getDefaultRouteForRole(role: UserRole): string {
 }
 
 export function isRole(value: string): value is UserRole {
-  return value === "admin" || value === "shop" || value === "domestic" || value === "ecommerce";
+  return (
+    value === "admin" ||
+    value === "shop" ||
+    value === "domestic" ||
+    value === "ecommerce" ||
+    value === "inventoryPo"
+  );
 }
 
 export function isRouteAllowedForRole(pathname: string, role: UserRole): boolean {

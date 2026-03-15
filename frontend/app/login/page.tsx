@@ -2,32 +2,28 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { AUTH_COOKIE_NAME, isValidAdminCredentials } from "@/lib/adminAuth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [employeeId, setEmployeeId] = useState("");
+  const [emailId, setEmailId] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
 
-    // Simulate authentication
-    setTimeout(() => {
-      if (employeeId && password) {
-        // Store auth state (in production, use proper authentication)
-        if (rememberMe) {
-          localStorage.setItem("employeeId", employeeId);
-        }
-        router.push("/retail");
-      } else {
-        alert("Please enter valid credentials");
-      }
-      setIsLoading(false);
-    }, 1000);
+    if (isValidAdminCredentials(emailId.trim(), password)) {
+      document.cookie = `${AUTH_COOKIE_NAME}=true; path=/; max-age=${60 * 60 * 8}; samesite=lax`;
+      router.push("/analytics");
+      return;
+    }
+
+    setError("Invalid email ID or password.");
+    setIsLoading(false);
   };
 
   return (
@@ -65,22 +61,22 @@ export default function LoginPage() {
           {/* Login Form */}
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Employee Login</h2>
-              <p className="text-gray-600 text-sm">Enter your credentials to access the portal</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Login</h2>
+              <p className="text-gray-600 text-sm">Enter your email ID and password to access Analytics</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Employee ID */}
+              {/* Email ID */}
               <div>
-                <label htmlFor="employeeId" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Employee ID
+                <label htmlFor="emailId" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email ID
                 </label>
                 <input
-                  id="employeeId"
-                  type="text"
-                  value={employeeId}
-                  onChange={(e) => setEmployeeId(e.target.value)}
-                  placeholder="Enter your employee ID"
+                  id="emailId"
+                  type="email"
+                  value={emailId}
+                  onChange={(e) => setEmailId(e.target.value)}
+                  placeholder="Enter admin email ID"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder:text-gray-400"
                   required
                 />
@@ -96,27 +92,13 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Enter admin password"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder:text-gray-400"
                   required
                 />
               </div>
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 font-medium">Remember me</span>
-                </label>
-                <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                  Forgot password?
-                </a>
-              </div>
+              {error ? <p className="text-sm text-red-600 font-medium">{error}</p> : null}
 
               {/* Sign In Button */}
               <button

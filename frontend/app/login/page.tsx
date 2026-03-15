@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { AUTH_COOKIE_NAME, isValidAdminCredentials } from "@/lib/adminAuth";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  AUTH_COOKIE_NAME,
+  AUTH_ROLE_COOKIE_NAME,
+  authenticateUser,
+  isRouteAllowedForRole,
+} from "@/lib/adminAuth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [emailId, setEmailId] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,9 +22,19 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    if (isValidAdminCredentials(emailId.trim(), password)) {
+    const user = authenticateUser(emailId.trim(), password);
+
+    if (user) {
       document.cookie = `${AUTH_COOKIE_NAME}=true; path=/; max-age=${60 * 60 * 8}; samesite=lax`;
-      router.push("/analytics");
+      document.cookie = `${AUTH_ROLE_COOKIE_NAME}=${user.role}; path=/; max-age=${60 * 60 * 8}; samesite=lax`;
+
+      const redirectPath = searchParams.get("redirect");
+      if (redirectPath && isRouteAllowedForRole(redirectPath, user.role)) {
+        router.push(redirectPath);
+        return;
+      }
+
+      router.push(user.defaultRoute);
       return;
     }
 
@@ -61,8 +77,8 @@ export default function LoginPage() {
           {/* Login Form */}
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Login</h2>
-              <p className="text-gray-600 text-sm">Enter your email ID and password to access Analytics</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Portal Login</h2>
+              <p className="text-gray-600 text-sm">Enter your email ID and password to access your section</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -76,7 +92,7 @@ export default function LoginPage() {
                   type="email"
                   value={emailId}
                   onChange={(e) => setEmailId(e.target.value)}
-                  placeholder="Enter admin email ID"
+                  placeholder="Enter email ID"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder:text-gray-400"
                   required
                 />
@@ -92,7 +108,7 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter admin password"
+                  placeholder="Enter password"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder:text-gray-400"
                   required
                 />

@@ -161,9 +161,13 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
   const rightPad = 32;
   const topPad = 26;
   const bottomPad = 64;
+  const tooltipWidth = 170;
+  const tooltipHeight = 40;
+  const tooltipOffset = 50;
+  const tooltipInset = 8;
   const chartWidth = width - leftPad - rightPad;
   const chartHeight = height - topPad - bottomPad;
-  const maxY = Math.max(100, ...data.map((d) => Math.max(d.sales, d.orders)));
+  const maxY = Math.max(100, ...data.map((d) => d.sales));
   const roundedMax = Math.ceil(maxY / 1000) * 1000;
   const steps = Array.from({ length: 5 }, (_, i) => (roundedMax / 4) * i);
 
@@ -171,7 +175,6 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
   const toY = (value: number) => topPad + chartHeight - (value / roundedMax) * chartHeight;
 
   const salesPoints = data.map((point, index) => `${toX(index)},${toY(point.sales)}`).join(" ");
-  const ordersPoints = data.map((point, index) => `${toX(index)},${toY(point.orders)}`).join(" ");
 
   return (
     <div className="w-full overflow-x-auto">
@@ -220,12 +223,15 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
         ))}
 
         <polyline fill="none" stroke="#3b82f6" strokeWidth="4" points={salesPoints} />
-        <polyline fill="none" stroke="#06b6d4" strokeWidth="4" points={ordersPoints} />
 
         {data.map((point, index) => {
           const x = toX(index);
           const ySales = toY(point.sales);
-          const yOrders = toY(point.orders);
+          const tooltipX = Math.min(
+            width - rightPad - tooltipWidth - tooltipInset,
+            Math.max(leftPad + tooltipInset, x - tooltipWidth / 2),
+          );
+          const tooltipY = Math.max(topPad + tooltipInset, ySales - tooltipOffset);
           return (
             <g
               key={`dot-${point.label}`}
@@ -234,27 +240,36 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
               style={{ cursor: "pointer" }}
             >
               <circle cx={x} cy={ySales} r="6" fill="#ffffff" stroke="#3b82f6" strokeWidth="3" />
-              <circle cx={x} cy={yOrders} r="6" fill="#ffffff" stroke="#06b6d4" strokeWidth="3" />
               
               {hoveredIndex === index && (
                 <>
                   <rect
-                    x={x - 85}
-                    y={Math.min(ySales, yOrders) - 65}
-                    width="170"
-                    height="55"
+                    x={tooltipX}
+                    y={tooltipY}
+                    width={tooltipWidth}
+                    height={tooltipHeight}
                     fill="#1e293b"
                     rx="6"
                     opacity="0.95"
                   />
-                  <text x={x} y={Math.min(ySales, yOrders) - 42} textAnchor="middle" fill="#ffffff" fontSize="14" fontWeight="600">
+                  <text
+                    x={tooltipX + tooltipWidth / 2}
+                    y={tooltipY + 20}
+                    textAnchor="middle"
+                    fill="#ffffff"
+                    fontSize="14"
+                    fontWeight="600"
+                  >
                     {point.label}
                   </text>
-                  <text x={x} y={Math.min(ySales, yOrders) - 25} textAnchor="middle" fill="#3b82f6" fontSize="13">
+                  <text
+                    x={tooltipX + tooltipWidth / 2}
+                    y={tooltipY + 37}
+                    textAnchor="middle"
+                    fill="#3b82f6"
+                    fontSize="13"
+                  >
                     Sales: {formatINR(point.sales)}
-                  </text>
-                  <text x={x} y={Math.min(ySales, yOrders) - 10} textAnchor="middle" fill="#06b6d4" fontSize="13">
-                    Orders: {point.orders}
                   </text>
                 </>
               )}
@@ -267,10 +282,6 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
         <div className="flex items-center gap-2 text-blue-500">
           <span className="text-xl leading-none">•</span>
           <span>sales</span>
-        </div>
-        <div className="flex items-center gap-2 text-cyan-500">
-          <span className="text-xl leading-none">•</span>
-          <span>orders</span>
         </div>
       </div>
     </div>

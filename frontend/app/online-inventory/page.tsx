@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "../../lib/api";
+import * as XLSX from "xlsx";
 
 type InventoryItem = {
   dno: string;
@@ -46,6 +47,13 @@ const COLORS = [
   "SILVER",
   "MIX",
 ];
+
+const EXPORT_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+
+const normalizeExportSize = (size?: string) => {
+  const normalized = (size || "").trim().toUpperCase();
+  return normalized === "2XL" ? "XXL" : normalized;
+};
 
 export default function OnlineInventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -137,6 +145,72 @@ export default function OnlineInventoryPage() {
       return matchesSearch && matchesSize && matchesColor;
     }
   );
+
+  const downloadExcel = () => {
+    const groupedRows = new Map<
+      string,
+      {
+        DNO: string;
+        Type: string;
+        Color: string;
+        sizeTotals: Record<string, number>;
+      }
+    >();
+
+    filteredDesigns.forEach(([designNumber, items]) => {
+      items.forEach((item) => {
+        const normalizedSize = normalizeExportSize(item.size);
+        if (!EXPORT_SIZES.includes(normalizedSize)) return;
+
+        const key = `${designNumber}__${item.color}`;
+        if (!groupedRows.has(key)) {
+          groupedRows.set(key, {
+            DNO: designNumber,
+            Type: "",
+            Color: item.color,
+            sizeTotals: EXPORT_SIZES.reduce((acc, size) => {
+              acc[size] = 0;
+              return acc;
+            }, {} as Record<string, number>),
+          });
+        }
+
+        const row = groupedRows.get(key)!;
+        row.sizeTotals[normalizedSize] += Number(item.stock || 0);
+      });
+    });
+
+    const excelData = Array.from(groupedRows.values()).map((row) => {
+      const sizeColumns = EXPORT_SIZES.reduce((acc, size) => {
+        acc[size] = row.sizeTotals[size] || 0;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const total = EXPORT_SIZES.reduce(
+        (sum, size) => sum + (row.sizeTotals[size] || 0),
+        0
+      );
+
+      return {
+        DNO: row.DNO,
+        Type: row.Type,
+        Color: row.Color,
+        ...sizeColumns,
+        Total: total,
+      };
+    });
+
+    if (excelData.length === 0) {
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Online Inventory");
+
+    const fileName = `Online_Inventory_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
   
   // console.log("🌿 Filtered designs:", filteredDesigns.length, "designs");
 
@@ -145,13 +219,22 @@ export default function OnlineInventoryPage() {
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Online Inventory
-            </h1>
-            <p className="text-sm text-gray-500">
-              Stock levels across online warehouse
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Online Inventory
+              </h1>
+              <p className="text-sm text-gray-500">
+                Stock levels across online warehouse
+              </p>
+            </div>
+            <button
+              onClick={downloadExcel}
+              disabled={loading || filteredDesigns.length === 0}
+              className="whitespace-nowrap rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
+            >
+              Export to Excel
+            </button>
           </div>
         </div>
       </div>

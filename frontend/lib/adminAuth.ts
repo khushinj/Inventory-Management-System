@@ -1,7 +1,7 @@
 export const AUTH_COOKIE_NAME = "ims_admin_auth";
 export const AUTH_ROLE_COOKIE_NAME = "ims_user_role";
 
-export type UserRole = "admin" | "shop" | "domestic" | "ecommerce" | "inventoryPo";
+export type UserRole = "admin" | "shop" | "domestic" | "ecommerce" | "inventoryPo" | "jobcard";
 
 type PortalUser = {
   emailId: string;
@@ -41,6 +41,12 @@ const PORTAL_USERS: PortalUser[] = [
     role: "inventoryPo",
     defaultRoute: "/inventory-po-access",
   },
+  {
+    emailId: "jobcard.user@gmail.com",
+    password: "jobcard#123",
+    role: "jobcard",
+    defaultRoute: "/jobcard-access",
+  },
 ];
 
 const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
@@ -62,6 +68,12 @@ const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
     "/online-inventory",
     "/domestic/purchase-order",
     "/purchase-order-dashboard",
+  ],
+  jobcard: [
+    "/jobcard-access",
+    "/jobcard",
+    "/jobcard-dashboard",
+    "/jobcard-forms",
   ],
 };
 
@@ -86,7 +98,8 @@ export function isRole(value: string): value is UserRole {
     value === "shop" ||
     value === "domestic" ||
     value === "ecommerce" ||
-    value === "inventoryPo"
+    value === "inventoryPo" ||
+    value === "jobcard"
   );
 }
 

@@ -57,5 +57,9 @@ export const config = {
     "/online-inventory/:path*",
     "/online-daily-report/:path*",
     "/inventory-po-access/:path*",
+    "/jobcard-access/:path*",
+    "/jobcard/:path*",
+    "/jobcard-dashboard/:path*",
+    "/jobcard-forms/:path*",
   ],
 };

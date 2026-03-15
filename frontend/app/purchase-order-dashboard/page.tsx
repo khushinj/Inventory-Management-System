@@ -222,6 +222,40 @@ export default function PurchaseOrdersPage() {
     return "partially pending";
   };
 
+  const getOrderCompletion = (
+    order: PurchaseOrder,
+    orderDelivered: DeliveredSizeMap[string] = {}
+  ) => {
+    let orderedQuantity = 0;
+    let deliveredQuantity = 0;
+
+    order.items.forEach((item, itemIndex) => {
+      const deliveredByItem = orderDelivered[itemIndex] || {};
+
+      sizeKeys.forEach((key) => {
+        const ordered = (item as Record<SizeKey, number>)[key] || 0;
+        if (ordered <= 0) {
+          return;
+        }
+
+        const deliveredRaw = deliveredByItem[key];
+        const delivered = typeof deliveredRaw === "number" ? deliveredRaw : 0;
+
+        orderedQuantity += ordered;
+        deliveredQuantity += Math.min(Math.max(delivered, 0), ordered);
+      });
+    });
+
+    const completionPercentage =
+      orderedQuantity > 0 ? Math.round((deliveredQuantity / orderedQuantity) * 100) : 0;
+
+    return {
+      orderedQuantity,
+      deliveredQuantity,
+      completionPercentage,
+    };
+  };
+
   const buildDeliveredSizesArray = (
     order: PurchaseOrder,
     orderDelivered: DeliveredSizeMap[string] = {}
@@ -547,7 +581,10 @@ export default function PurchaseOrdersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredOrders.map((order) => (
+          {filteredOrders.map((order) => {
+            const completion = getOrderCompletion(order, deliveredSizes[order._id]);
+
+            return (
             <div
               key={order._id}
               className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 p-6 relative"
@@ -606,6 +643,21 @@ export default function PurchaseOrdersPage() {
                   <span className="text-2xl font-bold text-gray-900">{formatCurrency(order.grandTotal)}</span>
                 </div>
                 <p className="text-sm text-gray-600">{order.items.length} items</p>
+                <div className="mt-4 rounded-lg bg-gray-50 p-3">
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Completed</span>
+                    <span className="font-semibold text-gray-900">{completion.completionPercentage}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+                    <div
+                      className="h-full rounded-full bg-green-500 transition-all duration-300"
+                      style={{ width: `${completion.completionPercentage}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-gray-600">
+                    {completion.deliveredQuantity} of {completion.orderedQuantity} qty delivered
+                  </p>
+                </div>
               </div>
 
               <div className="flex gap-2">
@@ -629,7 +681,8 @@ export default function PurchaseOrdersPage() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

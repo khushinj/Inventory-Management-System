@@ -189,11 +189,11 @@ function Card({ title, value, trend }: { title: string; value: string; trend?: s
 }
 
 function SalesReturnsChart({ points }: { points: TrendPoint[] }) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<{ index: number; series: "sales" | "returns" } | null>(null);
   const maxSales = Math.max(...points.map((p) => p.sales), 1);
   const maxReturns = Math.max(...points.map((p) => p.returns), 1);
   const max = Math.max(maxSales, maxReturns, 1);
-  const step = Math.ceil(max / 5 / 1000) * 1000;
+  const step = Math.max(1, Math.ceil(max / 5));
   const yMax = step * 5;
   const width = 900;
   const height = 400;
@@ -201,6 +201,9 @@ function SalesReturnsChart({ points }: { points: TrendPoint[] }) {
   const padRight = 30;
   const padTop = 20;
   const padBottom = 60;
+  const tooltipWidth = 200;
+  const tooltipHeight = 62;
+  const tooltipInset = 8;
   const chartWidth = width - padLeft - padRight;
   const chartHeight = height - padTop - padBottom;
 
@@ -253,7 +256,7 @@ function SalesReturnsChart({ points }: { points: TrendPoint[] }) {
             <g key={i}>
               <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="#e2e8f0" strokeWidth="1" />
               <text x={padLeft - 10} y={y} textAnchor="end" alignmentBaseline="middle" fill="#64748b" fontSize="14">
-                {(val / 1000).toFixed(0)}k
+                {val.toLocaleString()}
               </text>
             </g>
           );
@@ -296,8 +299,8 @@ function SalesReturnsChart({ points }: { points: TrendPoint[] }) {
                 stroke="#ffffff"
                 strokeWidth="2"
                 style={{ cursor: "pointer" }}
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseEnter={() => setHoveredPoint({ index: i, series: "sales" })}
+                onMouseLeave={() => setHoveredPoint(null)}
               />
               <circle
                 cx={x}
@@ -307,41 +310,63 @@ function SalesReturnsChart({ points }: { points: TrendPoint[] }) {
                 stroke="#ffffff"
                 strokeWidth="2"
                 style={{ cursor: "pointer" }}
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseEnter={() => setHoveredPoint({ index: i, series: "returns" })}
+                onMouseLeave={() => setHoveredPoint(null)}
               />
             </g>
           );
         })}
-      </svg>
 
-      {hoveredIndex !== null ? (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-lg bg-slate-900/95 px-4 py-2 text-sm text-white shadow-lg">
-          <div className="font-semibold">{formatDateLabel(points[hoveredIndex].label)}</div>
-          <div className="mt-1 space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-blue-500" />
-              <span>Sales: {formatINR(points[hoveredIndex].sales)}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-red-500" />
-              <span>Returns: {formatINR(points[hoveredIndex].returns)}</span>
-            </div>
-            <div className="mt-1 text-xs text-slate-300">
-              Qty: {points[hoveredIndex].qty} | Return Qty: {points[hoveredIndex].returnQty}
-            </div>
-          </div>
-        </div>
-      ) : null}
+        {hoveredPoint !== null ? (
+          (() => {
+            const point = points[hoveredPoint.index];
+            const x = padLeft + hoveredPoint.index * xStep;
+            const ySales = padTop + chartHeight - (point.sales / yMax) * chartHeight;
+            const yReturns = padTop + chartHeight - (point.returns / yMax) * chartHeight;
+            const anchorY = hoveredPoint.series === "returns" ? yReturns : ySales;
+            const tooltipX = Math.min(
+              width - padRight - tooltipWidth - tooltipInset,
+              Math.max(padLeft + tooltipInset, x - tooltipWidth / 2),
+            );
+            const preferredY = anchorY - tooltipHeight - 14;
+            const tooltipY = preferredY >= padTop + tooltipInset
+              ? preferredY
+              : Math.min(padTop + chartHeight - tooltipHeight - tooltipInset, anchorY + 14);
+
+            return (
+              <g pointerEvents="none">
+                <rect
+                  x={tooltipX}
+                  y={tooltipY}
+                  width={tooltipWidth}
+                  height={tooltipHeight}
+                  fill="#0f172a"
+                  rx="8"
+                  opacity="0.95"
+                />
+                <text x={tooltipX + tooltipWidth / 2} y={tooltipY + 20} textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="600">
+                  {formatDateLabel(point.label)}
+                </text>
+                <text x={tooltipX + 12} y={tooltipY + 40} fill="#60a5fa" fontSize="12">
+                  Qty Sold: {point.sales}
+                </text>
+                <text x={tooltipX + 12} y={tooltipY + 56} fill="#f87171" fontSize="12">
+                  Return Qty: {point.returns}
+                </text>
+              </g>
+            );
+          })()
+        ) : null}
+      </svg>
 
       <div className="mt-4 flex justify-center gap-6 text-sm">
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-full bg-blue-500" />
-          <span className="text-slate-600">sale</span>
+          <span className="text-slate-600">qty sold</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-full bg-red-500" />
-          <span className="text-slate-600">returns</span>
+          <span className="text-slate-600">return qty</span>
         </div>
       </div>
     </div>
@@ -489,10 +514,6 @@ export default function EcommerceAnalyticsPage() {
     fetchData();
   }, [fetchData]);
 
-  const inventoryDesignSet = useMemo(() => {
-    return new Set(onlineInventory.map((item) => normalizeDno(item.dno)));
-  }, [onlineInventory]);
-
   const mrpMap = useMemo(() => {
     const map = new Map<string, number>();
     jobCards.forEach((card) => {
@@ -503,27 +524,9 @@ export default function EcommerceAnalyticsPage() {
     return map;
   }, [jobCards]);
 
-  const getUnitAmount = useCallback(
-    (designNumber?: string) => {
-      if (!designNumber) return 0;
-      const normalized = normalizeDno(designNumber);
-      if (!inventoryDesignSet.has(normalized)) return 0;
-      return mrpMap.get(normalized) || 0;
-    },
-    [inventoryDesignSet, mrpMap]
-  );
-
   const inRangeSalesEntries = useMemo(() => {
     return onlineEntries.filter((entry) => {
       if (entry.formType !== "sales") return false;
-      const dateIso = toIsoDate(entry.date);
-      return dateIso >= dateRange.start && dateIso <= dateRange.end;
-    });
-  }, [dateRange.end, dateRange.start, onlineEntries]);
-
-  const inRangeReturnEntries = useMemo(() => {
-    return onlineEntries.filter((entry) => {
-      if (entry.formType !== "return") return false;
       const dateIso = toIsoDate(entry.date);
       return dateIso >= dateRange.start && dateIso <= dateRange.end;
     });
@@ -573,16 +576,6 @@ export default function EcommerceAnalyticsPage() {
   }, [filteredReports, onlineInventory, mrpMap, dateRange.start, dateRange.end]);
 
   const trendSeries = useMemo<TrendPoint[]>(() => {
-    const returnsByDate = inRangeReturnEntries.reduce<Record<string, { value: number; qty: number }>>((acc, entry) => {
-      const dateIso = toIsoDate(entry.date);
-      if (!dateIso) return acc;
-      const mrp = getUnitAmount(entry.dno);
-      if (!acc[dateIso]) acc[dateIso] = { value: 0, qty: 0 };
-      acc[dateIso].value += (entry.qty || 0) * mrp;
-      acc[dateIso].qty += entry.qty || 0;
-      return acc;
-    }, {});
-
     // Generate every date in range
     const allDates: string[] = [];
     const cursor = new Date(dateRange.start);
@@ -596,25 +589,31 @@ export default function EcommerceAnalyticsPage() {
       return [{ dateIso: "", label: "No Data", sales: 0, returns: 0, qty: 0, returnQty: 0 }];
     }
 
-    const saleByDate = new Map<string, { totalSale: number; totalQuantity: number }>();
+    const reportByDate = new Map<string, { totalQuantity: number; totalReturns: number }>();
     filteredReports.forEach((r) => {
       const d = toIsoDate(r.date);
-      if (d) saleByDate.set(d, { totalSale: getReportTotalAmountReceived(r), totalQuantity: getReportTotalQty(r) });
+      if (d) {
+        reportByDate.set(d, {
+          totalQuantity: getReportTotalQty(r),
+          totalReturns: getReportTotalReturns(r),
+        });
+      }
     });
 
     return allDates.map((dateIso) => {
-      const report = saleByDate.get(dateIso);
-      const ret = returnsByDate[dateIso];
+      const report = reportByDate.get(dateIso);
+      const soldQty = report?.totalQuantity || 0;
+      const returnQty = report?.totalReturns || 0;
       return {
         dateIso,
         label: formatDateLabel(dateIso),
-        sales: Math.round(report?.totalSale || 0),
-        returns: Math.round(ret?.value || 0),
-        qty: report?.totalQuantity || 0,
-        returnQty: ret?.qty || 0,
+        sales: Math.round(soldQty),
+        returns: Math.round(returnQty),
+        qty: Math.round(soldQty),
+        returnQty: Math.round(returnQty),
       };
     });
-  }, [dateRange.start, dateRange.end, filteredReports, inRangeReturnEntries, getUnitAmount]);
+  }, [dateRange.start, dateRange.end, filteredReports]);
 
   const tableRows = useMemo(() => {
     const reportByDate = filteredReports.reduce<Record<string, { amountReceived: number; totalQuantity: number; totalReturns: number }>>((acc, report) => {

@@ -283,7 +283,7 @@ export default function OnlineInventoryPage() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 lg:gap-8">
           {/* Filters Sidebar */}
-          <aside className={`bg-white border rounded-lg shadow-sm p-6 h-fit lg:sticky top-20 self-start ${showFilters ? "block" : "hidden lg:block"}`}>
+          <aside className={`bg-white border rounded-lg shadow-sm p-6 self-start max-h-[70vh] lg:max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 lg:sticky lg:top-20 ${showFilters ? "block" : "hidden lg:block"}`}>
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Filters
             </h2>

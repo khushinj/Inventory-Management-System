@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { api } from "../../lib/api";
 
-type Period = "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
+type Period = "last-10-days" | "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
 
 type OnlineEntry = {
   dno?: string;
@@ -98,7 +98,10 @@ function getDateRangeByPeriod(period: Exclude<Period, "custom">): DateRange {
   let start: Date;
   let end: Date = new Date(now);
 
-  if (period === "last-month") {
+  if (period === "last-10-days") {
+    start = new Date(now);
+    start.setDate(now.getDate() - 9);
+  } else if (period === "last-month") {
     start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     end = new Date(now.getFullYear(), now.getMonth(), 0);
   } else if (period === "last-3-months") {
@@ -471,8 +474,8 @@ function PlatformPieChart({ values }: { values: { amazon: number; flipkart: numb
 }
 
 export default function EcommerceAnalyticsPage() {
-  const [period, setPeriod] = useState<Period>("last-month");
-  const [dateRange, setDateRange] = useState<DateRange>(() => getDateRangeByPeriod("last-month"));
+  const [period, setPeriod] = useState<Period>("last-10-days");
+  const [dateRange, setDateRange] = useState<DateRange>(() => getDateRangeByPeriod("last-10-days"));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(true);
   const [onlineEntries, setOnlineEntries] = useState<OnlineEntry[]>([]);
@@ -782,6 +785,7 @@ export default function EcommerceAnalyticsPage() {
               value={period}
               onChange={(event) => setPeriod(event.target.value as Period)}
             >
+              <option value="last-10-days">Last 10 Days</option>
               <option value="last-month">Last Month</option>
               <option value="last-3-months">Last 3 Months</option>
               <option value="last-6-months">Last 6 Months</option>

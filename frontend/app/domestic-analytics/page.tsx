@@ -70,7 +70,7 @@ type JobCard = {
   mrp: number;
 };
 
-type PeriodType = "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
+type PeriodType = "last-10-days" | "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
 
 function formatINR(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -107,23 +107,15 @@ function toIsoDate(value?: string) {
   return value.split("T")[0] || "";
 }
 
-function getLastMonthDateRange() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const end = new Date(now.getFullYear(), now.getMonth(), 0);
-
-  return {
-    start: start.toISOString().split("T")[0],
-    end: end.toISOString().split("T")[0],
-  };
-}
-
 function getDateRangeByPeriod(periodType: Exclude<PeriodType, "custom">) {
   const now = new Date();
   let start: Date;
   let end: Date = new Date(now);
 
-  if (periodType === "last-month") {
+  if (periodType === "last-10-days") {
+    start = new Date(now);
+    start.setDate(now.getDate() - 9);
+  } else if (periodType === "last-month") {
     start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     end = new Date(now.getFullYear(), now.getMonth(), 0);
   } else if (periodType === "last-3-months") {
@@ -403,14 +395,14 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
 
 export default function DomesticAnalyticsPage() {
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<PeriodType>("last-month");
+  const [period, setPeriod] = useState<PeriodType>("last-10-days");
   const [metricCards, setMetricCards] = useState<MetricCard[]>([]);
   const [salesOrderSeries, setSalesOrderSeries] = useState<SeriesPoint[]>([]);
   const [slowMovingArticles, setSlowMovingArticles] = useState<MovingItem[]>([]);
   const [fastMovingArticles, setFastMovingArticles] = useState<MovingItem[]>([]);
   const [orderTable, setOrderTable] = useState<OrderRow[]>([]);
   const [regionDistribution, setRegionDistribution] = useState<RegionPoint[]>([]);
-  const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => getLastMonthDateRange());
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => getDateRangeByPeriod("last-10-days"));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = useRef<HTMLDivElement | null>(null);
 
@@ -773,6 +765,7 @@ export default function DomesticAnalyticsPage() {
               value={period}
               onChange={(e) => setPeriod(e.target.value as PeriodType)}
             >
+              <option value="last-10-days">Last 10 Days</option>
               <option value="last-month">Last Month</option>
               <option value="last-3-months">Last 3 Months</option>
               <option value="last-6-months">Last 6 Months</option>

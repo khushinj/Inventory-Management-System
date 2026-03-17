@@ -50,7 +50,15 @@ const PORTAL_USERS: PortalUser[] = [
 ];
 
 const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
-  admin: ["/analytics", "/shop-analytics", "/ecommerce-analytics", "/domestic-analytics"],
+  admin: [
+    "/analytics",
+    "/shop-analytics",
+    "/ecommerce-analytics",
+    "/domestic-analytics",
+    "/shop-inventory",
+    "/domestic-inventory",
+    "/online-inventory",
+  ],
   shop: ["/retail", "/shop", "/shop-inventory", "/shop-stock-returned", "/daily-report", "/shop-analytics"],
   domestic: [
     "/domestic-homepage",

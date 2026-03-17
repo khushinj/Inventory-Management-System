@@ -8333,7 +8333,7 @@
     "import": 0,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 1,
+    "sales": 2,
     "net": 0,
     "type": "return"
   },
@@ -9004,8 +9004,8 @@
     "import": 0,
     "customerReturn": 2,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 2,
+    "sales": 1,
+    "net": 1,
     "type": "return"
   },
   {
@@ -9301,8 +9301,8 @@
     "import": 0,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -10797,8 +10797,8 @@
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -12640,6 +12640,17 @@
   },
   {
     "designNumber": "NG-20022",
+    "color": "NAVY PRINT-2",
+    "size": "XL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "NG-20022",
     "color": "WHITE PRINT-1",
     "size": "L",
     "import": 1,
@@ -14240,8 +14251,8 @@
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {

@@ -22,15 +22,39 @@ type Entry = {
   channel?: string;
   domain: string;
   warehouseType?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type SampleRow = {
   dno: string;
   color: string;
+  latestTimestamp?: number;
   sizes: {
     [size: string]: number;
   };
 };
+
+const getEntryTimestamp = (entry: Entry) => {
+  const primaryDate = entry.date || entry.createdAt || entry.updatedAt;
+  const parsedPrimaryDate = primaryDate ? new Date(primaryDate).getTime() : 0;
+  if (Number.isFinite(parsedPrimaryDate) && parsedPrimaryDate > 0) {
+    return parsedPrimaryDate;
+  }
+
+  if (entry._id?.length >= 8) {
+    const objectIdTimestamp = Number.parseInt(entry._id.substring(0, 8), 16) * 1000;
+    if (Number.isFinite(objectIdTimestamp)) {
+      return objectIdTimestamp;
+    }
+  }
+
+  return 0;
+};
+
+const sortEntriesLatestFirst = (left: Entry, right: Entry) => getEntryTimestamp(right) - getEntryTimestamp(left);
+const sortRowsLatestFirst = (left: SampleRow, right: SampleRow) =>
+  (right.latestTimestamp || 0) - (left.latestTimestamp || 0);
 
 function DomesticDashboard() {
   const searchParams = useSearchParams();
@@ -208,6 +232,7 @@ function DomesticDashboard() {
           grouped[key] = {
             dno: entry.dno,
             color: entry.color,
+            latestTimestamp: 0,
             sizes: {}
           };
         }
@@ -215,10 +240,11 @@ function DomesticDashboard() {
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
         // SUM quantities if duplicate entries exist (don't overwrite)
         grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
+        grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
       }
     });
     
-    setSampleRows(Object.values(grouped));
+    setSampleRows(Object.values(grouped).sort(sortRowsLatestFirst));
   };
 
   const groupProductionEntries = (allEntries: Entry[]) => {
@@ -232,6 +258,7 @@ function DomesticDashboard() {
           grouped[key] = {
             dno: entry.dno,
             color: entry.color,
+            latestTimestamp: 0,
             sizes: {}
           };
         }
@@ -239,10 +266,11 @@ function DomesticDashboard() {
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
         // SUM quantities if duplicate entries exist (don't overwrite)
         grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
+        grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
       }
     });
     
-    setProductionRows(Object.values(grouped));
+    setProductionRows(Object.values(grouped).sort(sortRowsLatestFirst));
   };
 
   const groupPurchaseEntries = (allEntries: Entry[]) => {
@@ -256,6 +284,7 @@ function DomesticDashboard() {
           grouped[key] = {
             dno: entry.dno,
             color: entry.color,
+            latestTimestamp: 0,
             sizes: {}
           };
         }
@@ -263,10 +292,11 @@ function DomesticDashboard() {
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
         // SUM quantities if duplicate entries exist (don't overwrite)
         grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
+        grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
       }
     });
     
-    setPurchaseRows(Object.values(grouped));
+    setPurchaseRows(Object.values(grouped).sort(sortRowsLatestFirst));
   };
 
   const groupDispatchEntries = (allEntries: Entry[]) => {
@@ -280,6 +310,7 @@ function DomesticDashboard() {
           grouped[key] = {
             dno: entry.dno,
             color: entry.color,
+            latestTimestamp: 0,
             sizes: {}
           };
         }
@@ -287,10 +318,11 @@ function DomesticDashboard() {
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
         // SUM quantities if duplicate entries exist (don't overwrite)
         grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
+        grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
       }
     });
     
-    setDispatchRows(Object.values(grouped));
+    setDispatchRows(Object.values(grouped).sort(sortRowsLatestFirst));
   };
 
   const filteredEntries = entries
@@ -305,7 +337,8 @@ function DomesticDashboard() {
         entry.formType === selectedFormType;
 
       return matchesSearch && matchesFormType;
-    });
+    })
+    .sort(sortEntriesLatestFirst);
 
   // Filter grouped rows (sample, production, purchase, dispatch) by search term
   // Limit to last 30 entries to reduce frontend load

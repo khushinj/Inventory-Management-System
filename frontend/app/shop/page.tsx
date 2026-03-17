@@ -17,6 +17,8 @@ type Entry = {
   channel?: string;
   formType?: string;
   domain: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type SampleRow = {
@@ -24,10 +26,32 @@ type SampleRow = {
   type: string;
   color: string;
   date?: string;
+  latestTimestamp?: number;
   sizes: {
     [size: string]: number;
   };
 };
+
+const getEntryTimestamp = (entry: Entry) => {
+  const primaryDate = entry.date || entry.createdAt || entry.updatedAt;
+  const parsedPrimaryDate = primaryDate ? new Date(primaryDate).getTime() : 0;
+  if (Number.isFinite(parsedPrimaryDate) && parsedPrimaryDate > 0) {
+    return parsedPrimaryDate;
+  }
+
+  if (entry._id?.length >= 8) {
+    const objectIdTimestamp = Number.parseInt(entry._id.substring(0, 8), 16) * 1000;
+    if (Number.isFinite(objectIdTimestamp)) {
+      return objectIdTimestamp;
+    }
+  }
+
+  return 0;
+};
+
+const sortEntriesLatestFirst = (left: Entry, right: Entry) => getEntryTimestamp(right) - getEntryTimestamp(left);
+const sortRowsLatestFirst = (left: SampleRow, right: SampleRow) =>
+  (right.latestTimestamp || 0) - (left.latestTimestamp || 0);
 
 function ShopDashboard() {
   const searchParams = useSearchParams();
@@ -152,6 +176,7 @@ function ShopDashboard() {
             type: entry.type || "",
             color: entry.color,
             date: entry.date,
+            latestTimestamp: 0,
             sizes: {},
           };
         }
@@ -160,6 +185,7 @@ function ShopDashboard() {
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
         // SUM quantities if duplicate entries exist (don't overwrite)
         grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
+        grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
 
         if (entry.date) {
           const currentDate = grouped[key].date;
@@ -170,7 +196,7 @@ function ShopDashboard() {
       }
     });
 
-    return Object.values(grouped);
+    return Object.values(grouped).sort(sortRowsLatestFirst);
   };
 
   const filteredEntries = entries
@@ -191,7 +217,8 @@ function ShopDashboard() {
         selectedFormType === "return" ? entry.channel !== "domestic return" : true;
 
       return matchesSearch && matchesChannel && matchesFormType && isNotStockReturn;
-    });
+    })
+    .sort(sortEntriesLatestFirst);
 
   const limitedEntries = filteredEntries.slice(0, 30);
   const filteredGroupedRows = buildGroupedRows(filteredEntries);

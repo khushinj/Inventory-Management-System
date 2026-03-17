@@ -68,6 +68,7 @@ export default function DomesticInventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [jobCardsByDesign, setJobCardsByDesign] = useState<Record<string, ProductDetails>>({});
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -75,6 +76,8 @@ export default function DomesticInventoryPage() {
 
   useEffect(() => {
     initializeInventory();
+    const roleMatch = document.cookie.match(/(?:^|; )ims_user_role=([^;]+)/);
+    setIsAdmin(roleMatch?.[1] === "admin");
   }, []);
 
   const initializeInventory = async () => {
@@ -404,6 +407,7 @@ export default function DomesticInventoryPage() {
                   designNumber={designNumber}
                   items={items}
                   productDetails={jobCardsByDesign[normalizeDno(designNumber)]}
+                  isAdmin={isAdmin}
                 />
               ))
             )}
@@ -433,9 +437,10 @@ type ProductCardProps = {
   designNumber: string;
   items: InventoryItem[];
   productDetails?: ProductDetails;
+  isAdmin: boolean;
 };
 
-function ProductCard({ designNumber, items, productDetails }: ProductCardProps) {
+function ProductCard({ designNumber, items, productDetails, isAdmin }: ProductCardProps) {
   const resolvedDetails: ProductDetails =
     productDetails || {
       designNumber: designNumber.toUpperCase(),
@@ -487,25 +492,27 @@ function ProductCard({ designNumber, items, productDetails }: ProductCardProps) 
           <div className="flex items-start justify-between gap-4">
             <DetailBlock label="Design Number" value={resolvedDetails?.designNumber || designNumber.toUpperCase()} />
             <div className="flex gap-2">
-              <Link
-                href={`/domestic-inventory/edit/${encodeURIComponent(designNumber)}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {isAdmin && (
+                <Link
+                  href={`/domestic-inventory/edit/${encodeURIComponent(designNumber)}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                Edit
-              </Link>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  Edit
+                </Link>
+              )}
             </div>
           </div>
 

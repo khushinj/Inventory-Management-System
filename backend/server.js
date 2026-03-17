@@ -31,6 +31,8 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use("/api/shop", shopRoutes);
 app.use("/api/warehouse/domestic", domesticRoutes);
 app.use("/api/warehouse/online", onlineRoutes);
+app.use("/api/domestic", domesticRoutes);
+app.use("/api/online", onlineRoutes);
 app.use("/api/jobcard", jobCardRoutes);
 app.use("/api/shop-inventory", shopInventoryRoutes);
 app.use("/api/daily-report", dailyReportRoutes);

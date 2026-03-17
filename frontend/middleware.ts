@@ -33,6 +33,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(allowedUrl);
   }
 
+  const isInventoryEditRoute =
+    pathname.startsWith("/shop-inventory/edit/") ||
+    pathname.startsWith("/domestic-inventory/edit/") ||
+    pathname.startsWith("/online-inventory/edit/");
+
+  if (isInventoryEditRoute && roleValue !== "admin") {
+    const allowedUrl = new URL(getDefaultRouteForRole(roleValue), request.url);
+    return NextResponse.redirect(allowedUrl);
+  }
+
   return NextResponse.next();
 }
 

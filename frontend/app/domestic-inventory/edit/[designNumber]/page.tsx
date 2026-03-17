@@ -4,24 +4,26 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "../../../../lib/api";
 
-type JobCard = {
-  _id: string;
-  designNumber: string;
-  brand?: string;
-  fabric?: string;
-  fabricComposition?: string;
-  gsm?: number;
-  mrp?: number;
-  image?: string;
-};
-
 type InventoryItem = {
   dno: string;
   color: string;
   size: string;
-  inbound: number;
-  outbound: number;
   stock: number;
+};
+
+type EditableRow = {
+  key: string;
+  size: string;
+  currentColor: string;
+  currentQty: number;
+  newColor: string;
+  newQty: number;
+};
+
+const getRoleFromCookie = () => {
+  if (typeof document === "undefined") return "";
+  const roleMatch = document.cookie.match(/(?:^|; )ims_user_role=([^;]+)/);
+  return roleMatch?.[1] || "";
 };
 
 export default function EditDomesticInventoryPage() {
@@ -30,126 +32,127 @@ export default function EditDomesticInventoryPage() {
   const designNumber = decodeURIComponent((params.designNumber as string) || "").trim();
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [jobCard, setJobCard] = useState<JobCard | null>(null);
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  
-  const [formData, setFormData] = useState({
-    brand: "",
-    fabric: "",
-    fabricComposition: "",
-    gsm: "",
-    mrp: "",
-    image: "",
-  });
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [rows, setRows] = useState<EditableRow[]>([]);
 
   useEffect(() => {
-    fetchData();
+    const role = getRoleFromCookie();
+    if (role !== "admin") {
+      router.replace("/domestic-inventory");
+      return;
+    }
+    fetchInventory();
   }, [designNumber]);
 
-  const fetchData = async () => {
+  const fetchInventory = async () => {
     try {
       setLoading(true);
-
-      const jobCardResponse = await api.get(`/jobcard/search`, {
-        params: { query: designNumber },
+      const inventoryResponse = await api.get("/inventory/warehouse/domestic", {
+        timeout: 120000,
       });
 
-      const jobCards = jobCardResponse.data;
-      const normalizedDesignNumber = designNumber.toLowerCase();
-      const existingJobCard = jobCards.find(
-        (jc: JobCard) =>
-          (jc.designNumber || "").trim().toLowerCase() === normalizedDesignNumber
+      const allInventory = inventoryResponse.data.inventory || [];
+      const filtered = allInventory.filter(
+        (item: InventoryItem) => (item.dno || "").trim().toLowerCase() === designNumber.toLowerCase()
       );
 
-      if (existingJobCard) {
-        setJobCard(existingJobCard);
-        setFormData({
-          brand: existingJobCard.brand || "",
-          fabric: existingJobCard.fabric || "",
-          fabricComposition: existingJobCard.fabricComposition || "",
-          gsm: existingJobCard.gsm ? String(existingJobCard.gsm) : "",
-          mrp: existingJobCard.mrp ? String(existingJobCard.mrp) : "",
-          image: existingJobCard.image || "",
-        });
-        if (existingJobCard.image) {
-          setImagePreview(existingJobCard.image);
-        }
-      } else {
-        setJobCard(null);
-        setFormData({
-          brand: "",
-          fabric: "",
-          fabricComposition: "",
-          gsm: "",
-          mrp: "",
-          image: "",
-        });
-      }
+      const grouped = new Map<string, EditableRow>();
+      filtered.forEach((item: InventoryItem) => {
+        const key = `${item.color}__${item.size}`;
+        const qty = Number(item.stock) || 0;
+        const existing = grouped.get(key);
 
-      const inventoryResponse = await api.get("/inventory/warehouse/domestic", {
-        timeout: 120000, // 2 minutes for inventory recalculation
+        if (existing) {
+          existing.currentQty += qty;
+          existing.newQty += qty;
+        } else {
+          grouped.set(key, {
+            key,
+            size: item.size,
+            currentColor: item.color,
+            currentQty: qty,
+            newColor: item.color,
+            newQty: qty,
+          });
+        }
       });
-      const allInventory = inventoryResponse.data.inventory || [];
-      const filteredInventory = allInventory.filter((item: InventoryItem) => item.dno === designNumber);
-      setInventory(filteredInventory);
+
+      setRows(Array.from(grouped.values()));
     } catch (err) {
-      console.error("Error fetching data:", err);
-      alert("Failed to load data");
+      console.error("Failed to load domestic inventory:", err);
+      alert("Failed to load inventory data");
+      setRows([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image size should be less than 5MB");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setImagePreview(base64String);
-        setFormData((prev) => ({ ...prev, image: base64String }));
-      };
-      reader.readAsDataURL(file);
-    }
+  const createAdjustment = async (color: string, size: string, qty: number, formType: "production" | "dispatch") => {
+    if (qty <= 0) return;
+    await api.post("/warehouse/domestic", {
+      dno: designNumber,
+      color,
+      size,
+      qty,
+      formType,
+      date: new Date().toISOString(),
+      type: "adjustment",
+    });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSaveRow = async (row: EditableRow) => {
+    const nextColor = (row.newColor || "").trim();
+    const nextQty = Number(row.newQty);
+
+    if (!nextColor) {
+      alert("Color is required");
+      return;
+    }
+
+    if (!Number.isFinite(nextQty) || nextQty < 0) {
+      alert("Quantity must be 0 or greater");
+      return;
+    }
+
+    const colorChanged = nextColor.toLowerCase() !== row.currentColor.toLowerCase();
+    const qtyChanged = nextQty !== row.currentQty;
+    if (!colorChanged && !qtyChanged) {
+      return;
+    }
+
     try {
-      setSaving(true);
+      setSavingKey(row.key);
 
-      const payload = {
-        designNumber,
-        brand: (formData.brand || "").trim() || "Unknown",
-        fabric: (formData.fabric || "").trim() || "Unknown",
-        fabricComposition: (formData.fabricComposition || "").trim() || "Unknown",
-        gsm: (formData.gsm || "").trim() ? Number(formData.gsm) : 0,
-        mrp: (formData.mrp || "").trim() ? Number(formData.mrp) : 0,
-        image: formData.image || undefined,
-      };
-
-      if (jobCard) {
-        await api.patch(`/jobcard/${jobCard._id}`, payload);
-        alert("Product details updated successfully!");
+      if (colorChanged) {
+        if (row.currentQty > 0) {
+          await createAdjustment(row.currentColor, row.size, row.currentQty, "dispatch");
+        }
+        if (nextQty > 0) {
+          await createAdjustment(nextColor, row.size, nextQty, "production");
+        }
       } else {
-        await api.post("/jobcard", payload);
-        alert("Product details created successfully!");
+        const delta = nextQty - row.currentQty;
+        if (delta > 0) {
+          await createAdjustment(row.currentColor, row.size, delta, "production");
+        } else if (delta < 0) {
+          await createAdjustment(row.currentColor, row.size, Math.abs(delta), "dispatch");
+        }
       }
 
-      router.push("/domestic-inventory");
-    } catch (err: any) {
-      console.error("Error saving:", err);
-      alert(err.response?.data?.error || "Failed to save product details");
+      await fetchInventory();
+      alert("Domestic inventory updated successfully");
+    } catch (err: unknown) {
+      console.error("Failed to update domestic inventory:", err);
+      const apiError =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: { data?: { error?: string } } }).response?.data?.error === "string"
+          ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+          : null;
+      alert(apiError || "Failed to update inventory");
     } finally {
-      setSaving(false);
+      setSavingKey(null);
     }
   };
 
@@ -167,10 +170,10 @@ export default function EditDomesticInventoryPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-white border-b shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Edit Product Details - Domestic</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Edit Domestic Inventory</h1>
               <p className="text-sm text-gray-500 mt-1">Design Number: {designNumber}</p>
             </div>
             <button onClick={() => router.push("/domestic-inventory")} className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
@@ -180,136 +183,76 @@ export default function EditDomesticInventoryPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Edit Product Info</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">Brand</label>
-                  <input
-                    type="text"
-                    value={formData.brand}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
-                    className="w-full px-3 text-black py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                    placeholder="Enter brand"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">Fabric</label>
-                  <input
-                    type="text"
-                    value={formData.fabric}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, fabric: e.target.value }))}
-                    className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                    placeholder="Enter fabric"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-black mb-2">Composition</label>
-                  <input
-                    type="text"
-                    value={formData.fabricComposition}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, fabricComposition: e.target.value }))}
-                    className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                    placeholder="Enter composition (e.g. 80% cotton, 20% polyester)"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">GSM</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.gsm}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, gsm: e.target.value }))}
-                    className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                    placeholder="Enter GSM"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-black mb-2">MRP</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.mrp}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, mrp: e.target.value }))}
-                    className="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-                    placeholder="Enter MRP"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">Product Image</label>
-                <div className="mt-2">
-                  <input type="file" accept="image/*" onChange={handleImageUpload} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-white hover:file:bg-gray-700 cursor-pointer" />
-                  <p className="mt-2 text-xs text-gray-500">PNG, JPG, JPEG up to 5MB</p>
-                </div>
-
-                {imagePreview && (
-                  <div className="mt-4 relative">
-                    <img src={imagePreview} alt="Preview" className="w-full h-64 object-contain border border-gray-200 rounded-lg bg-gray-50" />
-                    <button type="button" onClick={() => { setImagePreview(""); setFormData((prev) => ({ ...prev, image: "" })); }} className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button type="submit" disabled={saving} className="flex-1 bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
-                  {saving ? "Saving..." : jobCard ? "Update Details" : "Create Details"}
-                </button>
-                <button type="button" onClick={() => router.push("/domestic-inventory")} className="px-6 py-3 text-black border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-6 sticky top-20">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Inventory Summary</h2>
-              {inventory.length > 0 ? (
-                <div className="space-y-4">
-                  <div className="border-b pb-3">
-                    <p className="text-sm text-gray-600">Total Variants</p>
-                    <p className="text-2xl font-bold text-gray-900">{inventory.length}</p>
-                  </div>
-                  <div className="border-b pb-3">
-                    <p className="text-sm text-gray-600">Total Stock</p>
-                    <p className="text-2xl font-bold text-green-600">{inventory.reduce((sum, item) => sum + item.stock, 0)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Colors Available</p>
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from(new Set(inventory.map((i) => i.color))).map((color) => (
-                        <span key={color} className="px-2 py-1 bg-gray-100 text-black text-xs rounded">{color}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Sizes Available</p>
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from(new Set(inventory.map((i) => i.size))).map((size) => (
-                        <span key={size} className="px-2 py-1 bg-gray-100 text-black text-xs rounded">{size}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500 text-sm">No inventory data available for this design.</p>
-              )}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Edit Color and Quantity</h2>
+          {rows.length === 0 ? (
+            <p className="text-gray-500 text-sm">No inventory rows found for this design number.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">Size</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">Current Color</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">Current Qty</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">New Color</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">New Qty</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {rows.map((row) => (
+                    <tr key={row.key} className="hover:bg-gray-50">
+                      <td className="px-3 py-2 text-sm text-gray-900 font-medium">{row.size}</td>
+                      <td className="px-3 py-2 text-sm text-gray-700">{row.currentColor}</td>
+                      <td className="px-3 py-2 text-sm text-gray-700">{row.currentQty}</td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={row.newColor}
+                          onChange={(e) =>
+                            setRows((prev) =>
+                              prev.map((item) =>
+                                item.key === row.key ? { ...item, newColor: e.target.value } : item
+                              )
+                            )
+                          }
+                          className="w-full px-2 py-1 border rounded text-sm text-black bg-white"
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={row.newQty}
+                          onChange={(e) =>
+                            setRows((prev) =>
+                              prev.map((item) =>
+                                item.key === row.key
+                                  ? { ...item, newQty: Number(e.target.value || 0) }
+                                  : item
+                              )
+                            )
+                          }
+                          className="w-28 px-2 py-1 border rounded text-sm text-black bg-white"
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <button
+                          onClick={() => handleSaveRow(row)}
+                          disabled={savingKey === row.key}
+                          className="px-3 py-1.5 bg-gray-800 text-white rounded text-sm font-medium hover:bg-gray-700 disabled:bg-gray-400"
+                        >
+                          {savingKey === row.key ? "Saving..." : "Save"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

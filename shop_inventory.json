@@ -289,10 +289,10 @@
     "designNumber": "ANCINFLK-9052",
     "color": "INDIGO",
     "size": "S",
-    "import": 1,
+    "import": 2,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
+    "sales": 1,
     "net": 1,
     "type": "import"
   },

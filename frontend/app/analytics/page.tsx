@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Globe, House, ShoppingBag, Zap, Store, MonitorSmartphone } from "lucide-react";
+import { Globe, House, ShoppingBag, Zap, Store, MonitorSmartphone, ClipboardList } from "lucide-react";
 import type { ComponentType } from "react";
 
 type CardItem = {
@@ -39,6 +39,13 @@ const analyticsCards: CardItem[] = [
     href: "/forms",
     icon: Zap,
     iconBg: "bg-orange-500",
+    iconColor: "text-white",
+  },
+  {
+    title: "Purchase Orders",
+    href: "/purchase-order-dashboard",
+    icon: ClipboardList,
+    iconBg: "bg-cyan-600",
     iconColor: "text-white",
   },
 ];

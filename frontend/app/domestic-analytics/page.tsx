@@ -107,6 +107,25 @@ function toIsoDate(value?: string) {
   return value.split("T")[0] || "";
 }
 
+function normalizeCityKey(city?: string) {
+  const normalized = (city || "Unknown").trim().replace(/\s+/g, " ").toUpperCase();
+  if (normalized.includes("DILSHAD GARDEN") && normalized.includes("DELHI")) {
+    return "NEW DELHI";
+  }
+  return normalized;
+}
+
+function formatCityLabel(city?: string) {
+  const cityKey = normalizeCityKey(city);
+  const normalized = cityKey.toLowerCase();
+  if (!normalized) return "Unknown";
+  return normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 function getDateRangeByPeriod(periodType: Exclude<PeriodType, "custom">) {
   const now = new Date();
   let start: Date;
@@ -647,6 +666,7 @@ export default function DomesticAnalyticsPage() {
 
   const calculateRegionDistribution = (allPurchaseOrders: PurchaseOrder[]) => {
     const regionData = new Map<string, {
+      label: string;
       sales: number;
       delivered: number;
       pending: number;
@@ -654,8 +674,14 @@ export default function DomesticAnalyticsPage() {
     }>();
 
     allPurchaseOrders.forEach((po) => {
-      const region = po.city || "Unknown";
-      const current = regionData.get(region) || { sales: 0, delivered: 0, pending: 0, total: 0 };
+      const regionKey = normalizeCityKey(po.city);
+      const current = regionData.get(regionKey) || {
+        label: formatCityLabel(po.city),
+        sales: 0,
+        delivered: 0,
+        pending: 0,
+        total: 0,
+      };
       
       current.sales += po.grandTotal || 0;
       current.total += 1;
@@ -666,17 +692,17 @@ export default function DomesticAnalyticsPage() {
         current.pending += 1;
       }
       
-      regionData.set(region, current);
+      regionData.set(regionKey, current);
     });
 
     const total = Array.from(regionData.values()).reduce((sum, data) => sum + data.sales, 0);
 
     const colors = ["#3f7edd", "#f59e0b", "#7c5ce6", "#1ba9c3", "#ef4444", "#10b981"];
-    const regions: RegionPoint[] = Array.from(regionData.entries())
-      .sort((a, b) => b[1].sales - a[1].sales)
+    const regions: RegionPoint[] = Array.from(regionData.values())
+      .sort((a, b) => b.sales - a.sales)
       .slice(0, 6)
-      .map(([label, data], index) => ({
-        label,
+      .map((data, index) => ({
+        label: data.label,
         value: data.sales,
         percentage: Math.round((data.sales / total) * 100),
         deliveredPercent: data.total > 0 ? Math.round((data.delivered / data.total) * 100) : 0,

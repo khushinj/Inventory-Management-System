@@ -1,19 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ClipboardList, LayoutDashboard, FilePlus } from "lucide-react";
+import { ClipboardList, LayoutDashboard } from "lucide-react";
 
 const accessTabs = [
   {
-    title: "Create Job Card",
+    title: "Create Job Cards",
     description: "Fill and submit a new job card entry",
-    href: "/jobcard-forms",
-    icon: FilePlus,
-    color: "bg-blue-600",
-  },
-  {
-    title: "View Job Cards",
-    description: "Browse all existing job cards",
     href: "/jobcard",
     icon: ClipboardList,
     color: "bg-emerald-600",
@@ -36,7 +29,7 @@ export default function JobcardAccessPage() {
           <p className="mt-2 text-slate-600">Create and view job cards from here</p>
         </div>
 
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {accessTabs.map((tab) => {
             const Icon = tab.icon;
             return (

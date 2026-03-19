@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
+import { useJobCardColors } from "../hooks/useJobCardColors";
+import { ColorInput } from "../components/ColorInput";
 
 type Entry = {
   _id: string;
@@ -181,6 +183,13 @@ function DomesticDashboard() {
   });
 
   const SAMPLE_SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+
+  // Color lookup hooks for different form types
+  const sampleColorHook = useJobCardColors();
+  const productionColorHook = useJobCardColors();
+  const purchaseColorHook = useJobCardColors();
+  const dispatchColorHook = useJobCardColors();
+  const regularFormColorHook = useJobCardColors();
 
   useEffect(() => {
     fetchEntries();
@@ -887,10 +896,12 @@ function DomesticDashboard() {
 
   // Keyboard navigation for new format forms
   const handleSampleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        // Trigger color lookup when leaving dno field
+        sampleColorHook.fetchColorsForDesignNumber(newSampleRow.dno);
         sampleColorRef.current?.focus();
       } else if (currentField === 'color') {
         sampleSizeRefs.current['S']?.focus();
@@ -909,10 +920,12 @@ function DomesticDashboard() {
   };
 
   const handleProductionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        // Trigger color lookup when leaving dno field
+        productionColorHook.fetchColorsForDesignNumber(newProductionRow.dno);
         productionColorRef.current?.focus();
       } else if (currentField === 'color') {
         productionSizeRefs.current['S']?.focus();
@@ -931,10 +944,12 @@ function DomesticDashboard() {
   };
 
   const handlePurchaseKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        // Trigger color lookup when leaving dno field
+        purchaseColorHook.fetchColorsForDesignNumber(newPurchaseRow.dno);
         purchaseColorRef.current?.focus();
       } else if (currentField === 'color') {
         purchaseSizeRefs.current['S']?.focus();
@@ -953,10 +968,12 @@ function DomesticDashboard() {
   };
 
   const handleDispatchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        // Trigger color lookup when leaving dno field
+        dispatchColorHook.fetchColorsForDesignNumber(newDispatchRow.dno);
         dispatchColorRef.current?.focus();
       } else if (currentField === 'color') {
         dispatchSizeRefs.current['S']?.focus();
@@ -1011,10 +1028,17 @@ function DomesticDashboard() {
     e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>,
     nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement | null>,
     isLastField?: boolean,
-    entryId?: string
+    entryId?: string,
+    fieldName?: string
   ) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
+      
+      // Trigger color lookup when leaving dno field in regular form
+      if (fieldName === 'dno') {
+        regularFormColorHook.fetchColorsForDesignNumber(editForm.dno);
+      }
+      
       if (isLastField) {
         handleSaveAndContinue(entryId);
       } else {
@@ -1533,12 +1557,14 @@ function DomesticDashboard() {
                           />
                         </td>
                         <td className="px-6 py-4">
-                          <input 
+                          <ColorInput 
                             ref={sampleColorRef}
-                            type="text" 
                             value={newSampleRow.color} 
-                            onChange={(e) => setNewSampleRow({...newSampleRow, color: e.target.value})} 
+                            onChange={(value) => setNewSampleRow({...newSampleRow, color: value})} 
                             onKeyDown={(e) => handleSampleKeyDown(e, 'color')}
+                            colorOptions={sampleColorHook.colorOptions}
+                            hasJobCard={sampleColorHook.hasJobCard}
+                            loading={sampleColorHook.loading}
                             placeholder="Color" 
                             className="w-full px-2 py-1 border rounded text-black bg-white" 
                           />
@@ -1654,12 +1680,14 @@ function DomesticDashboard() {
                           />
                         </td>
                         <td className="px-6 py-4">
-                          <input 
+                          <ColorInput 
                             ref={productionColorRef}
-                            type="text" 
                             value={newProductionRow.color} 
-                            onChange={(e) => setNewProductionRow({...newProductionRow, color: e.target.value})} 
+                            onChange={(value) => setNewProductionRow({...newProductionRow, color: value})} 
                             onKeyDown={(e) => handleProductionKeyDown(e, 'color')}
+                            colorOptions={productionColorHook.colorOptions}
+                            hasJobCard={productionColorHook.hasJobCard}
+                            loading={productionColorHook.loading}
                             placeholder="Color" 
                             className="w-full px-2 py-1 border rounded text-black bg-white" 
                           />
@@ -1775,12 +1803,14 @@ function DomesticDashboard() {
                           />
                         </td>
                         <td className="px-6 py-4">
-                          <input 
+                          <ColorInput 
                             ref={purchaseColorRef}
-                            type="text" 
                             value={newPurchaseRow.color} 
-                            onChange={(e) => setNewPurchaseRow({...newPurchaseRow, color: e.target.value})} 
+                            onChange={(value) => setNewPurchaseRow({...newPurchaseRow, color: value})} 
                             onKeyDown={(e) => handlePurchaseKeyDown(e, 'color')}
+                            colorOptions={purchaseColorHook.colorOptions}
+                            hasJobCard={purchaseColorHook.hasJobCard}
+                            loading={purchaseColorHook.loading}
                             placeholder="Color" 
                             className="w-full px-2 py-1 border rounded text-black bg-white" 
                           />
@@ -1896,12 +1926,14 @@ function DomesticDashboard() {
                           />
                         </td>
                         <td className="px-6 py-4">
-                          <input 
+                          <ColorInput 
                             ref={dispatchColorRef}
-                            type="text" 
                             value={newDispatchRow.color} 
-                            onChange={(e) => setNewDispatchRow({...newDispatchRow, color: e.target.value})} 
+                            onChange={(value) => setNewDispatchRow({...newDispatchRow, color: value})} 
                             onKeyDown={(e) => handleDispatchKeyDown(e, 'color')}
+                            colorOptions={dispatchColorHook.colorOptions}
+                            hasJobCard={dispatchColorHook.hasJobCard}
+                            loading={dispatchColorHook.loading}
                             placeholder="Color" 
                             className="w-full px-2 py-1 border rounded text-black bg-white" 
                           />
@@ -2012,9 +2044,9 @@ function DomesticDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isCreating && (
                     <tr className="bg-green-50">
-                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef)} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef, false, undefined, 'dno')} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><ColorInput ref={colorRef} value={editForm.color} onChange={(value) => setEditForm({...editForm, color: value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} colorOptions={regularFormColorHook.colorOptions} hasJobCard={regularFormColorHook.hasJobCard} loading={regularFormColorHook.loading} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {

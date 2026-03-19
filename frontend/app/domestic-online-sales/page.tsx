@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
+import { useJobCardColors } from "../hooks/useJobCardColors";
+import { ColorInput } from "../components/ColorInput";
 
 type Entry = {
   _id: string;
@@ -40,6 +42,9 @@ export default function DomesticOnlineSalesPage() {
   const dateRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Color lookup hook
+  const colorHook = useJobCardColors();
+
   useEffect(() => {
     fetchEntries();
   }, []);
@@ -59,10 +64,17 @@ export default function DomesticOnlineSalesPage() {
   const handleKeyDown = (
     e: React.KeyboardEvent,
     nextRef?: React.RefObject<HTMLInputElement | null>,
-    isLastField?: boolean
+    isLastField?: boolean,
+    fieldName?: string
   ) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" || e.key === "Tab") {
       e.preventDefault();
+      
+      // Trigger color lookup when leaving dno field
+      if (fieldName === 'dno') {
+        colorHook.fetchColorsForDesignNumber(editForm.dno);
+      }
+      
       if (nextRef) {
         nextRef.current?.focus();
       } else if (isLastField) {
@@ -299,7 +311,7 @@ export default function DomesticOnlineSalesPage() {
                           type="text"
                           value={editForm.dno}
                           onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })}
-                          onKeyDown={(e) => handleKeyDown(e, typeRef)}
+                          onKeyDown={(e) => handleKeyDown(e, typeRef, false, 'dno')}
                           placeholder="DNO"
                           className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
@@ -316,12 +328,14 @@ export default function DomesticOnlineSalesPage() {
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <input
+                        <ColorInput
                           ref={colorRef}
-                          type="text"
                           value={editForm.color}
-                          onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
+                          onChange={(value) => setEditForm({ ...editForm, color: value })}
                           onKeyDown={(e) => handleKeyDown(e, sizeRef)}
+                          colorOptions={colorHook.colorOptions}
+                          hasJobCard={colorHook.hasJobCard}
+                          loading={colorHook.loading}
                           placeholder="Color"
                           className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
@@ -396,10 +410,13 @@ export default function DomesticOnlineSalesPage() {
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input
-                                type="text"
+                              <ColorInput
                                 value={editForm.color}
-                                onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
+                                onChange={(value) => setEditForm({ ...editForm, color: value })}
+                                colorOptions={colorHook.colorOptions}
+                                hasJobCard={colorHook.hasJobCard}
+                                loading={colorHook.loading}
+                                placeholder="Color"
                                 className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>

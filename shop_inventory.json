@@ -292,8 +292,8 @@
     "import": 2,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 1,
-    "net": 1,
+    "sales": 0,
+    "net": 2,
     "type": "import"
   },
   {
@@ -1029,7 +1029,7 @@
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 10,
+    "sales": 11,
     "net": 0,
     "type": "sales"
   },
@@ -1546,7 +1546,7 @@
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 5,
-    "sales": 7,
+    "sales": 8,
     "net": 0,
     "type": "stock_return"
   },
@@ -2411,6 +2411,17 @@
   {
     "designNumber": "LK-2807",
     "color": "AOP",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "LK/NP-2820",
+    "color": "NAVY",
     "size": "XXL",
     "import": 0,
     "customerReturn": 0,
@@ -8553,8 +8564,8 @@
     "import": 1,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 1,
-    "net": 1,
+    "sales": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -14504,8 +14515,8 @@
     "import": 0,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15593,8 +15604,8 @@
     "import": 0,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "return"
   },
   {
@@ -15813,8 +15824,8 @@
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -15956,8 +15967,8 @@
     "import": 1,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 1,
+    "sales": 1,
+    "net": 0,
     "type": "import"
   },
   {
@@ -16281,6 +16292,17 @@
   },
   {
     "designNumber": "NG-91502",
+    "color": "ANTHRA MELANGE",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "NG-91502",
     "color": "BLACK",
     "size": "S",
     "import": 1,
@@ -16319,8 +16341,8 @@
     "import": 1,
     "customerReturn": 1,
     "stockReturn": 0,
-    "sales": 1,
-    "net": 1,
+    "sales": 2,
+    "net": 0,
     "type": "import"
   },
   {
@@ -22721,7 +22743,7 @@
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 1,
+    "sales": 5,
     "net": 0,
     "type": "sales"
   },
@@ -22754,7 +22776,7 @@
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 9,
+    "sales": 11,
     "net": 0,
     "type": "sales"
   },
@@ -22765,7 +22787,7 @@
     "import": 0,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 2,
+    "sales": 5,
     "net": 0,
     "type": "sales"
   },
@@ -23678,8 +23700,8 @@
     "import": 9,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 1,
-    "net": 8,
+    "sales": 2,
+    "net": 7,
     "type": "import"
   },
   {
@@ -24151,8 +24173,8 @@
     "import": 15,
     "customerReturn": 0,
     "stockReturn": 0,
-    "sales": 0,
-    "net": 15,
+    "sales": 2,
+    "net": 13,
     "type": "import"
   },
   {
@@ -26675,6 +26697,17 @@
     "type": "sales"
   },
   {
+    "designNumber": "TP-1313",
+    "color": "WOOD-54",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
     "designNumber": "TP-1352",
     "color": "ASH GRAY-39",
     "size": "XXL",
@@ -26776,6 +26809,17 @@
   {
     "designNumber": "TP-1475",
     "color": "GREEN-32",
+    "size": "XXL",
+    "import": 0,
+    "customerReturn": 0,
+    "stockReturn": 0,
+    "sales": 1,
+    "net": 0,
+    "type": "sales"
+  },
+  {
+    "designNumber": "TP-1496",
+    "color": "PINK-34",
     "size": "XXL",
     "import": 0,
     "customerReturn": 0,

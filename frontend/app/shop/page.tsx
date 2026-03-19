@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
+import { useJobCardColors } from "../hooks/useJobCardColors";
+import { ColorInput } from "../components/ColorInput";
 
 type Entry = {
   _id: string;
@@ -127,6 +129,11 @@ function ShopDashboard() {
     sizes: {}
   });
   const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+
+  // Color lookup hooks for different form types
+  const importColorHook = useJobCardColors();
+  const returnColorHook = useJobCardColors();
+  const salesColorHook = useJobCardColors();
 
   useEffect(() => {
     const formType = searchParams.get("formType") as "import" | "sales" | "return" | null;
@@ -306,10 +313,17 @@ function ShopDashboard() {
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>,
-    nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement | null>
+    nextRef?: React.RefObject<HTMLInputElement | HTMLSelectElement | null>,
+    fieldName?: string
   ) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
+      
+      // Trigger color lookup when leaving dno field in sales form
+      if (fieldName === 'dno') {
+        salesColorHook.fetchColorsForDesignNumber(editForm.dno);
+      }
+      
       nextRef?.current?.focus();
     }
   };
@@ -355,11 +369,13 @@ function ShopDashboard() {
   };
 
   // Import form handlers with horizontal size columns
-  const handleImportKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
-    if (e.key === 'Enter') {
+  const handleImportKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        // Trigger color lookup when leaving dno field
+        importColorHook.fetchColorsForDesignNumber(newImportRow.dno);
         importTypeRef.current?.focus();
       } else if (currentField === 'type') {
         importColorRef.current?.focus();
@@ -500,11 +516,13 @@ function ShopDashboard() {
   };
 
   // Return form handlers with horizontal size columns
-  const handleReturnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
-    if (e.key === 'Enter') {
+  const handleReturnKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
       if (currentField === 'dno') {
+        // Trigger color lookup when leaving dno field
+        returnColorHook.fetchColorsForDesignNumber(newReturnRow.dno);
         returnTypeRef.current?.focus();
       } else if (currentField === 'type') {
         returnColorRef.current?.focus();
@@ -839,12 +857,14 @@ function ShopDashboard() {
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <input 
+                        <ColorInput 
                           ref={importColorRef}
-                          type="text" 
                           value={newImportRow.color} 
-                          onChange={(e) => setNewImportRow({...newImportRow, color: e.target.value})} 
+                          onChange={(value) => setNewImportRow({...newImportRow, color: value})} 
                           onKeyDown={(e) => handleImportKeyDown(e, 'color')}
+                          colorOptions={importColorHook.colorOptions}
+                          hasJobCard={importColorHook.hasJobCard}
+                          loading={importColorHook.loading}
                           placeholder="Color" 
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
@@ -906,12 +926,14 @@ function ShopDashboard() {
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <input 
+                        <ColorInput 
                           ref={returnColorRef}
-                          type="text" 
                           value={newReturnRow.color} 
-                          onChange={(e) => setNewReturnRow({...newReturnRow, color: e.target.value})} 
+                          onChange={(value) => setNewReturnRow({...newReturnRow, color: value})} 
                           onKeyDown={(e) => handleReturnKeyDown(e, 'color')}
+                          colorOptions={returnColorHook.colorOptions}
+                          hasJobCard={returnColorHook.hasJobCard}
+                          loading={returnColorHook.loading}
                           placeholder="Color" 
                           className="w-full px-2 py-1 border rounded text-black bg-white" 
                         />
@@ -973,10 +995,13 @@ function ShopDashboard() {
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
+                              <ColorInput 
                                 value={editImportForm.color} 
-                                onChange={(e) => setEditImportForm({...editImportForm, color: e.target.value})} 
+                                onChange={(value) => setEditImportForm({...editImportForm, color: value})} 
+                                colorOptions={importColorHook.colorOptions}
+                                hasJobCard={importColorHook.hasJobCard}
+                                loading={importColorHook.loading}
+                                placeholder="Color" 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
@@ -1051,10 +1076,13 @@ function ShopDashboard() {
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
+                              <ColorInput 
                                 value={editReturnForm.color} 
-                                onChange={(e) => setEditReturnForm({...editReturnForm, color: e.target.value})} 
+                                onChange={(value) => setEditReturnForm({...editReturnForm, color: value})} 
+                                colorOptions={returnColorHook.colorOptions}
+                                hasJobCard={returnColorHook.hasJobCard}
+                                loading={returnColorHook.loading}
+                                placeholder="Color" 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
@@ -1137,9 +1165,9 @@ function ShopDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isCreating && (
                     <tr className="bg-blue-50">
-                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })} onKeyDown={(e) => handleKeyDown(e, typeRef)} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })} onKeyDown={(e) => handleKeyDown(e, typeRef, 'dno')} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
-                      <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} onKeyDown={(e) => handleKeyDown(e, sizeRef)} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4"><ColorInput ref={colorRef} value={editForm.color} onChange={(value) => setEditForm({ ...editForm, color: value })} onKeyDown={(e) => handleKeyDown(e, sizeRef)} colorOptions={salesColorHook.colorOptions} hasJobCard={salesColorHook.hasJobCard} loading={salesColorHook.loading} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({ ...editForm, size: e.target.value })} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({ ...editForm, qty: e.target.value })} onKeyDown={(e) => handleKeyDown(e, dateRef)} placeholder="Qty" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
@@ -1159,9 +1187,9 @@ function ShopDashboard() {
                     <tr key={entry._id}>
                       {editingEntry === entry._id ? (
                         <>
-                          <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })} onKeyDown={(e) => handleKeyDown(e, typeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })} onKeyDown={(e) => handleKeyDown(e, typeRef, 'dno')} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })} onKeyDown={(e) => handleKeyDown(e, colorRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
-                          <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({ ...editForm, color: e.target.value })} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
+                          <td className="px-6 py-4"><ColorInput ref={colorRef} value={editForm.color} onChange={(value) => setEditForm({ ...editForm, color: value })} onKeyDown={(e) => handleKeyDown(e, sizeRef)} colorOptions={salesColorHook.colorOptions} hasJobCard={salesColorHook.hasJobCard} loading={salesColorHook.loading} placeholder="Color" className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({ ...editForm, size: e.target.value })} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({ ...editForm, qty: e.target.value })} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded text-black" /></td>
                           <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} onKeyDown={(e) => handleKeyDown(e, channelRef)} className="w-full px-2 py-1 border rounded text-black" /></td>

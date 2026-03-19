@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
+import { useJobCardColors } from "../hooks/useJobCardColors";
+import { ColorInput } from "../components/ColorInput";
 
 type Entry = {
   _id: string;

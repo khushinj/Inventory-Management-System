@@ -72,6 +72,13 @@ const analyticsCards: CardItem[] = [
     iconBg: "bg-cyan-600",
     iconColor: "text-white",
   },
+  {
+    title: "Job Card Dashboard",
+    href: "/jobcard-dashboard",
+    icon: ClipboardList,
+    iconBg: "bg-slate-700",
+    iconColor: "text-white",
+  },
 ];
 
 const inventoryCards: CardItem[] = [

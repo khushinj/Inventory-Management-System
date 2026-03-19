@@ -59,6 +59,7 @@ const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
     "/domestic-inventory",
     "/online-inventory",
     "/purchase-order-dashboard",
+    "/jobcard-dashboard",
   ],
   shop: ["/retail", "/shop", "/shop-inventory", "/shop-stock-returned", "/daily-report", "/shop-analytics"],
   domestic: [

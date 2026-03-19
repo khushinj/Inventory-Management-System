@@ -5,6 +5,7 @@ import {
   getDistribution,
   getTopProductsController,
   getDashboard,
+  getRecentActivity,
 } from "../controllers/analytics.controller.js";
 
 const router = express.Router();
@@ -28,5 +29,8 @@ router.get("/distribution", getDistribution);
 
 // GET /api/analytics/top-products - Get top performing products
 router.get("/top-products", getTopProductsController);
+
+// GET /api/analytics/recent-activity - Unified recent feed across all areas
+router.get("/recent-activity", getRecentActivity);
 
 export default router;

@@ -1,7 +1,102 @@
 import { getTransactionModel } from "../models/Transaction.js";
 import PurchaseOrder from "../models/PurchaseOrder.js";
 import StockReturned from "../models/StockReturned.js";
+import DailyReport from "../models/DailyReport.js";
+import OnlineDailyReport from "../models/OnlineDailyReport.js";
 import { getWarehouseInventorySummary } from "./warehouseInventory.service.js";
+
+const SHOP_FORMS = ["import", "sales", "return", "purchase"];
+const DOMESTIC_FORMS = [
+  "dispatch",
+  "production",
+  "purchase",
+  "transfer",
+  "transfer inwards",
+  "transfer outwards",
+  "return",
+  "sample",
+  "sales",
+];
+const ONLINE_FORMS = ["return", "sales", "transfer", "purchase", "transfer inwards", "transfer outwards"];
+
+const toTimestamp = (value) => {
+  const dt = value ? new Date(value) : null;
+  return dt && !Number.isNaN(dt.getTime()) ? dt.toISOString() : null;
+};
+
+const normalizeTxn = (entry, area, source) => ({
+  id: String(entry._id),
+  area,
+  source,
+  activityType: entry.formType || source,
+  date: toTimestamp(entry.date),
+  activityAt: toTimestamp(entry.createdAt || entry.date),
+  designNumber: entry.dno || null,
+  quantity: Number(entry.qty || 0),
+  amount: typeof entry.mrp === "number" && typeof entry.qty === "number" ? entry.mrp * entry.qty : null,
+  channel: entry.channel || null,
+  platform: entry.platform || null,
+  metadata: {
+    color: entry.color || null,
+    size: entry.size || null,
+    receiver: entry.receiver || null,
+    supplier: entry.supplier || null,
+  },
+});
+
+const normalizeDailyReport = (entry, area, source) => ({
+  id: String(entry._id),
+  area,
+  source,
+  activityType: "daily-report",
+  date: toTimestamp(entry.date),
+  activityAt: toTimestamp(entry.updatedAt || entry.createdAt || entry.date),
+  designNumber: null,
+  quantity: Number(entry.qty || entry.totalQuantity || 0),
+  amount: Number(entry.totalSale || 0),
+  channel: null,
+  platform: null,
+  metadata: {
+    note: entry.note || null,
+  },
+});
+
+const normalizeStockReturned = (entry) => ({
+  id: String(entry._id),
+  area: "shop",
+  source: "shop-stock-returned",
+  activityType: "stock-return",
+  date: toTimestamp(entry.date),
+  activityAt: toTimestamp(entry.createdAt || entry.date),
+  designNumber: entry.dno || null,
+  quantity: Number(entry.totalQuantity || 0),
+  amount: Number(entry.mrp || 0) * Number(entry.totalQuantity || 0),
+  channel: null,
+  platform: null,
+  metadata: {
+    color: entry.color || null,
+    type: entry.type || null,
+  },
+});
+
+const normalizePurchaseOrder = (entry) => ({
+  id: String(entry._id),
+  area: "domestic",
+  source: "purchase-order",
+  activityType: "purchase-order",
+  date: toTimestamp(entry.date),
+  activityAt: toTimestamp(entry.updatedAt || entry.createdAt || entry.date),
+  designNumber: null,
+  quantity: Number(entry.totalQuantity || 0),
+  amount: Number(entry.grandTotal || 0),
+  channel: "domestic",
+  platform: null,
+  metadata: {
+    orderNumber: entry.orderNumber || null,
+    buyerName: entry.buyerName || null,
+    dealerName: entry.dealerName || null,
+  },
+});
 
 /**
  * Get analytics data for a specific time period
@@ -274,6 +369,79 @@ export const getTopProducts = async (days = 30, limit = 10) => {
     return topProducts;
   } catch (error) {
     console.error("Error in getTopProducts:", error);
+    throw error;
+  }
+};
+
+export const getRecentActivityFeed = async (hours = 24, limit) => {
+  try {
+    const lookbackHours = Number.isFinite(Number(hours)) ? Math.max(1, Number(hours)) : 24;
+    const maxItems = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Math.max(1, Number(limit)) : null;
+
+    const startDate = new Date(Date.now() - lookbackHours * 60 * 60 * 1000);
+    const txnFilter = {
+      $or: [
+        { createdAt: { $gte: startDate } },
+        { date: { $gte: startDate } },
+      ],
+    };
+    const reportFilter = {
+      $or: [
+        { createdAt: { $gte: startDate } },
+        { updatedAt: { $gte: startDate } },
+        { date: { $gte: startDate } },
+      ],
+    };
+
+    const shopQueries = SHOP_FORMS.map((formType) =>
+      getTransactionModel("shop", "", formType).find(txnFilter).lean()
+    );
+    const domesticQueries = DOMESTIC_FORMS.map((formType) =>
+      getTransactionModel("warehouse", "domestic", formType).find(txnFilter).lean()
+    );
+    const onlineQueries = ONLINE_FORMS.map((formType) =>
+      getTransactionModel("warehouse", "online", formType).find(txnFilter).lean()
+    );
+
+    const [
+      shopResults,
+      domesticResults,
+      onlineResults,
+      dailyReports,
+      onlineDailyReports,
+      stockReturned,
+      purchaseOrders,
+    ] = await Promise.all([
+      Promise.all(shopQueries),
+      Promise.all(domesticQueries),
+      Promise.all(onlineQueries),
+      DailyReport.find(reportFilter).lean(),
+      OnlineDailyReport.find(reportFilter).lean(),
+      StockReturned.find(reportFilter).lean(),
+      PurchaseOrder.find(reportFilter).lean(),
+    ]);
+
+    const activities = [
+      ...shopResults.flat().map((item) => normalizeTxn(item, "shop", "shop-entry")),
+      ...domesticResults.flat().map((item) => normalizeTxn(item, "domestic", "domestic-entry")),
+      ...onlineResults.flat().map((item) => normalizeTxn(item, "online", "online-entry")),
+      ...dailyReports.map((item) => normalizeDailyReport(item, "shop", "shop-daily-report")),
+      ...onlineDailyReports.map((item) => normalizeDailyReport(item, "online", "online-daily-report")),
+      ...stockReturned.map((item) => normalizeStockReturned(item)),
+      ...purchaseOrders.map((item) => normalizePurchaseOrder(item)),
+    ]
+      .filter((item) => item.activityAt)
+      .sort((a, b) => new Date(b.activityAt).getTime() - new Date(a.activityAt).getTime());
+
+    const finalActivities = maxItems ? activities.slice(0, maxItems) : activities;
+
+    return {
+      since: startDate.toISOString(),
+      total: finalActivities.length,
+      activities: finalActivities,
+    };
+  } catch (error) {
+    console.error("Error in getRecentActivityFeed:", error);
     throw error;
   }
 };

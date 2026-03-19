@@ -3,6 +3,7 @@ import {
   getTimeSeriesData,
   getCategoryDistribution,
   getTopProducts,
+  getRecentActivityFeed,
 } from "../services/analytics.service.js";
 
 /**
@@ -150,6 +151,33 @@ export const getDashboard = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch dashboard data",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/analytics/recent-activity
+ * Get unified activity feed across shop, domestic, and online areas
+ */
+export const getRecentActivity = async (req, res) => {
+  try {
+    const hours = parseInt(req.query.hours, 10) || 24;
+    const parsedLimit = parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : undefined;
+
+    const feed = await getRecentActivityFeed(hours, limit);
+
+    res.status(200).json({
+      success: true,
+      data: feed,
+      period: `${hours} hours`,
+    });
+  } catch (error) {
+    console.error("Error in getRecentActivity:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch recent activity",
       error: error.message,
     });
   }

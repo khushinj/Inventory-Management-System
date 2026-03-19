@@ -895,7 +895,7 @@ function DomesticDashboard() {
   };
 
   // Keyboard navigation for new format forms
-  const handleSampleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+  const handleSampleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
@@ -919,7 +919,7 @@ function DomesticDashboard() {
     }
   };
 
-  const handleProductionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+  const handleProductionKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
@@ -943,7 +943,7 @@ function DomesticDashboard() {
     }
   };
 
-  const handlePurchaseKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+  const handlePurchaseKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       
@@ -967,7 +967,7 @@ function DomesticDashboard() {
     }
   };
 
-  const handleDispatchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, currentField: string) => {
+  const handleDispatchKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
       

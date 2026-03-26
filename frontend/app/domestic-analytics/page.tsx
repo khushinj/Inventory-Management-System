@@ -40,6 +40,13 @@ type RegionPoint = {
   totalOrders: number;
 };
 
+type PocPoint = {
+  label: string;
+  value: number;
+  percentage: number;
+  color: string;
+};
+
 type Transaction = {
   dno: string;
   qty: number;
@@ -63,6 +70,7 @@ type PurchaseOrder = {
   grandTotal: number;
   totalQuantity: number;
   status?: string;
+  poc?: string;
   items?: Array<{
     s?: number;
     m?: number;
@@ -503,6 +511,107 @@ function RegionPieChart({ data, onSelect }: { data: RegionPoint[]; onSelect: (re
   );
 }
 
+function PocPieChart({ data }: { data: PocPoint[] }) {
+  const [hovered, setHovered] = useState<PocPoint | null>(null);
+
+  const size = 320;
+  const center = size / 2;
+  const radius = 110;
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  let startAngle = -90;
+
+  const slices = data.map((item) => {
+    const angle = (item.value / Math.max(total, 1)) * 360;
+    const endAngle = startAngle + angle;
+
+    const x1 = center + radius * Math.cos((Math.PI * startAngle) / 180);
+    const y1 = center + radius * Math.sin((Math.PI * startAngle) / 180);
+    const x2 = center + radius * Math.cos((Math.PI * endAngle) / 180);
+    const y2 = center + radius * Math.sin((Math.PI * endAngle) / 180);
+
+    const largeArcFlag = angle > 180 ? 1 : 0;
+
+    const path = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+
+    const midAngle = startAngle + angle / 2;
+
+    const slice = {
+      ...item,
+      path,
+      midAngle,
+    };
+
+    startAngle = endAngle;
+    return slice;
+  });
+
+  return (
+    <div className="relative flex justify-center pb-16">
+      <svg viewBox={`0 0 ${size} ${size}`} className="h-[320px] w-[320px]">
+
+        {/* PIE */}
+        {slices.map((slice, index) => (
+          <path
+            key={index}
+            d={slice.path}
+            fill={slice.color}
+            stroke="#fff"
+            strokeWidth="2"
+            style={{
+              cursor: "pointer",
+              opacity: hovered?.label === slice.label ? 0.8 : 1,
+            }}
+            onMouseEnter={() => setHovered(slice)}
+            onMouseLeave={() => setHovered(null)}
+          />
+        ))}
+
+        {/* LABELS */}
+        {slices.map((slice, index) => {
+          const angle = (Math.PI * slice.midAngle) / 180;
+
+          const labelRadius = radius + 25;
+
+          const x = center + labelRadius * Math.cos(angle);
+          const y = center + labelRadius * Math.sin(angle);
+
+          return (
+            <text
+              key={index}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              fontSize="11"
+              fill="#0f172a"
+              fontWeight="600"
+            >
+              {slice.label}
+            </text>
+          );
+        })}
+      </svg>
+
+      {/* TOOLTIP */}
+      {hovered && (
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 min-w-[200px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-lg">
+          <div className="font-semibold text-slate-900">
+            {hovered.label}
+          </div>
+
+          <div className="mt-1 text-blue-600 font-medium">
+            {formatINR(hovered.value)}
+          </div>
+
+          <div className="mt-1 text-slate-500">
+            {hovered.percentage}% of total
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DomesticAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodType>("last-10-days");
@@ -519,6 +628,7 @@ export default function DomesticAnalyticsPage() {
   const [regionOrders, setRegionOrders] = useState<PurchaseOrder[]>([]);
   const [overallCompletion, setOverallCompletion] = useState<number>(0);
   const allPurchaseOrdersRef = useRef<PurchaseOrder[]>([]);
+  const [pocDistribution, setPocDistribution] = useState<PocPoint[]>([]);
 
   const handleRegionClick = (regionLabel: string) => {
     setSelectedRegion(regionLabel);
@@ -621,6 +731,7 @@ export default function DomesticAnalyticsPage() {
       calculateMovingArticles(dispatchTransactions, inventoryItems);
       calculateOrderTable(purchaseOrders);
       calculateRegionDistribution(allPurchaseOrders);
+      calculatePocDistribution(allPurchaseOrders);
     } catch (error) {
       console.error("Error fetching analytics data:", error);
     } finally {
@@ -941,7 +1052,43 @@ export default function DomesticAnalyticsPage() {
     );
   };
 
+  const calculatePocDistribution = (allPurchaseOrders: PurchaseOrder[]) => {
+    const pocMap = new Map<string, number>();
 
+    allPurchaseOrders.forEach((po) => {
+      const poc = (po.poc || "Unknown").trim();
+
+      const current = pocMap.get(poc) || 0;
+      pocMap.set(poc, current + (po.grandTotal || 0));
+    });
+
+    const total = Array.from(pocMap.values()).reduce((sum, v) => sum + v, 0);
+
+    const colors = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#0ea5e9", "#a855f7"];
+
+    const data: PocPoint[] = Array.from(pocMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([poc, value], index) => ({
+        label: poc,
+        value,
+        percentage: total > 0 ? Math.round((value / total) * 100) : 0,
+        color: colors[index % colors.length],
+      }));
+
+    setPocDistribution(
+      data.length > 0
+        ? data
+        : [
+          {
+            label: "No Data",
+            value: 1,
+            percentage: 100,
+            color: "#64748b",
+          },
+        ]
+    );
+  };
 
   if (loading) {
     return (
@@ -1163,8 +1310,8 @@ export default function DomesticAnalyticsPage() {
                   <tr>
                     <th className="px-4 py-2">Date</th>
                     <th className="px-4 py-2">Value</th>
-                    <th className="px-4 py-2">Delivered</th>
-                    <th className="px-4 py-2">Pending</th>
+                    <th className="px-4 py-2">Delivered Qty</th>
+                    <th className="px-4 py-2">Pending Qty</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1199,6 +1346,18 @@ export default function DomesticAnalyticsPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </DashboardCard>
+        </div>
+
+        <div className="mt-6">
+          <DashboardCard>
+            <h2 className="text-xl font-semibold text-black">
+              POC Wise Performance
+            </h2>
+
+            <div className="mt-6">
+              <PocPieChart data={pocDistribution} />
             </div>
           </DashboardCard>
         </div>

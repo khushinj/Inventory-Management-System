@@ -766,55 +766,101 @@ export default function DomesticAnalyticsPage() {
   }, [orderTable]);
 
   const calculateRegionDistribution = (allPurchaseOrders: PurchaseOrder[]) => {
-    const regionData = new Map<string, {
-      label: string;
-      sales: number;
-      delivered: number;
-      pending: number;
-      total: number;
-    }>();
+    const regionMap = new Map<
+      string,
+      {
+        label: string;
+        sales: number;
+        totalCompletion: number;
+        count: number;
+      }
+    >();
 
     allPurchaseOrders.forEach((po) => {
       const regionKey = normalizeCityKey(po.city);
-      const current = regionData.get(regionKey) || {
+
+      // 🔥 STEP 1: Calculate completion % for EACH PO
+      let totalOrdered = 0;
+      let totalDelivered = 0;
+
+      if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes)) {
+        po.items.forEach((item, index) => {
+          const deliveredItem = po.deliveredSizes?.[index] || {};
+
+          poSizeKeys.forEach((key) => {
+            const ordered = Number(item?.[key] || 0);
+            const delivered = Number(deliveredItem?.[key] || 0);
+
+            totalOrdered += ordered;
+            totalDelivered += Math.min(delivered, ordered);
+          });
+        });
+      } else {
+        totalOrdered = po.totalQuantity || 0;
+        totalDelivered = po.status === "completed" ? totalOrdered : 0;
+      }
+
+      const completionPercent =
+        totalOrdered > 0 ? (totalDelivered / totalOrdered) * 100 : 0;
+
+      // 🔥 STEP 2: Aggregate by region
+      const existing = regionMap.get(regionKey) || {
         label: formatCityLabel(po.city),
         sales: 0,
-        delivered: 0,
-        pending: 0,
-        total: 0,
+        totalCompletion: 0,
+        count: 0,
       };
-      
-      current.sales += po.grandTotal || 0;
-      current.total += 1;
-      
-      if (po.status === "completed") {
-        current.delivered += 1;
-      } else {
-        current.pending += 1;
-      }
-      
-      regionData.set(regionKey, current);
+
+      existing.sales += po.grandTotal || 0;
+      existing.totalCompletion += completionPercent;
+      existing.count += 1;
+
+      regionMap.set(regionKey, existing);
     });
 
-    const total = Array.from(regionData.values()).reduce((sum, data) => sum + data.sales, 0);
+    const totalSales = Array.from(regionMap.values()).reduce(
+      (sum, r) => sum + r.sales,
+      0
+    );
 
     const colors = ["#3f7edd", "#f59e0b", "#7c5ce6", "#1ba9c3", "#ef4444", "#10b981"];
-    const regions: RegionPoint[] = Array.from(regionData.values())
+
+    const regions: RegionPoint[] = Array.from(regionMap.values())
       .sort((a, b) => b.sales - a.sales)
       .slice(0, 6)
-      .map((data, index) => ({
-        label: data.label,
-        value: data.sales,
-        percentage: Math.round((data.sales / total) * 100),
-        deliveredPercent: data.total > 0 ? Math.round((data.delivered / data.total) * 100) : 0,
-        pendingPercent: data.total > 0 ? Math.round((data.pending / data.total) * 100) : 0,
-        totalOrders: data.total,
-        color: colors[index % colors.length],
-      }));
+      .map((region, index) => {
+        const avgCompletion =
+          region.count > 0 ? region.totalCompletion / region.count : 0;
 
-    setRegionDistribution(regions.length > 0 ? regions : [
-      { label: "No Data", value: 1, percentage: 100, deliveredPercent: 0, pendingPercent: 0, totalOrders: 0, color: "#64748b" }
-    ]);
+        return {
+          label: region.label,
+          value: region.sales,
+          percentage:
+            totalSales > 0
+              ? Math.round((region.sales / totalSales) * 100)
+              : 0,
+          deliveredPercent: Number(avgCompletion.toFixed(2)),
+          pendingPercent: Number((100 - avgCompletion).toFixed(2)),
+          totalOrders: region.count,
+          color: colors[index % colors.length],
+        };
+      });
+
+    setRegionDistribution(
+      regions.length > 0
+        ? regions
+        : [
+          {
+            label: "No Data",
+            value: 1,
+            percentage: 100,
+            deliveredPercent: 0,
+            pendingPercent: 0,
+            totalOrders: 0,
+            color: "#64748b",
+          },
+        ]
+    );
   };
 
   if (loading) {
@@ -926,22 +972,22 @@ export default function DomesticAnalyticsPage() {
             <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Slow Moving Article</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
               <div className="max-h-[420px] overflow-auto">
-              <table className="w-full text-left">
-                <thead className="sticky top-0 z-10 bg-slate-50">
-                  <tr className="text-sm text-slate-500 sm:text-base">
-                    <th className="px-5 py-4 font-semibold">Article No</th>
-                    <th className="px-5 py-4 font-semibold">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {slowMovingArticles.map((item) => (
-                    <tr key={item.articleNo} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
-                      <td className="px-5 py-4">{item.articleNo}</td>
-                      <td className="px-5 py-4">{item.quantity}</td>
+                <table className="w-full text-left">
+                  <thead className="sticky top-0 z-10 bg-slate-50">
+                    <tr className="text-sm text-slate-500 sm:text-base">
+                      <th className="px-5 py-4 font-semibold">Article No</th>
+                      <th className="px-5 py-4 font-semibold">Quantity</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {slowMovingArticles.map((item) => (
+                      <tr key={item.articleNo} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
+                        <td className="px-5 py-4">{item.articleNo}</td>
+                        <td className="px-5 py-4">{item.quantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </DashboardCard>
@@ -981,22 +1027,22 @@ export default function DomesticAnalyticsPage() {
             <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Fast Moving Article</h2>
             <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
               <div className="max-h-[420px] overflow-auto">
-              <table className="w-full text-left">
-                <thead className="sticky top-0 z-10 bg-slate-50">
-                  <tr className="text-sm text-slate-500 sm:text-base">
-                    <th className="px-5 py-4 font-semibold">Article No</th>
-                    <th className="px-5 py-4 font-semibold">Sold</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fastMovingArticles.map((item) => (
-                    <tr key={item.articleNo} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
-                      <td className="px-5 py-4">{item.articleNo}</td>
-                      <td className="px-5 py-4">{item.dispatchCount}</td>
+                <table className="w-full text-left">
+                  <thead className="sticky top-0 z-10 bg-slate-50">
+                    <tr className="text-sm text-slate-500 sm:text-base">
+                      <th className="px-5 py-4 font-semibold">Article No</th>
+                      <th className="px-5 py-4 font-semibold">Sold</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {fastMovingArticles.map((item) => (
+                      <tr key={item.articleNo} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
+                        <td className="px-5 py-4">{item.articleNo}</td>
+                        <td className="px-5 py-4">{item.dispatchCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </DashboardCard>

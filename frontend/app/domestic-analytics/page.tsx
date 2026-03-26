@@ -63,6 +63,28 @@ type PurchaseOrder = {
   grandTotal: number;
   totalQuantity: number;
   status?: string;
+  items?: Array<{
+    s?: number;
+    m?: number;
+    l?: number;
+    xl?: number;
+    xxl?: number;
+    xxxl?: number;
+    xxxxl?: number;
+    xxxxxl?: number;
+    xxxxxxl?: number;
+  }>;
+  deliveredSizes?: Array<{
+    s?: number;
+    m?: number;
+    l?: number;
+    xl?: number;
+    xxl?: number;
+    xxxl?: number;
+    xxxxl?: number;
+    xxxxxl?: number;
+    xxxxxxl?: number;
+  }>;
 };
 
 type JobCard = {
@@ -101,6 +123,9 @@ function formatDate(dateStr: string) {
 function normalizeDno(dno?: string) {
   return (dno || "").trim().replace(/\s+/g, "").toUpperCase();
 }
+
+const poSizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxxl"] as const;
+type PoSizeKey = (typeof poSizeKeys)[number];
 
 function toIsoDate(value?: string) {
   if (!value) return "";
@@ -166,133 +191,196 @@ function DashboardCard({ children, className = "" }: { children: ReactNode; clas
 
 function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const width = 900;
+
   const height = 360;
   const leftPad = 80;
   const rightPad = 32;
   const topPad = 26;
   const bottomPad = 64;
+
+  // 🔥 NEW LOGIC
+  const visiblePoints = 10;
+  const pointSpacing = 80;
+
+  const dynamicWidth =
+    data.length > visiblePoints
+      ? data.length * pointSpacing
+      : 900;
+
+  const width = dynamicWidth;
+
   const tooltipWidth = 170;
   const tooltipHeight = 40;
   const tooltipOffset = 50;
   const tooltipInset = 8;
+
   const chartWidth = width - leftPad - rightPad;
   const chartHeight = height - topPad - bottomPad;
+
   const maxY = Math.max(100, ...data.map((d) => d.sales));
   const roundedMax = Math.ceil(maxY / 1000) * 1000;
   const steps = Array.from({ length: 5 }, (_, i) => (roundedMax / 4) * i);
 
-  const toX = (index: number) => leftPad + (index * chartWidth) / Math.max(1, data.length - 1);
-  const toY = (value: number) => topPad + chartHeight - (value / roundedMax) * chartHeight;
+  const toX = (index: number) =>
+    leftPad + (index * chartWidth) / Math.max(1, data.length - 1);
 
-  const salesPoints = data.map((point, index) => `${toX(index)},${toY(point.sales)}`).join(" ");
+  const toY = (value: number) =>
+    topPad + chartHeight - (value / roundedMax) * chartHeight;
+
+  const salesPoints = data
+    .map((point, index) => `${toX(index)},${toY(point.sales)}`)
+    .join(" ");
 
   return (
     <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-[340px] w-full min-w-[680px]">
-        {steps.map((tick) => {
-          const y = toY(tick);
-          return (
-            <g key={`grid-${tick}`}>
-              <line
-                x1={leftPad}
-                y1={y}
-                x2={width - rightPad}
-                y2={y}
-                stroke="#dce3ea"
-                strokeWidth="1"
-                strokeDasharray="5 5"
-              />
-              <text x={leftPad - 10} y={y + 4} textAnchor="end" fill="#6b7280" fontSize="18">
-                {Math.round(tick).toLocaleString()}
-              </text>
-            </g>
-          );
-        })}
+      {/* 👇 Fixed visible width */}
+      <div className="w-[900px]">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="h-[340px]"
+          style={{ width: `${width}px` }}
+        >
+          {/* Grid */}
+          {steps.map((tick) => {
+            const y = toY(tick);
+            return (
+              <g key={`grid-${tick}`}>
+                <line
+                  x1={leftPad}
+                  y1={y}
+                  x2={width - rightPad}
+                  y2={y}
+                  stroke="#dce3ea"
+                  strokeWidth="1"
+                  strokeDasharray="5 5"
+                />
+                <text
+                  x={leftPad - 10}
+                  y={y + 4}
+                  textAnchor="end"
+                  fill="#6b7280"
+                  fontSize="18"
+                >
+                  {Math.round(tick).toLocaleString()}
+                </text>
+              </g>
+            );
+          })}
 
-        <line x1={leftPad} y1={topPad} x2={leftPad} y2={topPad + chartHeight} stroke="#94a3b8" strokeWidth="2" />
-        <line
-          x1={leftPad}
-          y1={topPad + chartHeight}
-          x2={width - rightPad}
-          y2={topPad + chartHeight}
-          stroke="#94a3b8"
-          strokeWidth="2"
-        />
+          {/* Axes */}
+          <line
+            x1={leftPad}
+            y1={topPad}
+            x2={leftPad}
+            y2={topPad + chartHeight}
+            stroke="#94a3b8"
+            strokeWidth="2"
+          />
+          <line
+            x1={leftPad}
+            y1={topPad + chartHeight}
+            x2={width - rightPad}
+            y2={topPad + chartHeight}
+            stroke="#94a3b8"
+            strokeWidth="2"
+          />
 
-        {data.map((point, index) => (
-          <text
-            key={`x-label-${point.label}`}
-            x={toX(index)}
-            y={topPad + chartHeight + 26}
-            textAnchor="middle"
-            fill="#6b7280"
-            fontSize="18"
-          >
-            {point.label}
-          </text>
-        ))}
-
-        <polyline fill="none" stroke="#3b82f6" strokeWidth="4" points={salesPoints} />
-
-        {data.map((point, index) => {
-          const x = toX(index);
-          const ySales = toY(point.sales);
-          const tooltipX = Math.min(
-            width - rightPad - tooltipWidth - tooltipInset,
-            Math.max(leftPad + tooltipInset, x - tooltipWidth / 2),
-          );
-          const tooltipY = Math.max(topPad + tooltipInset, ySales - tooltipOffset);
-          return (
-            <g
-              key={`dot-${point.label}`}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              style={{ cursor: "pointer" }}
+          {/* X labels */}
+          {data.map((point, index) => (
+            <text
+              key={`x-label-${point.label}`}
+              x={toX(index)}
+              y={topPad + chartHeight + 26}
+              textAnchor="middle"
+              fill="#6b7280"
+              fontSize="18"
             >
-              <circle cx={x} cy={ySales} r="6" fill="#ffffff" stroke="#3b82f6" strokeWidth="3" />
-              
-              {hoveredIndex === index && (
-                <>
-                  <rect
-                    x={tooltipX}
-                    y={tooltipY}
-                    width={tooltipWidth}
-                    height={tooltipHeight}
-                    fill="#1e293b"
-                    rx="6"
-                    opacity="0.95"
-                  />
-                  <text
-                    x={tooltipX + tooltipWidth / 2}
-                    y={tooltipY + 20}
-                    textAnchor="middle"
-                    fill="#ffffff"
-                    fontSize="14"
-                    fontWeight="600"
-                  >
-                    {point.label}
-                  </text>
-                  <text
-                    x={tooltipX + tooltipWidth / 2}
-                    y={tooltipY + 37}
-                    textAnchor="middle"
-                    fill="#3b82f6"
-                    fontSize="13"
-                  >
-                    Sales: {formatINR(point.sales)}
-                  </text>
-                </>
-              )}
-            </g>
-          );
-        })}
-      </svg>
+              {point.label}
+            </text>
+          ))}
 
-      <div className="mt-2 flex items-center justify-center gap-6 text-sm sm:text-lg">
-        <div className="flex items-center gap-2 text-blue-500">
-          <span className="text-xl leading-none">•</span>
-          <span>sales</span>
+          {/* Line */}
+          <polyline
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="4"
+            points={salesPoints}
+          />
+
+          {/* Dots + Tooltip */}
+          {data.map((point, index) => {
+            const x = toX(index);
+            const ySales = toY(point.sales);
+
+            const tooltipX = Math.min(
+              width - rightPad - tooltipWidth - tooltipInset,
+              Math.max(leftPad + tooltipInset, x - tooltipWidth / 2)
+            );
+
+            const tooltipY = Math.max(
+              topPad + tooltipInset,
+              ySales - tooltipOffset
+            );
+
+            return (
+              <g
+                key={`dot-${point.label}`}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                style={{ cursor: "pointer" }}
+              >
+                <circle
+                  cx={x}
+                  cy={ySales}
+                  r="6"
+                  fill="#ffffff"
+                  stroke="#3b82f6"
+                  strokeWidth="3"
+                />
+
+                {hoveredIndex === index && (
+                  <>
+                    <rect
+                      x={tooltipX}
+                      y={tooltipY}
+                      width={tooltipWidth}
+                      height={tooltipHeight}
+                      fill="#1e293b"
+                      rx="6"
+                      opacity="0.95"
+                    />
+                    <text
+                      x={tooltipX + tooltipWidth / 2}
+                      y={tooltipY + 20}
+                      textAnchor="middle"
+                      fill="#ffffff"
+                      fontSize="14"
+                      fontWeight="600"
+                    >
+                      {point.label}
+                    </text>
+                    <text
+                      x={tooltipX + tooltipWidth / 2}
+                      y={tooltipY + 37}
+                      textAnchor="middle"
+                      fill="#3b82f6"
+                      fontSize="13"
+                    >
+                      Sales Qty: {point.sales.toLocaleString()}
+                    </text>
+                  </>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Legend */}
+        <div className="mt-2 flex items-center justify-center gap-6 text-sm sm:text-lg">
+          <div className="flex items-center gap-2 text-blue-500">
+            <span className="text-xl leading-none">•</span>
+            <span>sales</span>
+          </div>
         </div>
       </div>
     </div>
@@ -538,31 +626,44 @@ export default function DomesticAnalyticsPage() {
     ]);
   };
 
-  const calculateSalesOrderSeries = (dispatches: Transaction[], purchaseOrders: PurchaseOrder[]) => {
+  const calculateSalesOrderSeries = useCallback((_dispatches: Transaction[], purchaseOrders: PurchaseOrder[]) => {
     // Group by date
     const salesByDate = new Map<string, number>();
     const ordersByDate = new Map<string, number>();
-
-    dispatches.forEach((t) => {
-      const date = t.date.split("T")[0];
-      const current = salesByDate.get(date) || 0;
-      salesByDate.set(date, current + t.qty);
-    });
 
     purchaseOrders.forEach((po) => {
       const date = po.date.split("T")[0];
       const current = ordersByDate.get(date) || 0;
       ordersByDate.set(date, current + 1);
+
+      let deliveredQty = 0;
+      if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes) && po.items.length > 0) {
+        po.items.forEach((item, itemIndex) => {
+          const deliveredForItem = po.deliveredSizes?.[itemIndex] || {};
+          poSizeKeys.forEach((key) => {
+            const ordered = Number((item as Record<PoSizeKey, number | undefined>)?.[key] || 0);
+            const deliveredRaw = Number((deliveredForItem as Record<PoSizeKey, number | undefined>)?.[key] || 0);
+            deliveredQty += Math.min(Math.max(deliveredRaw, 0), Math.max(ordered, 0));
+          });
+        });
+      } else {
+        deliveredQty = po.status === "completed" ? Number(po.totalQuantity || 0) : 0;
+      }
+
+      const currentSales = salesByDate.get(date) || 0;
+      salesByDate.set(date, currentSales + deliveredQty);
     });
 
-    // Get last 10 unique dates
-    const allDates = Array.from(
-      new Set([...Array.from(salesByDate.keys()), ...Array.from(ordersByDate.keys())])
-    ).sort();
+    const allDates: string[] = [];
+    const cursor = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
 
-    const last10Dates = allDates.slice(-10);
+    while (cursor <= endDate) {
+      allDates.push(cursor.toISOString().split("T")[0]);
+      cursor.setDate(cursor.getDate() + 1);
+    }
 
-    const series: SeriesPoint[] = last10Dates.map((date) => ({
+    const series: SeriesPoint[] = allDates.map((date) => ({
       label: formatDate(date),
       sales: salesByDate.get(date) || 0,
       orders: ordersByDate.get(date) || 0,
@@ -571,7 +672,7 @@ export default function DomesticAnalyticsPage() {
     setSalesOrderSeries(series.length > 0 ? series : [
       { label: "No Data", sales: 0, orders: 0 }
     ]);
-  };
+  }, [dateRange.end, dateRange.start]);
 
   const calculateMovingArticles = (dispatches: Transaction[], inventory: InventoryItem[]) => {
     // Count dispatch frequency per article
@@ -815,7 +916,7 @@ export default function DomesticAnalyticsPage() {
 
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
           <DashboardCard>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Sales vs Orders</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Sales</h2>
             <div className="mt-6">
               <SalesOrdersChart data={salesOrderSeries} />
             </div>

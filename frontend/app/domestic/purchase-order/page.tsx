@@ -34,11 +34,11 @@ type PurchaseOrderItem = {
 // Function to convert number to words (Indian Rupees)
 function numberToWords(num: number): string {
   if (num === 0) return "Zero Rupees Only";
-  
+
   const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
   const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
   const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-  
+
   function convertLessThanThousand(n: number): string {
     if (n === 0) return "";
     if (n < 10) return ones[n];
@@ -46,12 +46,12 @@ function numberToWords(num: number): string {
     if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + ones[n % 10] : "");
     return ones[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " " + convertLessThanThousand(n % 100) : "");
   }
-  
+
   let rupees = Math.floor(num);
   const paise = Math.round((num - Math.floor(num)) * 100);
-  
+
   let result = "";
-  
+
   // Convert rupees part
   if (rupees >= 10000000) { // Crores
     result += convertLessThanThousand(Math.floor(rupees / 10000000)) + " Crore ";
@@ -68,13 +68,13 @@ function numberToWords(num: number): string {
   if (rupees > 0) {
     result += convertLessThanThousand(rupees);
   }
-  
+
   result = result.trim();
-  
+
   if (paise > 0) {
     result += " and " + convertLessThanThousand(paise) + " Paisa";
   }
-  
+
   return result + " Only";
 }
 
@@ -175,22 +175,22 @@ export default function PurchaseOrderEntryForm() {
   const calculateItemValues = (item: PurchaseOrderItem): PurchaseOrderItem => {
     // Calculate QTY: sum of all sizes
     const qty = item.s + item.m + item.l + item.xl + item.xxl + item.xxxl + item.xxxxl + item.xxxxxl + item.xxxxxxl;
-    
+
     // Calculate RATE: MRP - (MRP * discount%)
     const rate = item.mrp - (item.mrp * item.dis / 100);
-    
+
     // Calculate AMOUNT: RATE * QTY
     const amount = rate * qty;
-    
+
     // Calculate TGST %: 5% if MRP < 2500, 18% if MRP >= 2500
     const tgst = item.mrp > 0 ? (item.mrp < 2500 ? 5 : 18) : 0;
-    
+
     // Calculate TAX: AMOUNT * (TGST / 100)
     const tax = amount * (tgst / 100);
-    
+
     // Calculate AMT: AMOUNT + TAX (total payable)
     const amt = amount + tax;
-    
+
     return {
       ...item,
       qty,
@@ -254,7 +254,7 @@ export default function PurchaseOrderEntryForm() {
         'input:not([disabled]):not([readonly]), button:not([disabled])'
       ));
       const currentIndex = inputs.indexOf(e.currentTarget);
-      
+
       if (currentIndex > -1 && currentIndex < inputs.length - 1) {
         inputs[currentIndex + 1]?.focus();
       }
@@ -264,13 +264,19 @@ export default function PurchaseOrderEntryForm() {
   const handleSaveData = async () => {
     try {
       // Validate required fields
-      if (!headerInfo.dealerName || !headerInfo.buyerName || !headerInfo.date || !headerInfo.city) {
-        alert("Please fill in all required header fields (Dealer Name, Buyer Name, Date, City)");
+      if (
+        !headerInfo.dealerName ||
+        !headerInfo.buyerName ||
+        !headerInfo.poc ||   // 🔥 THIS LINE
+        !headerInfo.date ||
+        !headerInfo.city
+      ) {
+        alert("Please fill all required fields including POC");
         return;
       }
 
       // Filter out empty items (items with no data)
-      const validItems = items.filter(item => 
+      const validItems = items.filter(item =>
         item.designNumber && item.color && item.qty > 0
       );
 
@@ -299,7 +305,7 @@ export default function PurchaseOrderEntryForm() {
 
       // Save to backend
       const response = await api.post("/purchase-order", purchaseOrderData);
-      
+
       if (response.data.success) {
         alert("Purchase order saved successfully!");
       }
@@ -313,34 +319,34 @@ export default function PurchaseOrderEntryForm() {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    
+
     // Title - PURCHASE ORDER
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
     doc.text("PURCHASE ORDER", pageWidth / 2, 20, { align: "center" });
-    
+
     // Header Information Box
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    
+
     // Left side - Consignee (Ship to)
     doc.setFont("helvetica", "bold");
     doc.text("Consignee (Ship to)", 14, 35);
     doc.setFont("helvetica", "normal");
     doc.text(headerInfo.dealerName || "Name of Dealer", 14, 42);
     doc.text(headerInfo.city || "City", 14, 49);
-    
+
     // Right side - Dated, Mode/Terms of Payment
     doc.setFont("helvetica", "bold");
     doc.text("Voucher No.", pageWidth - 65, 35);
     doc.setFont("helvetica", "normal");
     doc.text(headerInfo.date ? `PO-${headerInfo.date.replace(/-/g, "")}` : "PO-", pageWidth - 65, 42);
-    
+
     doc.setFont("helvetica", "bold");
     doc.text("Dated", pageWidth - 65, 49);
     doc.setFont("helvetica", "normal");
     doc.text(headerInfo.date || new Date().toLocaleDateString("en-GB"), pageWidth - 65, 56);
-    
+
     // Buyer Info
     doc.setFont("helvetica", "bold");
     doc.text("Name of Buyer:", 14, 56);
@@ -351,11 +357,11 @@ export default function PurchaseOrderEntryForm() {
     doc.text("POC:", 14, 63);
     doc.setFont("helvetica", "normal");
     doc.text(headerInfo.poc || "-", 50, 63);
-    
+
     // Divider line
     doc.setDrawColor(200, 200, 200);
     doc.line(14, 69, pageWidth - 14, 69);
-    
+
     // Items Table
     const tableData = items.map((item, index) => [
       index + 1,
@@ -376,17 +382,17 @@ export default function PurchaseOrderEntryForm() {
       item.tax.toFixed(2),
       item.amt.toFixed(2),
     ]);
-    
+
     autoTable(doc, {
       startY: 75,
       head: [[
-        'SL\\nNo.', 'Description of Goods\\n& HSN/SAC', 'Color', 'S', 'M', 'L', 'XL', 
-        'XXL', '3XL', 'Quantity', 'Rate\\nper PC', 'Disc\\n%', 'Net\\nRate', 'Amount', 
+        'SL\\nNo.', 'Description of Goods\\n& HSN/SAC', 'Color', 'S', 'M', 'L', 'XL',
+        'XXL', '3XL', 'Quantity', 'Rate\\nper PC', 'Disc\\n%', 'Net\\nRate', 'Amount',
         'GST\\n%', 'Tax', 'Amount\\n(₹)'
       ]],
       body: tableData,
       theme: 'grid',
-      headStyles: { 
+      headStyles: {
         fillColor: [71, 85, 105], // Slate color
         textColor: [255, 255, 255],
         fontSize: 7,
@@ -396,7 +402,7 @@ export default function PurchaseOrderEntryForm() {
         lineWidth: 0.1,
         lineColor: [0, 0, 0],
       },
-      bodyStyles: { 
+      bodyStyles: {
         fontSize: 7,
         cellPadding: 2,
         lineWidth: 0.1,
@@ -431,26 +437,26 @@ export default function PurchaseOrderEntryForm() {
     const summaryStartX = pageWidth - 70;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    
+
     doc.text("Gross Total:", summaryStartX, finalY);
     doc.text(`₹${summary.grossTotal.toFixed(2)}`, pageWidth - 16, finalY, { align: 'right' });
-    
+
     finalY += 7;
     doc.text("GST Output:", summaryStartX, finalY);
     doc.text(`₹${summary.gstOutput.toFixed(2)}`, pageWidth - 16, finalY, { align: 'right' });
-    
+
     finalY += 7;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text("Grand Total:", summaryStartX, finalY);
     doc.text(`₹${summary.grandTotal.toFixed(2)}`, pageWidth - 16, finalY, { align: 'right' });
-    
+
     // Total Quantity on left side
     finalY += 7;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.text(`Total Quantity: ${summary.totalQuantity} pcs`, 14, finalY);
-    
+
     // Amount in words
     finalY += 10;
     doc.setFont("helvetica", "bold");
@@ -459,15 +465,15 @@ export default function PurchaseOrderEntryForm() {
     doc.setFontSize(8);
     const amountWords = doc.splitTextToSize(summary.purchaseOrderValueWords, pageWidth - 28);
     doc.text(amountWords, 14, finalY + 5);
-    
+
     finalY += 5 + (amountWords.length * 5);
-    
+
     // Terms and Conditions
     if (finalY + 30 > pageHeight - 20) {
       doc.addPage();
       finalY = 20;
     }
-    
+
     finalY += 8;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
@@ -476,9 +482,9 @@ export default function PurchaseOrderEntryForm() {
     doc.setFontSize(8);
     const termsLines = doc.splitTextToSize(summary.termsCondition, pageWidth - 28);
     doc.text(termsLines, 14, finalY + 6);
-    
+
     finalY += 6 + (termsLines.length * 4);
-    
+
     // Footer
     if (finalY > pageHeight - 15) {
       doc.addPage();
@@ -486,7 +492,7 @@ export default function PurchaseOrderEntryForm() {
     } else {
       finalY = pageHeight - 15;
     }
-    
+
     doc.setFontSize(8);
     doc.setFont("helvetica", "italic");
     doc.text("This is a Computer Generated Document", pageWidth / 2, finalY, { align: "center" });
@@ -555,7 +561,7 @@ export default function PurchaseOrderEntryForm() {
         {/* Header Information Section */}
         <div className="bg-white rounded-xl shadow-md p-8 mb-6 border border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Header Information</h2>
-          
+
           <div className="grid text-black grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -585,7 +591,7 @@ export default function PurchaseOrderEntryForm() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                POC (Point of Contact) - Optional
+                POC (Point of Contact)
               </label>
               <input
                 type="text"
@@ -595,7 +601,7 @@ export default function PurchaseOrderEntryForm() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date
@@ -608,7 +614,7 @@ export default function PurchaseOrderEntryForm() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Deadline
@@ -621,7 +627,7 @@ export default function PurchaseOrderEntryForm() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
             </div>
-            
+
             <div ref={cityInputRef} className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 City
@@ -720,7 +726,7 @@ export default function PurchaseOrderEntryForm() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                       />
                     </td>
-                      <td className="px-3 py-3 text-black">
+                    <td className="px-3 py-3 text-black">
                       <input
                         type="text"
                         placeholder="Color"
@@ -869,7 +875,7 @@ export default function PurchaseOrderEntryForm() {
         {/* Summary & Terms Section */}
         <div className="bg-white rounded-xl shadow-md p-8 border border-gray-200">
           <h2 className="text-2xl font-bold text-black mb-6">Summary & Terms</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column */}
             <div className="space-y-6">
@@ -881,7 +887,7 @@ export default function PurchaseOrderEntryForm() {
                   {summary.totalQuantity}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Purchase Order Value (in Words) - Indian Rupees
@@ -890,7 +896,7 @@ export default function PurchaseOrderEntryForm() {
                   {summary.purchaseOrderValueWords}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Terms & Condition - E.A.O.E
@@ -911,7 +917,7 @@ export default function PurchaseOrderEntryForm() {
                   ₹{summary.grossTotal.toFixed(2)}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   GST OUTPUT
@@ -920,7 +926,7 @@ export default function PurchaseOrderEntryForm() {
                   ₹{summary.gstOutput.toFixed(2)}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Grand Total

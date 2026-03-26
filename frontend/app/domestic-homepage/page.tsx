@@ -62,13 +62,6 @@ const operations: OperationCard[] = [
     href: "/domestic?formType=purchase&locked=true",
   },
   {
-    title: "Analytics",
-    description: "View domestic warehouse analytics dashboard",
-    icon: BarChart3,
-    bgColor: "bg-violet-500",
-    href: "/domestic-analytics",
-  },
-  {
     title: "Purchase Order",
     description: "Generate purchase orders with invoices",
     icon: FileText,

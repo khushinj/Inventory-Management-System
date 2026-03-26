@@ -231,6 +231,8 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
     .map((point, index) => `${toX(index)},${toY(point.sales)}`)
     .join(" ");
 
+
+
   return (
     <div className="w-full overflow-x-auto">
       {/* 👇 Fixed visible width */}
@@ -387,7 +389,7 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
   );
 }
 
-function RegionPieChart({ data }: { data: RegionPoint[] }) {
+function RegionPieChart({ data, onSelect }: { data: RegionPoint[]; onSelect: (region: string) => void }) {
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const size = 360;
   const center = size / 2;
@@ -442,6 +444,7 @@ function RegionPieChart({ data }: { data: RegionPoint[] }) {
             style={{ cursor: "pointer", opacity: hoveredRegion === slice.label ? 0.8 : 1 }}
             onMouseEnter={() => setHoveredRegion(slice.label)}
             onMouseLeave={() => setHoveredRegion(null)}
+            onClick={() => onSelect(slice.label)}
           />
         ))}
 
@@ -512,7 +515,22 @@ export default function DomesticAnalyticsPage() {
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => getDateRangeByPeriod("last-10-days"));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const datePickerRef = useRef<HTMLDivElement | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [regionOrders, setRegionOrders] = useState<PurchaseOrder[]>([]);
+  const [overallCompletion, setOverallCompletion] = useState<number>(0);
+  const allPurchaseOrdersRef = useRef<PurchaseOrder[]>([]);
 
+  const handleRegionClick = (regionLabel: string) => {
+    setSelectedRegion(regionLabel);
+
+    const selectedKey = normalizeCityKey(regionLabel);
+
+    const filtered = allPurchaseOrdersRef.current.filter(
+      (po) => normalizeCityKey(po.city) === selectedKey
+    );
+
+    setRegionOrders(filtered);
+  };
   useEffect(() => {
     if (period === "custom") return;
     setDateRange(getDateRangeByPeriod(period));
@@ -536,6 +554,37 @@ export default function DomesticAnalyticsPage() {
     };
   }, [showDatePicker]);
 
+
+  const calculateOverallCompletion = (allPurchaseOrders: PurchaseOrder[]) => {
+    let totalOrdered = 0;
+    let totalDelivered = 0;
+
+    allPurchaseOrders.forEach((po) => {
+      if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes)) {
+        po.items.forEach((item, index) => {
+          const deliveredItem = po.deliveredSizes?.[index] || {};
+
+          poSizeKeys.forEach((key) => {
+            const ordered = Number(item?.[key] || 0);
+            const delivered = Number(deliveredItem?.[key] || 0);
+
+            totalOrdered += ordered;
+            totalDelivered += Math.min(delivered, ordered);
+          });
+        });
+      } else {
+        totalOrdered += po.totalQuantity || 0;
+        if (po.status === "completed") {
+          totalDelivered += po.totalQuantity || 0;
+        }
+      }
+    });
+
+    const percent =
+      totalOrdered > 0 ? (totalDelivered / totalOrdered) * 100 : 0;
+
+    setOverallCompletion(Number(percent.toFixed(2)));
+  };
   const fetchAnalyticsData = useCallback(async () => {
     try {
       setLoading(true);
@@ -554,6 +603,8 @@ export default function DomesticAnalyticsPage() {
       const inventoryItems: InventoryItem[] = inventoryRes.data?.inventory || [];
       const jobCards: JobCard[] = jobCardsRes.data || [];
 
+      allPurchaseOrdersRef.current = allPurchaseOrders;
+      calculateOverallCompletion(allPurchaseOrders);
       // Filter data by date range
       const dispatchTransactions = allTransactions.filter((t) => {
         const dateIso = toIsoDate(t.date);
@@ -624,6 +675,33 @@ export default function DomesticAnalyticsPage() {
         value: formatINR(inventoryValue),
       },
     ]);
+  };
+
+  const getDeliveredAndPending = (po: PurchaseOrder) => {
+    let totalOrdered = 0;
+    let totalDelivered = 0;
+
+    if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes)) {
+      po.items.forEach((item, index) => {
+        const deliveredItem = po.deliveredSizes?.[index] || {};
+
+        poSizeKeys.forEach((key) => {
+          const ordered = Number(item?.[key] || 0);
+          const delivered = Number(deliveredItem?.[key] || 0);
+
+          totalOrdered += ordered;
+          totalDelivered += Math.min(delivered, ordered);
+        });
+      });
+    } else {
+      totalOrdered = po.totalQuantity || 0;
+      totalDelivered = po.status === "completed" ? totalOrdered : 0;
+    }
+
+    return {
+      delivered: totalDelivered,
+      pending: totalOrdered - totalDelivered,
+    };
   };
 
   const calculateSalesOrderSeries = useCallback((_dispatches: Transaction[], purchaseOrders: PurchaseOrder[]) => {
@@ -863,6 +941,8 @@ export default function DomesticAnalyticsPage() {
     );
   };
 
+
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
@@ -875,6 +955,7 @@ export default function DomesticAnalyticsPage() {
       </main>
     );
   }
+
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
@@ -1048,10 +1129,77 @@ export default function DomesticAnalyticsPage() {
           </DashboardCard>
         </div>
 
+        {/* 🔥 OVERALL COMPLETION */}
         <div className="mt-6">
           <DashboardCard>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Region Wise Distribution</h2>
-            <RegionPieChart data={regionDistribution} />
+            <h2 className="text-xl text-black font-semibold">Overall Completion of Purchase Orders</h2>
+            <p className="mt-4 text-3xl font-bold text-green-600">
+              {overallCompletion}%
+            </p>
+          </DashboardCard>
+        </div>
+
+        {/* 🔥 PIE + TABLE */}
+        <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1.5fr_1fr]">
+
+          {/* PIE */}
+          <DashboardCard>
+            <h2 className="text-xl text-black font-semibold">Region Wise Distribution</h2>
+            <RegionPieChart
+              data={regionDistribution}
+              onSelect={(region) => handleRegionClick(region)}
+            />
+          </DashboardCard>
+
+          {/* TABLE */}
+          <DashboardCard>
+            <h2 className="text-xl text-black font-semibold">
+              {selectedRegion ? `${selectedRegion} Orders` : "Select Region"}
+            </h2>
+
+            <div className="mt-4 max-h-[320px] overflow-auto text-black">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-2">Date</th>
+                    <th className="px-4 py-2">Value</th>
+                    <th className="px-4 py-2">Delivered</th>
+                    <th className="px-4 py-2">Pending</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {regionOrders.length > 0 ? (
+                    regionOrders.map((po) => (
+                      <tr key={po._id} className="border-t">
+                        <td className="px-4 py-2">{formatDate(po.date)}</td>
+                        <td className="px-4 py-2">{formatINR(po.grandTotal)}</td>
+
+                        {(() => {
+                          const { delivered, pending } = getDeliveredAndPending(po);
+
+                          return (
+                            <>
+                              <td className="px-4 py-2 text-green-600 font-medium">
+                                {delivered}
+                              </td>
+                              <td className="px-4 py-2 text-orange-600 font-medium">
+                                {pending}
+                              </td>
+                            </>
+                          );
+                        })()}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="text-center py-4 text-slate-400">
+                        No data
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </DashboardCard>
         </div>
       </div>

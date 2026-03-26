@@ -63,13 +63,6 @@ const cards: ActionCard[] = [
     gradient: "indigo-600",
     href:"/shop-inventory",
   },
-  {
-    title: "Shop Analytics",
-    description: "View shop sales, expenses, payments, and stock insights",
-    icon: BarChart3,
-    gradient: "rose-600",
-    href: "/shop-analytics",
-  },
 ];
 
 

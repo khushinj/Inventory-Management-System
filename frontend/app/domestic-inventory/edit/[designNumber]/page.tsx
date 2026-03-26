@@ -145,12 +145,64 @@ export default function EditDomesticInventoryPage() {
       console.error("Failed to update domestic inventory:", err);
       const apiError =
         typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        typeof (err as { response?: { data?: { error?: string } } }).response?.data?.error === "string"
+          err !== null &&
+          "response" in err &&
+          typeof (err as { response?: { data?: { error?: string } } }).response?.data?.error === "string"
           ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
           : null;
       alert(apiError || "Failed to update inventory");
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
+
+  const handleSaveAll = async () => {
+    try {
+      setSavingKey("ALL");
+
+      for (const row of rows) {
+        const nextColor = (row.newColor || "").trim();
+        const nextQty = Number(row.newQty);
+
+        const colorChanged =
+          nextColor.toLowerCase() !== row.currentColor.toLowerCase();
+        const qtyChanged = nextQty !== row.currentQty;
+
+        if (!colorChanged && !qtyChanged) continue;
+
+        if (!nextColor) {
+          alert("Color is required");
+          return;
+        }
+
+        if (!Number.isFinite(nextQty) || nextQty < 0) {
+          alert("Invalid quantity");
+          return;
+        }
+
+        if (colorChanged) {
+          if (row.currentQty > 0) {
+            await createAdjustment(row.currentColor, row.size, row.currentQty, "dispatch");
+          }
+          if (nextQty > 0) {
+            await createAdjustment(nextColor, row.size, nextQty, "production");
+          }
+        } else {
+          const delta = nextQty - row.currentQty;
+          if (delta > 0) {
+            await createAdjustment(row.currentColor, row.size, delta, "production");
+          } else if (delta < 0) {
+            await createAdjustment(row.currentColor, row.size, Math.abs(delta), "dispatch");
+          }
+        }
+      }
+
+      await fetchInventory();
+      alert("All changes saved successfully");
+    } catch (err) {
+      console.error("Save all failed:", err);
+      alert("Failed to save changes");
     } finally {
       setSavingKey(null);
     }
@@ -198,7 +250,6 @@ export default function EditDomesticInventoryPage() {
                     <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">Current Qty</th>
                     <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">New Color</th>
                     <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">New Qty</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -238,19 +289,19 @@ export default function EditDomesticInventoryPage() {
                           className="w-28 px-2 py-1 border rounded text-sm text-black bg-white"
                         />
                       </td>
-                      <td className="px-3 py-2">
-                        <button
-                          onClick={() => handleSaveRow(row)}
-                          disabled={savingKey === row.key}
-                          className="px-3 py-1.5 bg-gray-800 text-white rounded text-sm font-medium hover:bg-gray-700 disabled:bg-gray-400"
-                        >
-                          {savingKey === row.key ? "Saving..." : "Save"}
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={handleSaveAll}
+                  disabled={savingKey === "ALL"}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400"
+                >
+                  {savingKey === "ALL" ? "Saving..." : "Save All Changes"}
+                </button>
+              </div>
             </div>
           )}
         </div>

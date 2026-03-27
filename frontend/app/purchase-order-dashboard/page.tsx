@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { api } from "../../lib/api";
-import { FileText, Search, Filter, Eye, X, Trash2 } from "lucide-react";
+import { FileText, Search, Filter, Eye, X, Trash2, Edit } from "lucide-react";
 
 type PurchaseOrderItem = {
   category: string;
@@ -67,6 +67,9 @@ export default function PurchaseOrdersPage() {
   const [deliveredSizes, setDeliveredSizes] = useState<DeliveredSizeMap>({});
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<PurchaseOrder>>({});
+  const [editSaveStatus, setEditSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const deliveredUpdateTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Helper function to get order number with fallback
@@ -78,6 +81,70 @@ export default function PurchaseOrdersPage() {
     const year = new Date(order.date).getFullYear();
     const id = order._id.slice(-3).toUpperCase();
     return `PO-${year}-${id}`;
+  };
+
+  const openEditModal = (order: PurchaseOrder) => {
+    setEditingOrder(order);
+    setEditFormData({
+      dealerName: order.dealerName,
+      buyerName: order.buyerName,
+      date: new Date(order.date).toISOString().split('T')[0],
+      deadline: order.deadline ? new Date(order.deadline).toISOString().split('T')[0] : '',
+      city: order.city,
+      termsCondition: order.termsCondition,
+    });
+    setEditSaveStatus("idle");
+  };
+
+  const closeEditModal = () => {
+    setEditingOrder(null);
+    setEditFormData({});
+    setEditSaveStatus("idle");
+  };
+
+  const handleEditFormChange = (field: string, value: string) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleEditFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingOrder) return;
+
+    try {
+      setEditSaveStatus("saving");
+      
+      // Prepare the update data with proper date formatting
+      const updateData: Partial<PurchaseOrder> = {
+        dealerName: editFormData.dealerName || editingOrder.dealerName,
+        buyerName: editFormData.buyerName || editingOrder.buyerName,
+        date: editFormData.date ? new Date(editFormData.date).toISOString() : editingOrder.date,
+        deadline: editFormData.deadline ? new Date(editFormData.deadline).toISOString() : editingOrder.deadline,
+        city: editFormData.city || editingOrder.city,
+        termsCondition: editFormData.termsCondition !== undefined ? editFormData.termsCondition : editingOrder.termsCondition,
+      };
+
+      const res = await api.put(`/purchase-order/${editingOrder._id}`, updateData);
+      if (res.data && res.data.success) {
+        const updatedOrder: PurchaseOrder = res.data.data;
+        setOrders((prev) =>
+          prev.map((order) => (order._id === editingOrder._id ? updatedOrder : order))
+        );
+        if (selectedOrder?._id === editingOrder._id) {
+          setSelectedOrder(updatedOrder);
+        }
+        setEditSaveStatus("saved");
+        setTimeout(() => {
+          closeEditModal();
+        }, 1200);
+      }
+    } catch (error) {
+      console.error("Error updating purchase order:", error);
+      setEditSaveStatus("error");
+      setTimeout(() => setEditSaveStatus("idle"), 2000);
+    }
   };
 
   useEffect(() => {
@@ -673,6 +740,13 @@ export default function PurchaseOrdersPage() {
                   View Details
                 </button>
                 <button
+                  onClick={() => openEditModal(order)}
+                  className="flex items-center justify-center gap-2 px-4 py-2 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit
+                </button>
+                <button
                   onClick={() => handleDeleteOrder(order)}
                   className="flex items-center justify-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                 >
@@ -897,6 +971,147 @@ export default function PurchaseOrdersPage() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+            {/* Modal Header */}
+            <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Edit {getOrderNumber(editingOrder)}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">Update purchase order details</p>
+              </div>
+              <button
+                onClick={closeEditModal}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <form onSubmit={handleEditFormSubmit} className="p-6">
+              <div className="space-y-4">
+                {/* Dealer Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Company/Dealer Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.dealerName || ""}
+                    onChange={(e) => handleEditFormChange("dealerName", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                {/* Buyer Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Client/Buyer Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.buyerName || ""}
+                    onChange={(e) => handleEditFormChange("buyerName", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                {/* Order Date */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Order Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.date || ""}
+                    onChange={(e) => handleEditFormChange("date", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                {/* Deadline */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Deadline (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.deadline || ""}
+                    onChange={(e) => handleEditFormChange("deadline", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    City *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.city || ""}
+                    onChange={(e) => handleEditFormChange("city", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                {/* Terms & Conditions */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Terms & Conditions
+                  </label>
+                  <textarea
+                    value={editFormData.termsCondition || ""}
+                    onChange={(e) => handleEditFormChange("termsCondition", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={4}
+                  />
+                </div>
+              </div>
+
+              {/* Form Actions */}
+              <div className="mt-6 flex gap-3">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSaveStatus === "saving"}
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                    editSaveStatus === "saved"
+                      ? "bg-green-100 text-green-800"
+                      : editSaveStatus === "error"
+                      ? "bg-red-100 text-red-800"
+                      : editSaveStatus === "saving"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  {editSaveStatus === "saving" && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                  )}
+                  {editSaveStatus === "saved" && <span>✓</span>}
+                  {editSaveStatus === "error" && <span>✗</span>}
+                  {editSaveStatus === "saving" ? "Saving..." : editSaveStatus === "saved" ? "Saved!" : editSaveStatus === "error" ? "Error" : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

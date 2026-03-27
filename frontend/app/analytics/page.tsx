@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Globe, House, ShoppingBag, Zap, Store, MonitorSmartphone, ClipboardList } from "lucide-react";
+import { Globe, House, ShoppingBag, Store, MonitorSmartphone, ClipboardList } from "lucide-react";
 import type { ComponentType } from "react";
 import { api } from "../../lib/api";
 
@@ -56,13 +56,6 @@ const analyticsCards: CardItem[] = [
     href: "/domestic-analytics",
     icon: House,
     iconBg: "bg-emerald-600",
-    iconColor: "text-white",
-  },
-  {
-    title: "Export/FOB",
-    href: "/forms",
-    icon: Zap,
-    iconBg: "bg-orange-500",
     iconColor: "text-white",
   },
   {

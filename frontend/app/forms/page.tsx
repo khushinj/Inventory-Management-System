@@ -27,6 +27,12 @@ const formTypes = [
     href: "/jobcard-forms",
     color: "bg-purple-500",
   },
+  {
+    title: "Export/FOB",
+    description: "Access Export/FOB operations with dedicated credentials",
+    href: "/export-fob",
+    color: "bg-slate-600",
+  },
 ];
 
 export default function FormsPage() {
@@ -42,7 +48,7 @@ export default function FormsPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           {formTypes.map((form) => (
             <Link
               key={form.href}

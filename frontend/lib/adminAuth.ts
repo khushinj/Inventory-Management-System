@@ -1,7 +1,7 @@
 export const AUTH_COOKIE_NAME = "ims_admin_auth";
 export const AUTH_ROLE_COOKIE_NAME = "ims_user_role";
 
-export type UserRole = "admin" | "shop" | "domestic" | "ecommerce" | "inventoryPo" | "jobcard";
+export type UserRole = "admin" | "shop" | "domestic" | "ecommerce" | "inventoryPo" | "jobcard" | "exportFob";
 
 type PortalUser = {
   emailId: string;
@@ -47,6 +47,12 @@ const PORTAL_USERS: PortalUser[] = [
     role: "jobcard",
     defaultRoute: "/jobcard-access",
   },
+  {
+    emailId: "exportfob.user@gmail.com",
+    password: "expfob#2026",
+    role: "exportFob",
+    defaultRoute: "/export-fob",
+  },
 ];
 
 const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
@@ -85,6 +91,7 @@ const ROLE_ALLOWED_ROUTE_PREFIXES: Record<UserRole, string[]> = {
     "/jobcard-dashboard",
     "/jobcard-forms",
   ],
+  exportFob: ["/export-fob"],
 };
 
 export const ACCESS_CONTROLLED_ROUTE_PREFIXES = Array.from(
@@ -109,7 +116,8 @@ export function isRole(value: string): value is UserRole {
     value === "domestic" ||
     value === "ecommerce" ||
     value === "inventoryPo" ||
-    value === "jobcard"
+    value === "jobcard" ||
+    value === "exportFob"
   );
 }
 

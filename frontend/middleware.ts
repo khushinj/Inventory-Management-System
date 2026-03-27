@@ -11,6 +11,7 @@ import {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
   const isAccessControlledRoute = ACCESS_CONTROLLED_ROUTE_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
@@ -71,5 +72,6 @@ export const config = {
     "/jobcard/:path*",
     "/jobcard-dashboard/:path*",
     "/jobcard-forms/:path*",
+    "/export-fob/:path*",
   ],
 };

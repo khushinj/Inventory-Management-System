@@ -15,6 +15,9 @@ import purchaseOrderRoutes from "./routes/purchaseOrder.route.js";
 import stockReturnedRoutes from "./routes/stockReturned.route.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 import migrationRoutes from "./routes/migration.route.js";
+import presentStockRoutes from "./routes/presentStock.route.js";
+import productionTrackingRoutes from "./routes/productionTracking.route.js";
+import shippedOrderRoutes from "./routes/shippedOrder.route.js";
 
 
 dotenv.config();
@@ -42,6 +45,9 @@ app.use("/api/purchase-order", purchaseOrderRoutes);
 app.use("/api/stock-returned", stockReturnedRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", migrationRoutes);
+app.use("/api/present-stock", presentStockRoutes);
+app.use("/api/production-tracking", productionTrackingRoutes);
+app.use("/api/shipped-order", shippedOrderRoutes);
 
 // test route
 app.get("/", (req, res) => {

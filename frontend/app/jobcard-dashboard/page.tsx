@@ -178,6 +178,23 @@ export default function JobCardDashboard() {
     }
   };
 
+  const handleDeleteCard = async (card: JobCard) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete job card ${card.designNumber}? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/jobcard/${card._id}`);
+      alert("Job card deleted successfully!");
+      fetchJobCards();
+    } catch (err: any) {
+      console.error("Error deleting job card:", err);
+      alert("Failed to delete job card: " + (err.response?.data?.error || err.message));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -228,7 +245,7 @@ export default function JobCardDashboard() {
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {filteredJobCards.map((card) => (
-              <JobCardItem key={card._id} card={card} onEdit={handleEdit} />
+              <JobCardItem key={card._id} card={card} onEdit={handleEdit} onDelete={handleDeleteCard} />
             ))}
           </div>
         )}
@@ -399,9 +416,10 @@ export default function JobCardDashboard() {
 type JobCardItemProps = {
   card: JobCard;
   onEdit: (card: JobCard) => void;
+  onDelete: (card: JobCard) => void;
 };
 
-function JobCardItem({ card, onEdit }: JobCardItemProps) {
+function JobCardItem({ card, onEdit, onDelete }: JobCardItemProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
       <div className="md:flex md:gap-10 p-6">
@@ -438,13 +456,22 @@ function JobCardItem({ card, onEdit }: JobCardItemProps) {
                   Created: {new Date(card.createdAt).toLocaleDateString("en-GB")}
                 </p>
               </div>
-              <button
-                onClick={() => onEdit(card)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onEdit(card)}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDelete(card)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </button>
+              </div>
             </div>
 
             {/* Details Grid */}

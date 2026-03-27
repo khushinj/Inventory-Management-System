@@ -251,6 +251,15 @@ export default function ShippedOrderPage() {
           <p className="text-lg md:text-xl text-slate-600">Manage orders and their production status</p>
         </div>
 
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-5 gap-5">
+          {STATUS_OPTIONS.map((status) => (
+            <div key={status} className={`rounded-2xl border p-6 ${STATUS_COLORS[status]}`}>
+              <p className="text-4xl font-semibold">{counts[status]}</p>
+              <p className="mt-2 text-xl font-medium">{status}</p>
+            </div>
+          ))}
+        </div>
+
         <div className="bg-white/90 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -345,15 +354,6 @@ export default function ShippedOrderPage() {
               Add Row
             </button>
           </div>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-5">
-          {STATUS_OPTIONS.map((status) => (
-            <div key={status} className={`rounded-2xl border p-6 ${STATUS_COLORS[status]}`}>
-              <p className="text-4xl font-semibold">{counts[status]}</p>
-              <p className="mt-2 text-xl font-medium">{status}</p>
-            </div>
-          ))}
         </div>
 
         <div className="mt-6 flex gap-3 justify-end flex-wrap">

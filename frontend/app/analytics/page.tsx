@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Globe, House, ShoppingBag, Store, MonitorSmartphone, ClipboardList } from "lucide-react";
+import { Globe, House, ShoppingBag, Store, MonitorSmartphone, ClipboardList, PackageCheck, Boxes, Activity } from "lucide-react";
 import type { ComponentType } from "react";
 import { api } from "../../lib/api";
 
@@ -36,6 +36,17 @@ type DisplayActivityItem = RecentActivityItem & {
   displayType: string;
 };
 
+type ExportFobSummary = {
+  shippedOrderCount: number;
+  shippedOrderShippedCount: number;
+  presentStockCount: number;
+  presentStockPackedOrShippedCount: number;
+  productionRowCount: number;
+  productionCuttingTotal: number;
+  productionStitchingTotal: number;
+  productionFinishingTotal: number;
+};
+
 const analyticsCards: CardItem[] = [
   {
     title: "Shop",
@@ -56,6 +67,13 @@ const analyticsCards: CardItem[] = [
     href: "/domestic-analytics",
     icon: House,
     iconBg: "bg-emerald-600",
+    iconColor: "text-white",
+  },
+  {
+    title: "Export/FOB",
+    href: "/export-fob",
+    icon: PackageCheck,
+    iconBg: "bg-amber-600",
     iconColor: "text-white",
   },
   {
@@ -267,6 +285,17 @@ function ActivityTable({
 export default function AnalyticsPage() {
   const [recentActivities, setRecentActivities] = useState<RecentActivityItem[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
+  const [loadingExportFob, setLoadingExportFob] = useState(true);
+  const [exportFobSummary, setExportFobSummary] = useState<ExportFobSummary>({
+    shippedOrderCount: 0,
+    shippedOrderShippedCount: 0,
+    presentStockCount: 0,
+    presentStockPackedOrShippedCount: 0,
+    productionRowCount: 0,
+    productionCuttingTotal: 0,
+    productionStitchingTotal: 0,
+    productionFinishingTotal: 0,
+  });
 
   useEffect(() => {
     const fetchRecentActivity = async () => {
@@ -286,6 +315,59 @@ export default function AnalyticsPage() {
     };
 
     fetchRecentActivity();
+  }, []);
+
+  useEffect(() => {
+    const fetchExportFobSummary = async () => {
+      try {
+        setLoadingExportFob(true);
+
+        const [shippedOrderResponse, presentStockResponse, productionTrackingResponse] = await Promise.all([
+          api.get("/shipped-order"),
+          api.get("/present-stock"),
+          api.get("/production-tracking"),
+        ]);
+
+        const shippedOrderRows = Array.isArray(shippedOrderResponse.data)
+          ? shippedOrderResponse.data
+          : shippedOrderResponse.data?.data || [];
+
+        const presentStockRows = Array.isArray(presentStockResponse.data)
+          ? presentStockResponse.data
+          : presentStockResponse.data?.data || [];
+
+        const productionTrackingRows = Array.isArray(productionTrackingResponse.data)
+          ? productionTrackingResponse.data
+          : productionTrackingResponse.data?.data || [];
+
+        setExportFobSummary({
+          shippedOrderCount: shippedOrderRows.length,
+          shippedOrderShippedCount: shippedOrderRows.filter((item: { status?: string }) => item.status === "Shipped").length,
+          presentStockCount: presentStockRows.length,
+          presentStockPackedOrShippedCount: presentStockRows.filter((item: { status?: string }) => item.status === "Packed" || item.status === "Shipped").length,
+          productionRowCount: productionTrackingRows.length,
+          productionCuttingTotal: productionTrackingRows.reduce((sum: number, item: { cutting?: number }) => sum + (Number(item.cutting) || 0), 0),
+          productionStitchingTotal: productionTrackingRows.reduce((sum: number, item: { stitching?: number }) => sum + (Number(item.stitching) || 0), 0),
+          productionFinishingTotal: productionTrackingRows.reduce((sum: number, item: { finishing?: number }) => sum + (Number(item.finishing) || 0), 0),
+        });
+      } catch (error) {
+        console.error("Error loading Export/FOB analytics:", error);
+        setExportFobSummary({
+          shippedOrderCount: 0,
+          shippedOrderShippedCount: 0,
+          presentStockCount: 0,
+          presentStockPackedOrShippedCount: 0,
+          productionRowCount: 0,
+          productionCuttingTotal: 0,
+          productionStitchingTotal: 0,
+          productionFinishingTotal: 0,
+        });
+      } finally {
+        setLoadingExportFob(false);
+      }
+    };
+
+    fetchExportFobSummary();
   }, []);
 
   const activityRows = useMemo(() => {

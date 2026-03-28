@@ -145,7 +145,24 @@ export default function ProductionTrackingPage() {
   };
 
   const handleSaveNewEntries = async () => {
-    const newEntries = entries.filter((e) => e._id?.startsWith("temp-"));
+    const newEntries = entries
+      .filter((e) => e._id?.startsWith("temp-"))
+      .map((entry) => {
+        const entryId = entry._id || "";
+        const draft = tempValues[entryId] || {};
+
+        return {
+          ...entry,
+          ...draft,
+          designNumber: String(draft.designNumber ?? entry.designNumber ?? "").trim(),
+          color: String(draft.color ?? entry.color ?? "").trim(),
+          size: String(draft.size ?? entry.size ?? "").trim(),
+          cutting: Number(draft.cutting ?? entry.cutting ?? 0) || 0,
+          stitching: Number(draft.stitching ?? entry.stitching ?? 0) || 0,
+          finishing: Number(draft.finishing ?? entry.finishing ?? 0) || 0,
+          remarks: String(draft.remarks ?? entry.remarks ?? "").trim(),
+        };
+      });
     
     if (newEntries.length === 0) {
       alert("No new entries to save");
@@ -175,12 +192,14 @@ export default function ProductionTrackingPage() {
         )
       );
 
+      const savedRows = savedEntries.map((response) => response.data?.data || response.data);
+
       setEntries(
         entries.map((e) => {
           if (e._id?.startsWith("temp-")) {
             const savedIndex = newEntries.findIndex((ne) => ne._id === e._id);
-            if (savedIndex >= 0 && savedEntries[savedIndex].data) {
-              return savedEntries[savedIndex].data;
+            if (savedIndex >= 0 && savedRows[savedIndex]) {
+              return savedRows[savedIndex];
             }
           }
           return e;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../../lib/api";
 import { Plus, Trash2, Download } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -34,6 +34,30 @@ export default function ShippedOrderPage() {
   const [loading, setLoading] = useState(true);
   const [tempValues, setTempValues] = useState<Record<string, Partial<ShippedOrderEntry>>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.key !== "Enter") {
+      return;
+    }
+
+    e.preventDefault();
+
+    const table = e.currentTarget.closest("table");
+    if (!table) {
+      return;
+    }
+
+    const fields = Array.from(
+      table.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+        'input:not([type="checkbox"]):not([disabled]):not([readonly]), select:not([disabled])'
+      )
+    );
+
+    const currentIndex = fields.indexOf(e.currentTarget);
+    if (currentIndex > -1 && currentIndex < fields.length - 1) {
+      fields[currentIndex + 1]?.focus();
+    }
+  }, []);
 
   useEffect(() => {
     fetchEntries();
@@ -307,6 +331,7 @@ export default function ShippedOrderPage() {
                             type="text"
                             value={displayValues.designNumber}
                             onChange={(e) => handleCellChange(entry._id, "designNumber", e.target.value)}
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "designNumber")}
                             className="w-full rounded-xl border border-slate-300 px-4 py-3 text-lg text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
                             placeholder="DSN-001"
@@ -316,6 +341,7 @@ export default function ShippedOrderPage() {
                           <select
                             value={displayValues.status}
                             onChange={(e) => handleCellChange(entry._id, "status", e.target.value)}
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "status")}
                             className={`w-full rounded-xl border px-4 py-3 text-lg font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 ${
                               STATUS_COLORS[displayValues.status]

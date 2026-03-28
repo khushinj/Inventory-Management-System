@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../../lib/api";
 import { Plus, Trash2, Download, Scissors, Layout, CheckCircle2 } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -20,6 +20,30 @@ export default function ProductionTrackingPage() {
   const [entries, setEntries] = useState<ProductionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [tempValues, setTempValues] = useState<Record<string, Partial<ProductionEntry>>>({});
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.key !== "Enter") {
+      return;
+    }
+
+    e.preventDefault();
+
+    const table = e.currentTarget.closest("table");
+    if (!table) {
+      return;
+    }
+
+    const fields = Array.from(
+      table.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+        'input:not([type="checkbox"]):not([disabled]):not([readonly]), select:not([disabled])'
+      )
+    );
+
+    const currentIndex = fields.indexOf(e.currentTarget);
+    if (currentIndex > -1 && currentIndex < fields.length - 1) {
+      fields[currentIndex + 1]?.focus();
+    }
+  }, []);
 
   useEffect(() => {
     fetchProductionData();
@@ -349,6 +373,7 @@ export default function ProductionTrackingPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "designNumber", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "designNumber")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="e.g., DSN-001"
@@ -363,6 +388,7 @@ export default function ProductionTrackingPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "color", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "color")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="e.g., Red"
@@ -377,6 +403,7 @@ export default function ProductionTrackingPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "size", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "size")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="e.g., M"
@@ -391,6 +418,7 @@ export default function ProductionTrackingPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "cutting", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "cutting")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="0"
@@ -405,6 +433,7 @@ export default function ProductionTrackingPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "stitching", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "stitching")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="0"
@@ -419,6 +448,7 @@ export default function ProductionTrackingPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "finishing", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "finishing")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="0"
@@ -433,6 +463,7 @@ export default function ProductionTrackingPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "remarks", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "remarks")}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="Add remarks..."

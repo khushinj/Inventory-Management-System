@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../../lib/api";
 import { Plus, Trash2, Download } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -36,6 +36,30 @@ export default function PresentStockPage() {
   const [loading, setLoading] = useState(true);
   const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
   const [tempValues, setTempValues] = useState<Record<string, Partial<StockEntry>>>({});
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.key !== "Enter") {
+      return;
+    }
+
+    e.preventDefault();
+
+    const table = e.currentTarget.closest("table");
+    if (!table) {
+      return;
+    }
+
+    const fields = Array.from(
+      table.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+        'input:not([type="checkbox"]):not([disabled]):not([readonly]), select:not([disabled])'
+      )
+    );
+
+    const currentIndex = fields.indexOf(e.currentTarget);
+    if (currentIndex > -1 && currentIndex < fields.length - 1) {
+      fields[currentIndex + 1]?.focus();
+    }
+  }, []);
 
   useEffect(() => {
     fetchStockData();
@@ -319,6 +343,7 @@ export default function PresentStockPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "duo", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "duo")}
                             onFocus={() => handleCellClick(entry._id)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
@@ -334,6 +359,7 @@ export default function PresentStockPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "color", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "color")}
                             onFocus={() => handleCellClick(entry._id)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
@@ -349,6 +375,7 @@ export default function PresentStockPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "size", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "size")}
                             onFocus={() => handleCellClick(entry._id)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
@@ -363,6 +390,7 @@ export default function PresentStockPage() {
                             onChange={(e) =>
                               handleCellChange(entry._id, "status", e.target.value)
                             }
+                            onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "status")}
                             className={`w-full px-3 py-2 border-2 rounded-lg focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-medium text-gray-900 ${
                               STATUS_COLORS[displayValues.status]

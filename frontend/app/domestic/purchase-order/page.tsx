@@ -31,6 +31,22 @@ type PurchaseOrderItem = {
   amt: number;
 };
 
+type JobCardColor = {
+  color?: string;
+};
+
+type JobCardEntry = {
+  designNumber?: string;
+  mrp?: number | string;
+  cutting?: JobCardColor[];
+};
+
+type JobCardOption = {
+  designNumber: string;
+  mrp: number;
+  colors: string[];
+};
+
 // Function to convert number to words (Indian Rupees)
 function numberToWords(num: number): string {
   if (num === 0) return "Zero Rupees Only";
@@ -94,6 +110,7 @@ export default function PurchaseOrderEntryForm() {
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [isCityDropdownSelected, setIsCityDropdownSelected] = useState(false);
   const [cityValidationError, setCityValidationError] = useState("");
+  const [jobCardOptions, setJobCardOptions] = useState<JobCardOption[]>([]);
   const dealerInputRef = useRef<HTMLDivElement | null>(null);
   const buyerInputRef = useRef<HTMLDivElement | null>(null);
   const cityInputRef = useRef<HTMLDivElement | null>(null);
@@ -171,6 +188,15 @@ export default function PurchaseOrderEntryForm() {
     setHeaderInfo((prev) => ({ ...prev, [field]: value }));
   };
 
+  const getJobCardOptionByDesign = useCallback((designNumber: string) => {
+    return jobCardOptions.find((option) => option.designNumber === designNumber);
+  }, [jobCardOptions]);
+
+  const getColorOptionsForDesign = useCallback((designNumber: string) => {
+    const selectedDesign = getJobCardOptionByDesign(designNumber);
+    return selectedDesign?.colors || [];
+  }, [getJobCardOptionByDesign]);
+
   useEffect(() => {
     const loadPartySuggestions = async () => {
       try {
@@ -195,6 +221,62 @@ export default function PurchaseOrderEntryForm() {
 
     loadPartySuggestions();
   }, [normalizeUniqueNames]);
+
+  useEffect(() => {
+    const loadJobCardOptions = async () => {
+      try {
+        const response = await api.get("/jobcard");
+        const jobCards: JobCardEntry[] = Array.isArray(response.data) ? response.data : [];
+
+        const optionMap = new Map<string, JobCardOption>();
+
+        jobCards.forEach((card) => {
+          const designNumber = String(card.designNumber || "").trim();
+          if (!designNumber) {
+            return;
+          }
+
+          const key = designNumber.toLowerCase();
+          if (!optionMap.has(key)) {
+            optionMap.set(key, {
+              designNumber,
+              mrp: Number(card.mrp) || 0,
+              colors: [],
+            });
+          }
+
+          const existingOption = optionMap.get(key)!;
+          const cardMrp = Number(card.mrp) || 0;
+          if (!existingOption.mrp && cardMrp > 0) {
+            existingOption.mrp = cardMrp;
+          }
+
+          const cardColors = Array.isArray(card.cutting)
+            ? card.cutting.map((cut) => String(cut.color || "").trim()).filter(Boolean)
+            : [];
+
+          cardColors.forEach((color) => {
+            if (!existingOption.colors.some((existingColor) => existingColor.toLowerCase() === color.toLowerCase())) {
+              existingOption.colors.push(color);
+            }
+          });
+        });
+
+        const options = Array.from(optionMap.values())
+          .map((option) => ({
+            ...option,
+            colors: [...option.colors].sort((a, b) => a.localeCompare(b)),
+          }))
+          .sort((a, b) => a.designNumber.localeCompare(b.designNumber));
+
+        setJobCardOptions(options);
+      } catch (error) {
+        console.error("Failed to load job card options:", error);
+      }
+    };
+
+    loadJobCardOptions();
+  }, []);
 
   // Auto-calculate summary based on items
   useEffect(() => {
@@ -283,6 +365,29 @@ export default function PurchaseOrderEntryForm() {
     );
   };
 
+  const handleDesignSelection = (id: number, designNumber: string) => {
+    const selectedDesign = getJobCardOptionByDesign(designNumber);
+
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) {
+          return item;
+        }
+
+        return calculateItemValues({
+          ...item,
+          designNumber,
+          color: "",
+          mrp: selectedDesign?.mrp || 0,
+        });
+      })
+    );
+  };
+
+  const handleColorSelection = (id: number, color: string) => {
+    handleItemChange(id, "color", color);
+  };
+
   const addRow = () => {
     const newId = Math.max(...items.map((item) => item.id), 0) + 1;
     setItems([
@@ -313,14 +418,14 @@ export default function PurchaseOrderEntryForm() {
   };
 
   // Handle Enter key to move to next input
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       const form = e.currentTarget.form;
       if (!form) return;
 
-      const inputs = Array.from(form.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
-        'input:not([disabled]):not([readonly]), button:not([disabled])'
+      const inputs = Array.from(form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>(
+        'input:not([disabled]):not([readonly]), select:not([disabled]), button:not([disabled])'
       ));
       const currentIndex = inputs.indexOf(e.currentTarget);
 
@@ -359,8 +464,24 @@ export default function PurchaseOrderEntryForm() {
         item.designNumber && item.color && item.qty > 0
       );
 
+      const hasInvalidJobCardSelection = validItems.some((item) => {
+        const selectedDesign = getJobCardOptionByDesign(item.designNumber);
+
+        if (!selectedDesign) {
+          return true;
+        }
+
+        const selectedColor = item.color.trim().toLowerCase();
+        return !selectedDesign.colors.some((color) => color.toLowerCase() === selectedColor);
+      });
+
       if (validItems.length === 0) {
         alert("Please add at least one valid item with all required fields");
+        return;
+      }
+
+      if (hasInvalidJobCardSelection) {
+        alert("Design number and color must be selected from JobCard dropdowns only");
         return;
       }
 
@@ -882,24 +1003,35 @@ export default function PurchaseOrderEntryForm() {
                   <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 text-black">
                     <td className="px-3 py-3 text-sm text-gray-900">{index + 1}</td>
                     <td className="px-3 py-3">
-                      <input
-                        type="text"
-                        placeholder="Design Number"
+                      <select
                         value={item.designNumber}
-                        onChange={(e) => handleItemChange(item.id, "designNumber", e.target.value)}
+                        onChange={(e) => handleDesignSelection(item.id, e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                      />
+                        className="w-44 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                      >
+                        <option value="">Select design</option>
+                        {jobCardOptions.map((option) => (
+                          <option key={option.designNumber} value={option.designNumber}>
+                            {option.designNumber}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="px-3 py-3 text-black">
-                      <input
-                        type="text"
-                        placeholder="Color"
+                      <select
                         value={item.color}
-                        onChange={(e) => handleItemChange(item.id, "color", e.target.value)}
+                        onChange={(e) => handleColorSelection(item.id, e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-                      />
+                        disabled={!item.designNumber}
+                        className="w-36 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white disabled:bg-gray-100 disabled:text-gray-400"
+                      >
+                        <option value="">Select color</option>
+                        {getColorOptionsForDesign(item.designNumber).map((color) => (
+                          <option key={`${item.id}-${color}`} value={color}>
+                            {color}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="px-3 py-3">
                       <input
@@ -986,13 +1118,7 @@ export default function PurchaseOrderEntryForm() {
                       <div className="w-20 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-center text-gray-700 font-medium">{item.qty}</div>
                     </td>
                     <td className="px-3 py-3">
-                      <input
-                        type="number"
-                        value={item.mrp || ""}
-                        onChange={(e) => handleItemChange(item.id, "mrp", Number(e.target.value))}
-                        onKeyDown={handleKeyDown}
-                        className="w-20 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
-                      />
+                      <div className="w-20 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-center text-gray-700 font-medium">{item.mrp > 0 ? item.mrp.toFixed(2) : "-"}</div>
                     </td>
                     <td className="px-3 py-3">
                       <input

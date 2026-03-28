@@ -87,7 +87,15 @@ export default function PurchaseOrderEntryForm() {
     deadline: "",
     city: "",
   });
+  const [existingDealerNames, setExistingDealerNames] = useState<string[]>([]);
+  const [existingBuyerNames, setExistingBuyerNames] = useState<string[]>([]);
+  const [showDealerSuggestions, setShowDealerSuggestions] = useState(false);
+  const [showBuyerSuggestions, setShowBuyerSuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [isCityDropdownSelected, setIsCityDropdownSelected] = useState(false);
+  const [cityValidationError, setCityValidationError] = useState("");
+  const dealerInputRef = useRef<HTMLDivElement | null>(null);
+  const buyerInputRef = useRef<HTMLDivElement | null>(null);
   const cityInputRef = useRef<HTMLDivElement | null>(null);
 
   const [items, setItems] = useState<PurchaseOrderItem[]>([
@@ -128,9 +136,65 @@ export default function PurchaseOrderEntryForm() {
     ? INDIA_CITIES.filter((city) => city.toLowerCase().includes(headerInfo.city.trim().toLowerCase()))
     : [];
 
+  const filteredDealerNames = headerInfo.dealerName.trim()
+    ? existingDealerNames.filter((name) => name.toLowerCase().includes(headerInfo.dealerName.trim().toLowerCase()))
+    : [];
+
+  const filteredBuyerNames = headerInfo.buyerName.trim()
+    ? existingBuyerNames.filter((name) => name.toLowerCase().includes(headerInfo.buyerName.trim().toLowerCase()))
+    : [];
+
+  const isCitySelectedFromDropdown = useCallback((cityValue: string) => {
+    const normalizedInput = cityValue.trim().toLowerCase();
+    return INDIA_CITIES.some((city) => city.toLowerCase() === normalizedInput);
+  }, []);
+
+  const normalizeUniqueNames = useCallback((names: string[]) => {
+    const uniqueByLower = new Map<string, string>();
+
+    names.forEach((name) => {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        return;
+      }
+
+      const key = trimmedName.toLowerCase();
+      if (!uniqueByLower.has(key)) {
+        uniqueByLower.set(key, trimmedName);
+      }
+    });
+
+    return Array.from(uniqueByLower.values()).sort((a, b) => a.localeCompare(b));
+  }, []);
+
   const handleHeaderChange = (field: string, value: string) => {
     setHeaderInfo((prev) => ({ ...prev, [field]: value }));
   };
+
+  useEffect(() => {
+    const loadPartySuggestions = async () => {
+      try {
+        const response = await api.get("/purchase-order");
+        const orders = Array.isArray(response.data?.data) ? response.data.data : [];
+
+        const dealerNames = normalizeUniqueNames(
+          orders
+            .map((order: { dealerName?: string }) => order.dealerName || "")
+        );
+        const buyerNames = normalizeUniqueNames(
+          orders
+            .map((order: { buyerName?: string }) => order.buyerName || "")
+        );
+
+        setExistingDealerNames(dealerNames);
+        setExistingBuyerNames(buyerNames);
+      } catch (error) {
+        console.error("Failed to load dealer/buyer suggestions:", error);
+      }
+    };
+
+    loadPartySuggestions();
+  }, [normalizeUniqueNames]);
 
   // Auto-calculate summary based on items
   useEffect(() => {
@@ -151,17 +215,22 @@ export default function PurchaseOrderEntryForm() {
   }, [items]);
 
   useEffect(() => {
-    if (!showCitySuggestions) {
+    if (!showCitySuggestions && !showDealerSuggestions && !showBuyerSuggestions) {
       return;
     }
 
     const handleOutsideClick = (event: MouseEvent) => {
-      if (!cityInputRef.current) {
-        return;
+      const target = event.target as Node;
+
+      if (dealerInputRef.current && !dealerInputRef.current.contains(target)) {
+        setShowDealerSuggestions(false);
       }
 
-      const target = event.target as Node;
-      if (!cityInputRef.current.contains(target)) {
+      if (buyerInputRef.current && !buyerInputRef.current.contains(target)) {
+        setShowBuyerSuggestions(false);
+      }
+
+      if (cityInputRef.current && !cityInputRef.current.contains(target)) {
         setShowCitySuggestions(false);
       }
     };
@@ -170,7 +239,7 @@ export default function PurchaseOrderEntryForm() {
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, [showCitySuggestions]);
+  }, [showCitySuggestions, showDealerSuggestions, showBuyerSuggestions]);
 
   const calculateItemValues = (item: PurchaseOrderItem): PurchaseOrderItem => {
     // Calculate QTY: sum of all sizes
@@ -272,6 +341,16 @@ export default function PurchaseOrderEntryForm() {
         !headerInfo.city
       ) {
         alert("Please fill all required fields including POC");
+        return;
+      }
+
+      if (!isCitySelectedFromDropdown(headerInfo.city)) {
+        alert("Please select city only from dropdown");
+        return;
+      }
+
+      if (!isCityDropdownSelected) {
+        alert("Please select city from dropdown suggestions");
         return;
       }
 
@@ -563,30 +642,86 @@ export default function PurchaseOrderEntryForm() {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Header Information</h2>
 
           <div className="grid text-black grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
+            <div ref={dealerInputRef} className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name of Dealer
               </label>
               <input
                 type="text"
                 value={headerInfo.dealerName}
-                onChange={(e) => handleHeaderChange("dealerName", e.target.value)}
+                onChange={(e) => {
+                  handleHeaderChange("dealerName", e.target.value);
+                  setShowDealerSuggestions(true);
+                }}
+                onFocus={() => {
+                  if (headerInfo.dealerName.trim()) {
+                    setShowDealerSuggestions(true);
+                  }
+                }}
                 onKeyDown={handleKeyDown}
+                placeholder="Type dealer name"
+                autoComplete="off"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
+
+              {showDealerSuggestions && filteredDealerNames.length > 0 ? (
+                <div className="absolute z-20 mt-2 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg" style={{ maxHeight: "220px" }}>
+                  {filteredDealerNames.map((dealerName) => (
+                    <button
+                      key={dealerName}
+                      type="button"
+                      onMouseDown={() => {
+                        handleHeaderChange("dealerName", dealerName);
+                        setShowDealerSuggestions(false);
+                      }}
+                      className="block w-full border-b border-gray-100 px-4 py-2 text-left text-sm text-gray-700 last:border-b-0 hover:bg-blue-50"
+                    >
+                      {dealerName}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
-            <div>
+            <div ref={buyerInputRef} className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name of Buyer
               </label>
               <input
                 type="text"
                 value={headerInfo.buyerName}
-                onChange={(e) => handleHeaderChange("buyerName", e.target.value)}
+                onChange={(e) => {
+                  handleHeaderChange("buyerName", e.target.value);
+                  setShowBuyerSuggestions(true);
+                }}
+                onFocus={() => {
+                  if (headerInfo.buyerName.trim()) {
+                    setShowBuyerSuggestions(true);
+                  }
+                }}
                 onKeyDown={handleKeyDown}
+                placeholder="Type buyer name"
+                autoComplete="off"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               />
+
+              {showBuyerSuggestions && filteredBuyerNames.length > 0 ? (
+                <div className="absolute z-20 mt-2 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg" style={{ maxHeight: "220px" }}>
+                  {filteredBuyerNames.map((buyerName) => (
+                    <button
+                      key={buyerName}
+                      type="button"
+                      onMouseDown={() => {
+                        handleHeaderChange("buyerName", buyerName);
+                        setShowBuyerSuggestions(false);
+                      }}
+                      className="block w-full border-b border-gray-100 px-4 py-2 text-left text-sm text-gray-700 last:border-b-0 hover:bg-blue-50"
+                    >
+                      {buyerName}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             <div>
@@ -638,12 +773,35 @@ export default function PurchaseOrderEntryForm() {
                 value={headerInfo.city}
                 onChange={(e) => {
                   handleHeaderChange("city", e.target.value);
+                  setIsCityDropdownSelected(false);
+                  setCityValidationError("");
                   setShowCitySuggestions(true);
                 }}
                 onFocus={() => {
                   if (headerInfo.city.trim()) {
                     setShowCitySuggestions(true);
                   }
+                }}
+                onBlur={(e) => {
+                  const inputCity = e.target.value.trim();
+                  if (!inputCity) {
+                    setIsCityDropdownSelected(false);
+                    setCityValidationError("");
+                    return;
+                  }
+
+                  const matchedCity = INDIA_CITIES.find((city) => city.toLowerCase() === inputCity.toLowerCase());
+
+                  if (!matchedCity) {
+                    handleHeaderChange("city", "");
+                    setIsCityDropdownSelected(false);
+                    setCityValidationError("Please select a city from dropdown only");
+                    return;
+                  }
+
+                  handleHeaderChange("city", matchedCity);
+                  setIsCityDropdownSelected(false);
+                  setCityValidationError("");
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Type city name"
@@ -659,6 +817,8 @@ export default function PurchaseOrderEntryForm() {
                       type="button"
                       onMouseDown={() => {
                         handleHeaderChange("city", city);
+                        setIsCityDropdownSelected(true);
+                        setCityValidationError("");
                         setShowCitySuggestions(false);
                       }}
                       className="block w-full border-b border-gray-100 px-4 py-2 text-left text-sm text-gray-700 last:border-b-0 hover:bg-blue-50"
@@ -667,6 +827,10 @@ export default function PurchaseOrderEntryForm() {
                     </button>
                   ))}
                 </div>
+              ) : null}
+
+              {cityValidationError ? (
+                <p className="mt-2 text-xs text-red-600">{cityValidationError}</p>
               ) : null}
             </div>
           </div>

@@ -83,15 +83,88 @@ export default function PurchaseOrdersPage() {
     return `PO-${year}-${id}`;
   };
 
+  const cloneItems = (items: PurchaseOrderItem[]) =>
+    items.map((item) => ({
+      ...item,
+      category: item.category || "",
+      designNumber: item.designNumber || "",
+      color: item.color || "",
+      s: item.s || 0,
+      m: item.m || 0,
+      l: item.l || 0,
+      xl: item.xl || 0,
+      xxl: item.xxl || 0,
+      xxxl: item.xxxl || 0,
+      xxxxl: item.xxxxl || 0,
+      xxxxxl: item.xxxxxl || 0,
+      xxxxxxl: item.xxxxxxl || 0,
+      qty: item.qty || 0,
+      mrp: item.mrp || 0,
+      dis: item.dis || 0,
+      rate: item.rate || 0,
+      amount: item.amount || 0,
+      tgst: item.tgst || 0,
+      tax: item.tax || 0,
+      amt: item.amt || 0,
+    }));
+
+  const toDeliveredArray = (order: PurchaseOrder): SizeBreakdown[] => {
+    return order.items.map((_, itemIndex) => {
+      const savedSizes = deliveredSizes[order._id]?.[itemIndex] || order.deliveredSizes?.[itemIndex] || {};
+      const entry: SizeBreakdown = {};
+      sizeKeys.forEach((key) => {
+        const value = savedSizes[key];
+        entry[key] = typeof value === "number" && value >= 0 ? value : 0;
+      });
+      return entry;
+    });
+  };
+
+  const recalculateOrderTotals = (items: PurchaseOrderItem[]) => {
+    const totalQuantity = items.reduce((sum, item) => sum + (item.qty || 0), 0);
+    const grossTotal = items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const gstOutput = items.reduce((sum, item) => sum + (item.tax || 0), 0);
+    const grandTotal = items.reduce((sum, item) => sum + (item.amt || 0), 0);
+
+    return { totalQuantity, grossTotal, gstOutput, grandTotal };
+  };
+
+  const recalculateItem = (item: PurchaseOrderItem): PurchaseOrderItem => {
+    const qty = sizeKeys.reduce((sum, sizeKey) => sum + (((item as Record<SizeKey, number>)[sizeKey] || 0)), 0);
+    const mrp = Number(item.mrp || 0);
+    const dis = Number(item.dis || 0);
+    const tgst = Number(item.tgst || 0);
+    const rate = Number((mrp - (mrp * dis) / 100).toFixed(2));
+    const amount = Number((qty * rate).toFixed(2));
+    const tax = Number((amount * (tgst / 100)).toFixed(2));
+    const amt = Number((amount + tax).toFixed(2));
+
+    return {
+      ...item,
+      qty,
+      rate,
+      amount,
+      tax,
+      amt,
+    };
+  };
+
   const openEditModal = (order: PurchaseOrder) => {
     setEditingOrder(order);
     setEditFormData({
+      status: order.status,
       dealerName: order.dealerName,
       buyerName: order.buyerName,
       date: new Date(order.date).toISOString().split('T')[0],
       deadline: order.deadline ? new Date(order.deadline).toISOString().split('T')[0] : '',
       city: order.city,
       termsCondition: order.termsCondition,
+      items: cloneItems(order.items),
+      deliveredSizes: toDeliveredArray(order),
+      totalQuantity: order.totalQuantity,
+      grossTotal: order.grossTotal,
+      gstOutput: order.gstOutput,
+      grandTotal: order.grandTotal,
     });
     setEditSaveStatus("idle");
   };
@@ -109,6 +182,76 @@ export default function PurchaseOrdersPage() {
     }));
   };
 
+  const handleEditItemChange = (
+    itemIndex: number,
+    field: keyof PurchaseOrderItem,
+    value: string
+  ) => {
+    setEditFormData((prev) => {
+      const currentItems = cloneItems((prev.items as PurchaseOrderItem[]) || editingOrder?.items || []);
+      const existingItem = currentItems[itemIndex];
+      if (!existingItem) {
+        return prev;
+      }
+
+      const numericFields: Array<keyof PurchaseOrderItem> = [
+        "s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxxl",
+        "qty", "mrp", "dis", "rate", "amount", "tgst", "tax", "amt",
+      ];
+
+      const parsedValue = numericFields.includes(field)
+        ? Math.max(0, Number(value) || 0)
+        : value;
+
+      const updatedItem = { ...existingItem, [field]: parsedValue } as PurchaseOrderItem;
+
+      const shouldAutoRecalculate =
+        field === "s" ||
+        field === "m" ||
+        field === "l" ||
+        field === "xl" ||
+        field === "xxl" ||
+        field === "xxxl" ||
+        field === "xxxxl" ||
+        field === "xxxxxl" ||
+        field === "xxxxxxl" ||
+        field === "mrp" ||
+        field === "dis" ||
+        field === "tgst";
+
+      currentItems[itemIndex] = shouldAutoRecalculate ? recalculateItem(updatedItem) : updatedItem;
+
+      const totals = recalculateOrderTotals(currentItems);
+
+      return {
+        ...prev,
+        items: currentItems,
+        totalQuantity: totals.totalQuantity,
+        grossTotal: totals.grossTotal,
+        gstOutput: totals.gstOutput,
+        grandTotal: totals.grandTotal,
+      };
+    });
+  };
+
+  const handleEditDeliveredChange = (itemIndex: number, sizeKey: SizeKey, value: string) => {
+    setEditFormData((prev) => {
+      const currentDelivered = Array.isArray(prev.deliveredSizes)
+        ? [...prev.deliveredSizes]
+        : toDeliveredArray(editingOrder as PurchaseOrder);
+
+      const itemDelivered = { ...(currentDelivered[itemIndex] || {}) };
+      const parsed = Math.max(0, Number(value) || 0);
+      itemDelivered[sizeKey] = parsed;
+      currentDelivered[itemIndex] = itemDelivered;
+
+      return {
+        ...prev,
+        deliveredSizes: currentDelivered,
+      };
+    });
+  };
+
   const handleEditFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingOrder) return;
@@ -118,12 +261,21 @@ export default function PurchaseOrdersPage() {
       
       // Prepare the update data with proper date formatting
       const updateData: Partial<PurchaseOrder> = {
+        status: (editFormData.status as PurchaseOrder["status"]) || editingOrder.status,
         dealerName: editFormData.dealerName || editingOrder.dealerName,
         buyerName: editFormData.buyerName || editingOrder.buyerName,
         date: editFormData.date ? new Date(editFormData.date).toISOString() : editingOrder.date,
         deadline: editFormData.deadline ? new Date(editFormData.deadline).toISOString() : editingOrder.deadline,
         city: editFormData.city || editingOrder.city,
         termsCondition: editFormData.termsCondition !== undefined ? editFormData.termsCondition : editingOrder.termsCondition,
+        items: Array.isArray(editFormData.items) ? cloneItems(editFormData.items as PurchaseOrderItem[]) : editingOrder.items,
+        deliveredSizes: Array.isArray(editFormData.deliveredSizes)
+          ? (editFormData.deliveredSizes as SizeBreakdown[])
+          : toDeliveredArray(editingOrder),
+        totalQuantity: typeof editFormData.totalQuantity === "number" ? editFormData.totalQuantity : editingOrder.totalQuantity,
+        grossTotal: typeof editFormData.grossTotal === "number" ? editFormData.grossTotal : editingOrder.grossTotal,
+        gstOutput: typeof editFormData.gstOutput === "number" ? editFormData.gstOutput : editingOrder.gstOutput,
+        grandTotal: typeof editFormData.grandTotal === "number" ? editFormData.grandTotal : editingOrder.grandTotal,
       };
 
       const res = await api.put(`/purchase-order/${editingOrder._id}`, updateData);
@@ -135,6 +287,23 @@ export default function PurchaseOrdersPage() {
         if (selectedOrder?._id === editingOrder._id) {
           setSelectedOrder(updatedOrder);
         }
+        setDeliveredSizes((prev) => {
+          const orderDelivered: Record<number, Record<SizeKey, number>> = {};
+          updatedOrder.items.forEach((_, itemIndex) => {
+            const delivered = updatedOrder.deliveredSizes?.[itemIndex] || {};
+            const entry = {} as Record<SizeKey, number>;
+            sizeKeys.forEach((key) => {
+              const value = delivered[key];
+              entry[key] = typeof value === "number" && value >= 0 ? value : 0;
+            });
+            orderDelivered[itemIndex] = entry;
+          });
+
+          return {
+            ...prev,
+            [updatedOrder._id]: orderDelivered,
+          };
+        });
         setEditSaveStatus("saved");
         setTimeout(() => {
           closeEditModal();
@@ -978,7 +1147,7 @@ export default function PurchaseOrdersPage() {
       {/* Edit Modal */}
       {editingOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+          <div className="bg-white rounded-xl shadow-2xl max-w-7xl w-full max-h-[92vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <div>
@@ -998,6 +1167,22 @@ export default function PurchaseOrdersPage() {
             {/* Modal Content */}
             <form onSubmit={handleEditFormSubmit} className="p-6">
               <div className="space-y-4">
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={(editFormData.status as PurchaseOrder["status"]) || "pending"}
+                    onChange={(e) => handleEditFormChange("status", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="partially pending">Partially Pending</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
                 {/* Dealer Name */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1078,6 +1263,137 @@ export default function PurchaseOrdersPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows={4}
                   />
+                </div>
+
+                {/* Order Items */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Order Items (Editable)
+                  </label>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto max-h-[360px]">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 sticky top-0 z-10">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-gray-700">Design</th>
+                            <th className="px-3 py-2 text-left text-gray-700">Color</th>
+                            <th className="px-3 py-2 text-left text-gray-700">Sizes</th>
+                            <th className="px-3 py-2 text-left text-gray-700">MRP</th>
+                            <th className="px-3 py-2 text-left text-gray-700">Dis%</th>
+                            <th className="px-3 py-2 text-left text-gray-700">GST%</th>
+                            <th className="px-3 py-2 text-left text-gray-700">Qty</th>
+                            <th className="px-3 py-2 text-left text-gray-700">Amt</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {((editFormData.items as PurchaseOrderItem[]) || []).map((item, itemIndex) => (
+                            <tr key={itemIndex} className="align-top">
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={item.designNumber || ""}
+                                  onChange={(e) => handleEditItemChange(itemIndex, "designNumber", e.target.value)}
+                                  className="w-36 px-2 py-1 border border-gray-300 rounded text-gray-900"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={item.color || ""}
+                                  onChange={(e) => handleEditItemChange(itemIndex, "color", e.target.value)}
+                                  className="w-28 px-2 py-1 border border-gray-300 rounded text-gray-900"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="grid grid-cols-3 gap-1 min-w-[210px]">
+                                  {sizeKeys.map((sizeKey) => (
+                                    <label key={sizeKey} className="text-[10px] text-gray-600 uppercase">
+                                      {sizeKey}
+                                      <input
+                                        type="number"
+                                        min={0}
+                                        value={(item as Record<SizeKey, number>)[sizeKey] ?? 0}
+                                        onChange={(e) => handleEditItemChange(itemIndex, sizeKey as keyof PurchaseOrderItem, e.target.value)}
+                                        className="mt-0.5 w-full px-1.5 py-1 border border-gray-300 rounded text-xs text-gray-900"
+                                      />
+                                    </label>
+                                  ))}
+                                </div>
+                                <p className="mt-2 text-[10px] uppercase tracking-wide text-gray-500">Delivered Qty</p>
+                                <div className="mt-1 grid grid-cols-3 gap-1 min-w-[210px]">
+                                  {sizeKeys.map((sizeKey) => {
+                                    const delivered =
+                                      ((editFormData.deliveredSizes as SizeBreakdown[]) || [])[itemIndex]?.[sizeKey] ?? 0;
+                                    return (
+                                      <label key={`delivered-${sizeKey}`} className="text-[10px] text-gray-600 uppercase">
+                                        {sizeKey}
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          value={delivered}
+                                          onChange={(e) => handleEditDeliveredChange(itemIndex, sizeKey, e.target.value)}
+                                          className="mt-0.5 w-full px-1.5 py-1 border border-gray-300 rounded text-xs text-gray-900"
+                                        />
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={item.mrp || 0}
+                                  onChange={(e) => handleEditItemChange(itemIndex, "mrp", e.target.value)}
+                                  className="w-24 px-2 py-1 border border-gray-300 rounded text-gray-900"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={item.dis || 0}
+                                  onChange={(e) => handleEditItemChange(itemIndex, "dis", e.target.value)}
+                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-gray-900"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={item.tgst || 0}
+                                  onChange={(e) => handleEditItemChange(itemIndex, "tgst", e.target.value)}
+                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-gray-900"
+                                />
+                              </td>
+                              <td className="px-3 py-2 text-gray-900 font-medium">{item.qty || 0}</td>
+                              <td className="px-3 py-2 text-gray-900 font-semibold">{formatCurrency(item.amt || 0)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Totals */}
+                <div className="bg-blue-50 rounded-lg p-4 grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-600">Total Qty</p>
+                    <p className="text-lg font-semibold text-gray-900">{editFormData.totalQuantity || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Gross Total</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatCurrency(editFormData.grossTotal || 0)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">GST Total</p>
+                    <p className="text-lg font-semibold text-gray-900">{formatCurrency(editFormData.gstOutput || 0)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Grand Total</p>
+                    <p className="text-lg font-semibold text-blue-900">{formatCurrency(editFormData.grandTotal || 0)}</p>
+                  </div>
                 </div>
               </div>
 

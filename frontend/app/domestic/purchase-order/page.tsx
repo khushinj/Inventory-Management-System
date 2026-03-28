@@ -1009,7 +1009,7 @@ export default function PurchaseOrderEntryForm() {
                         onKeyDown={handleKeyDown}
                         className="w-44 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
                       >
-                        <option value="">Select design</option>
+                        <option value="">Select design number</option>
                         {jobCardOptions.map((option) => (
                           <option key={option.designNumber} value={option.designNumber}>
                             {option.designNumber}

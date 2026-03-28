@@ -189,7 +189,8 @@ export default function PurchaseOrderEntryForm() {
   };
 
   const getJobCardOptionByDesign = useCallback((designNumber: string) => {
-    return jobCardOptions.find((option) => option.designNumber === designNumber);
+    const normalizedDesign = designNumber.trim().toLowerCase();
+    return jobCardOptions.find((option) => option.designNumber.trim().toLowerCase() === normalizedDesign);
   }, [jobCardOptions]);
 
   const getColorOptionsForDesign = useCallback((designNumber: string) => {
@@ -365,7 +366,7 @@ export default function PurchaseOrderEntryForm() {
     );
   };
 
-  const handleDesignSelection = (id: number, designNumber: string) => {
+  const handleDesignInputChange = (id: number, designNumber: string) => {
     const selectedDesign = getJobCardOptionByDesign(designNumber);
 
     setItems((prev) =>
@@ -377,15 +378,11 @@ export default function PurchaseOrderEntryForm() {
         return calculateItemValues({
           ...item,
           designNumber,
-          color: "",
+          color: item.color,
           mrp: selectedDesign?.mrp || 0,
         });
       })
     );
-  };
-
-  const handleColorSelection = (id: number, color: string) => {
-    handleItemChange(id, "color", color);
   };
 
   const addRow = () => {
@@ -464,24 +461,8 @@ export default function PurchaseOrderEntryForm() {
         item.designNumber && item.color && item.qty > 0
       );
 
-      const hasInvalidJobCardSelection = validItems.some((item) => {
-        const selectedDesign = getJobCardOptionByDesign(item.designNumber);
-
-        if (!selectedDesign) {
-          return true;
-        }
-
-        const selectedColor = item.color.trim().toLowerCase();
-        return !selectedDesign.colors.some((color) => color.toLowerCase() === selectedColor);
-      });
-
       if (validItems.length === 0) {
         alert("Please add at least one valid item with all required fields");
-        return;
-      }
-
-      if (hasInvalidJobCardSelection) {
-        alert("Design number and color must be selected from JobCard dropdowns only");
         return;
       }
 
@@ -1003,35 +984,31 @@ export default function PurchaseOrderEntryForm() {
                   <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50 text-black">
                     <td className="px-3 py-3 text-sm text-gray-900">{index + 1}</td>
                     <td className="px-3 py-3">
-                      <select
+                      <input
+                        type="text"
                         value={item.designNumber}
-                        onChange={(e) => handleDesignSelection(item.id, e.target.value)}
+                        onChange={(e) => handleDesignInputChange(item.id, e.target.value)}
                         onKeyDown={handleKeyDown}
+                        list="jobcard-design-options"
+                        placeholder="Type or select design"
                         className="w-44 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
-                      >
-                        <option value="">Select design number</option>
-                        {jobCardOptions.map((option) => (
-                          <option key={option.designNumber} value={option.designNumber}>
-                            {option.designNumber}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </td>
                     <td className="px-3 py-3 text-black">
-                      <select
+                      <input
+                        type="text"
                         value={item.color}
-                        onChange={(e) => handleColorSelection(item.id, e.target.value)}
+                        onChange={(e) => handleItemChange(item.id, "color", e.target.value)}
                         onKeyDown={handleKeyDown}
-                        disabled={!item.designNumber}
-                        className="w-36 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white disabled:bg-gray-100 disabled:text-gray-400"
-                      >
-                        <option value="">Select color</option>
+                        list={`jobcard-color-options-${item.id}`}
+                        placeholder="Type or select color"
+                        className="w-36 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
+                      />
+                      <datalist id={`jobcard-color-options-${item.id}`}>
                         {getColorOptionsForDesign(item.designNumber).map((color) => (
-                          <option key={`${item.id}-${color}`} value={color}>
-                            {color}
-                          </option>
+                          <option key={`${item.id}-${color}`} value={color} />
                         ))}
-                      </select>
+                      </datalist>
                     </td>
                     <td className="px-3 py-3">
                       <input
@@ -1160,6 +1137,11 @@ export default function PurchaseOrderEntryForm() {
                 ))}
               </tbody>
             </table>
+            <datalist id="jobcard-design-options">
+              {jobCardOptions.map((option) => (
+                <option key={option.designNumber} value={option.designNumber} />
+              ))}
+            </datalist>
           </div>
         </div>
 

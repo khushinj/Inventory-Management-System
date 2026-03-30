@@ -379,7 +379,7 @@ export default function PurchaseOrderEntryForm() {
           ...item,
           designNumber,
           color: item.color,
-          mrp: selectedDesign?.mrp || 0,
+          mrp: selectedDesign ? selectedDesign.mrp : item.mrp,
         });
       })
     );
@@ -902,7 +902,7 @@ export default function PurchaseOrderEntryForm() {
                   }
 
                   handleHeaderChange("city", matchedCity);
-                  setIsCityDropdownSelected(false);
+                  setIsCityDropdownSelected(true);
                   setCityValidationError("");
                 }}
                 onKeyDown={handleKeyDown}
@@ -1095,7 +1095,16 @@ export default function PurchaseOrderEntryForm() {
                       <div className="w-20 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-center text-gray-700 font-medium">{item.qty}</div>
                     </td>
                     <td className="px-3 py-3">
-                      <div className="w-20 px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-center text-gray-700 font-medium">{item.mrp > 0 ? item.mrp.toFixed(2) : "-"}</div>
+                      <input
+                        type="number"
+                        value={item.mrp || ""}
+                        onChange={(e) => handleItemChange(item.id, "mrp", Number(e.target.value))}
+                        onKeyDown={handleKeyDown}
+                        className="w-20 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm text-center"
+                        placeholder="MRP"
+                        min="0"
+                        step="0.01"
+                      />
                     </td>
                     <td className="px-3 py-3">
                       <input

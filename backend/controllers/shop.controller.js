@@ -2,45 +2,66 @@ import { getTransactionModel } from "../models/Transaction.js";
 
 const allowedShopForms = ["import", "sales", "return", "purchase"];
 
+const createSingleShopEntry = async (payload) => {
+  if (!allowedShopForms.includes(payload.formType)) {
+    throw new Error("Invalid shop form type");
+  }
+
+  const Model = getTransactionModel("shop", "", payload.formType);
+
+  const data = await Model.create({
+    ...payload,
+    domain: "shop",
+    warehouseType: "",
+  });
+
+  // If this is a shop import (stock received), create corresponding domestic dispatch entry
+  // to subtract from domestic inventory
+  if (payload.formType === "import") {
+    try {
+      const DomesticModel = getTransactionModel("warehouse", "domestic", "dispatch");
+      await DomesticModel.create({
+        dno: payload.dno,
+        type: payload.type,
+        color: payload.color,
+        size: payload.size,
+        qty: payload.qty,
+        date: payload.date || new Date(),
+        formType: "dispatch",
+        domain: "warehouse",
+        warehouseType: "domestic",
+        channel: "retail", // Dispatched to retail shop
+        receiver: "Shop", // Mark that this went to shop
+      });
+    } catch (domesticErr) {
+      console.error("Error creating domestic dispatch entry:", domesticErr.message);
+      // Continue even if domestic entry fails - shop entry is already created
+    }
+  }
+
+  return data;
+};
+
 export const createShopEntry = async (req, res) => {
   try {
-    if (!allowedShopForms.includes(req.body.formType)) {
-      return res.status(400).json({ error: "Invalid shop form type" });
-    }
-
-    const Model = getTransactionModel("shop", "", req.body.formType);
-
-    const data = await Model.create({
-      ...req.body,
-      domain: "shop",
-      warehouseType: "",
-    });
-
-    // If this is a shop import (stock received), create corresponding domestic dispatch entry
-    // to subtract from domestic inventory
-    if (req.body.formType === "import") {
-      try {
-        const DomesticModel = getTransactionModel("warehouse", "domestic", "dispatch");
-        await DomesticModel.create({
-          dno: req.body.dno,
-          type: req.body.type,
-          color: req.body.color,
-          size: req.body.size,
-          qty: req.body.qty,
-          date: req.body.date || new Date(),
-          formType: "dispatch",
-          domain: "warehouse",
-          warehouseType: "domestic",
-          channel: "retail", // Dispatched to retail shop
-          receiver: "Shop", // Mark that this went to shop
-        });
-      } catch (domesticErr) {
-        console.error("Error creating domestic dispatch entry:", domesticErr.message);
-        // Continue even if domestic entry fails - shop entry is already created
-      }
-    }
+    const data = await createSingleShopEntry(req.body);
 
     res.status(201).json(data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+export const createShopEntriesBulk = async (req, res) => {
+  try {
+    const { entries } = req.body;
+
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return res.status(400).json({ error: "entries must be a non-empty array" });
+    }
+
+    const created = await Promise.all(entries.map((entry) => createSingleShopEntry(entry)));
+    res.status(201).json({ count: created.length, data: created });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

@@ -426,10 +426,10 @@ function ShopDashboard() {
   const handleSaveImportRow = async () => {
     try {
       const entryGroupId = createEntryGroupId();
-      const promises = SIZES.map(size => {
+      const entriesToCreate = SIZES.map(size => {
         const qty = newImportRow.sizes[size] || 0;
         if (qty > 0) {
-          return api.post("/shop", {
+          return {
             dno: newImportRow.dno,
             type: newImportRow.type,
             color: newImportRow.color,
@@ -439,12 +439,14 @@ function ShopDashboard() {
             date: newImportRow.date || new Date().toISOString().split("T")[0],
             formType: "import",
             channel: "retail",
-          });
+          };
         }
         return null;
-      }).filter(p => p !== null);
-      
-      await Promise.all(promises);
+      }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+      if (entriesToCreate.length > 0) {
+        await api.post("/shop/bulk", { entries: entriesToCreate });
+      }
       
       setNewImportRow({
         rowKey: "",
@@ -484,10 +486,10 @@ function ShopDashboard() {
 
       const entryGroupId = createEntryGroupId();
       
-      const promises = SIZES.map(size => {
+      const entriesToCreate = SIZES.map(size => {
         const qty = editImportForm.sizes[size] || 0;
         if (qty > 0) {
-          return api.post("/shop", {
+          return {
             dno: editImportForm.dno,
             type: editImportForm.type,
             color: editImportForm.color,
@@ -497,12 +499,14 @@ function ShopDashboard() {
             date: editImportForm.date || new Date().toISOString().split("T")[0],
             formType: "import",
             channel: "retail",
-          });
+          };
         }
         return null;
-      }).filter(p => p !== null);
-      
-      await Promise.all(promises);
+      }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+      if (entriesToCreate.length > 0) {
+        await api.post("/shop/bulk", { entries: entriesToCreate });
+      }
       
       setEditingImportRow(null);
       fetchEntries();
@@ -572,10 +576,10 @@ function ShopDashboard() {
   const handleSaveReturnRow = async () => {
     try {
       const entryGroupId = createEntryGroupId();
-      const promises = SIZES.map(size => {
+      const entriesToCreate = SIZES.map(size => {
         const qty = newReturnRow.sizes[size] || 0;
         if (qty > 0) {
-          return api.post("/shop", {
+          return {
             dno: newReturnRow.dno,
             type: newReturnRow.type,
             color: newReturnRow.color,
@@ -585,12 +589,14 @@ function ShopDashboard() {
             date: newReturnRow.date || new Date().toISOString().split("T")[0],
             formType: "return",
             channel: "retail",
-          });
+          };
         }
         return null;
-      }).filter(p => p !== null);
-      
-      await Promise.all(promises);
+      }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+      if (entriesToCreate.length > 0) {
+        await api.post("/shop/bulk", { entries: entriesToCreate });
+      }
       
       setNewReturnRow({
         rowKey: "",
@@ -630,10 +636,10 @@ function ShopDashboard() {
 
       const entryGroupId = createEntryGroupId();
       
-      const promises = SIZES.map(size => {
+      const entriesToCreate = SIZES.map(size => {
         const qty = editReturnForm.sizes[size] || 0;
         if (qty > 0) {
-          return api.post("/shop", {
+          return {
             dno: editReturnForm.dno,
             type: editReturnForm.type,
             color: editReturnForm.color,
@@ -643,12 +649,14 @@ function ShopDashboard() {
             date: editReturnForm.date || new Date().toISOString().split("T")[0],
             formType: "return",
             channel: "retail",
-          });
+          };
         }
         return null;
-      }).filter(p => p !== null);
-      
-      await Promise.all(promises);
+      }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+      if (entriesToCreate.length > 0) {
+        await api.post("/shop/bulk", { entries: entriesToCreate });
+      }
       
       setEditingReturnRow(null);
       fetchEntries();

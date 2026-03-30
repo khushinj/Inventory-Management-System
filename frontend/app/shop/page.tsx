@@ -15,6 +15,7 @@ type Entry = {
   color?: string;
   size?: string;
   qty: number;
+  entryGroupId?: string;
   date?: string;
   channel?: string;
   formType?: string;
@@ -24,6 +25,9 @@ type Entry = {
 };
 
 type SampleRow = {
+  rowKey: string;
+  entryGroupId?: string;
+  entryIds: string[];
   dno: string;
   type: string;
   color: string;
@@ -54,6 +58,16 @@ const getEntryTimestamp = (entry: Entry) => {
 const sortEntriesLatestFirst = (left: Entry, right: Entry) => getEntryTimestamp(right) - getEntryTimestamp(left);
 const sortRowsLatestFirst = (left: SampleRow, right: SampleRow) =>
   (right.latestTimestamp || 0) - (left.latestTimestamp || 0);
+const createEntryGroupId = () => `grp_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+const getDateOnlyKey = (dateValue?: string) => {
+  if (!dateValue) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateValue.split("T")[0] || "";
+  }
+  return parsed.toISOString().split("T")[0];
+};
 
 function ShopDashboard() {
   const searchParams = useSearchParams();
@@ -101,6 +115,8 @@ function ShopDashboard() {
   const [editingImportRow, setEditingImportRow] = useState<string | null>(null);
   const [editingReturnRow, setEditingReturnRow] = useState<string | null>(null);
   const [newImportRow, setNewImportRow] = useState<SampleRow>({
+    rowKey: "",
+    entryIds: [],
     dno: "",
     type: "",
     color: "",
@@ -108,6 +124,8 @@ function ShopDashboard() {
     sizes: {}
   });
   const [newReturnRow, setNewReturnRow] = useState<SampleRow>({
+    rowKey: "",
+    entryIds: [],
     dno: "",
     type: "",
     color: "",
@@ -115,6 +133,8 @@ function ShopDashboard() {
     sizes: {}
   });
   const [editImportForm, setEditImportForm] = useState<SampleRow>({
+    rowKey: "",
+    entryIds: [],
     dno: "",
     type: "",
     color: "",
@@ -122,6 +142,8 @@ function ShopDashboard() {
     sizes: {}
   });
   const [editReturnForm, setEditReturnForm] = useState<SampleRow>({
+    rowKey: "",
+    entryIds: [],
     dno: "",
     type: "",
     color: "",
@@ -176,9 +198,14 @@ function ShopDashboard() {
 
     items.forEach((entry) => {
       if (entry.dno && entry.color && entry.size) {
-        const key = `${entry.dno}_${entry.color}`;
+        // Group by design+color+date so one row can show all sizes for that day.
+        const dateKey = getDateOnlyKey(entry.date || entry.createdAt || entry.updatedAt);
+        const key = `${entry.dno}__${entry.color}__${dateKey}`;
         if (!grouped[key]) {
           grouped[key] = {
+            rowKey: key,
+            entryGroupId: entry.entryGroupId,
+            entryIds: [],
             dno: entry.dno,
             type: entry.type || "",
             color: entry.color,
@@ -188,9 +215,11 @@ function ShopDashboard() {
           };
         }
 
+        grouped[key].entryIds.push(entry._id);
+
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-        // SUM quantities if duplicate entries exist (don't overwrite)
+  // Sum within the same design+color+date row.
         grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
         grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
 
@@ -396,6 +425,7 @@ function ShopDashboard() {
 
   const handleSaveImportRow = async () => {
     try {
+      const entryGroupId = createEntryGroupId();
       const promises = SIZES.map(size => {
         const qty = newImportRow.sizes[size] || 0;
         if (qty > 0) {
@@ -405,6 +435,7 @@ function ShopDashboard() {
             color: newImportRow.color,
             size: size,
             qty: qty,
+            entryGroupId,
             date: newImportRow.date || new Date().toISOString().split("T")[0],
             formType: "import",
             channel: "retail",
@@ -416,6 +447,8 @@ function ShopDashboard() {
       await Promise.all(promises);
       
       setNewImportRow({
+        rowKey: "",
+        entryIds: [],
         dno: "",
         type: "",
         color: "",
@@ -432,28 +465,24 @@ function ShopDashboard() {
     }
   };
 
-  const handleEditImportRow = (dno: string, color: string) => {
-    const key = `${dno}_${color}`;
-    setEditingImportRow(key);
-    const row = importRows.find(r => r.dno === dno && r.color === color);
-    if (row) {
-      // Format date to YYYY-MM-DD for date input
-      const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
-      setEditImportForm({...row, date: formattedDate});
-    }
+  const handleEditImportRow = (row: SampleRow) => {
+    setEditingImportRow(row.rowKey);
+    // Format date to YYYY-MM-DD for date input
+    const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
+    setEditImportForm({...row, date: formattedDate});
   };
 
-  const handleUpdateImportRow = async (dno: string, color: string) => {
+  const handleUpdateImportRow = async (row: SampleRow) => {
     try {
-      const entriesToDelete = entries.filter(e => 
-        e.formType === "import" && e.dno === dno && e.color === color
-      );
+      const entryIdsToDelete = row.entryIds;
       
-      const deletePromises = entriesToDelete.map(entry => 
-        api.delete(`/shop/${entry._id}`)
+      const deletePromises = entryIdsToDelete.map(entryId => 
+        api.delete(`/shop/${entryId}`)
       );
       
       await Promise.all(deletePromises);
+
+      const entryGroupId = createEntryGroupId();
       
       const promises = SIZES.map(size => {
         const qty = editImportForm.sizes[size] || 0;
@@ -464,6 +493,7 @@ function ShopDashboard() {
             color: editImportForm.color,
             size: size,
             qty: qty,
+            entryGroupId,
             date: editImportForm.date || new Date().toISOString().split("T")[0],
             formType: "import",
             channel: "retail",
@@ -484,15 +514,11 @@ function ShopDashboard() {
     }
   };
 
-  const handleDeleteImportRow = async (dno: string, color: string) => {
-    if (window.confirm(`Are you sure you want to delete all entries for ${dno} - ${color}?`)) {
+  const handleDeleteImportRow = async (row: SampleRow) => {
+    if (window.confirm(`Are you sure you want to delete this import entry for ${row.dno} - ${row.color}?`)) {
       try {
-        const entriesToDelete = entries.filter(e => 
-          e.formType === "import" && e.dno === dno && e.color === color
-        );
-        
-        const deletePromises = entriesToDelete.map(entry => 
-          api.delete(`/shop/${entry._id}`)
+        const deletePromises = row.entryIds.map(entryId => 
+          api.delete(`/shop/${entryId}`)
         );
         
         await Promise.all(deletePromises);
@@ -507,6 +533,8 @@ function ShopDashboard() {
   const handleCancelImport = () => {
     setIsCreatingImport(false);
     setNewImportRow({
+      rowKey: "",
+      entryIds: [],
       dno: "",
       type: "",
       color: "",
@@ -543,6 +571,7 @@ function ShopDashboard() {
 
   const handleSaveReturnRow = async () => {
     try {
+      const entryGroupId = createEntryGroupId();
       const promises = SIZES.map(size => {
         const qty = newReturnRow.sizes[size] || 0;
         if (qty > 0) {
@@ -552,6 +581,7 @@ function ShopDashboard() {
             color: newReturnRow.color,
             size: size,
             qty: qty,
+            entryGroupId,
             date: newReturnRow.date || new Date().toISOString().split("T")[0],
             formType: "return",
             channel: "retail",
@@ -563,6 +593,8 @@ function ShopDashboard() {
       await Promise.all(promises);
       
       setNewReturnRow({
+        rowKey: "",
+        entryIds: [],
         dno: "",
         type: "",
         color: "",
@@ -579,28 +611,24 @@ function ShopDashboard() {
     }
   };
 
-  const handleEditReturnRow = (dno: string, color: string) => {
-    const key = `${dno}_${color}`;
-    setEditingReturnRow(key);
-    const row = returnRows.find(r => r.dno === dno && r.color === color);
-    if (row) {
-      // Format date to YYYY-MM-DD for date input
-      const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
-      setEditReturnForm({...row, date: formattedDate});
-    }
+  const handleEditReturnRow = (row: SampleRow) => {
+    setEditingReturnRow(row.rowKey);
+    // Format date to YYYY-MM-DD for date input
+    const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
+    setEditReturnForm({...row, date: formattedDate});
   };
 
-  const handleUpdateReturnRow = async (dno: string, color: string) => {
+  const handleUpdateReturnRow = async (row: SampleRow) => {
     try {
-      const entriesToDelete = entries.filter(e => 
-        e.formType === "return" && e.dno === dno && e.color === color
-      );
+      const entryIdsToDelete = row.entryIds;
       
-      const deletePromises = entriesToDelete.map(entry => 
-        api.delete(`/shop/${entry._id}`)
+      const deletePromises = entryIdsToDelete.map(entryId => 
+        api.delete(`/shop/${entryId}`)
       );
       
       await Promise.all(deletePromises);
+
+      const entryGroupId = createEntryGroupId();
       
       const promises = SIZES.map(size => {
         const qty = editReturnForm.sizes[size] || 0;
@@ -611,6 +639,7 @@ function ShopDashboard() {
             color: editReturnForm.color,
             size: size,
             qty: qty,
+            entryGroupId,
             date: editReturnForm.date || new Date().toISOString().split("T")[0],
             formType: "return",
             channel: "retail",
@@ -631,15 +660,11 @@ function ShopDashboard() {
     }
   };
 
-  const handleDeleteReturnRow = async (dno: string, color: string) => {
-    if (window.confirm(`Are you sure you want to delete all entries for ${dno} - ${color}?`)) {
+  const handleDeleteReturnRow = async (row: SampleRow) => {
+    if (window.confirm(`Are you sure you want to delete this return entry for ${row.dno} - ${row.color}?`)) {
       try {
-        const entriesToDelete = entries.filter(e => 
-          e.formType === "return" && e.dno === dno && e.color === color
-        );
-        
-        const deletePromises = entriesToDelete.map(entry => 
-          api.delete(`/shop/${entry._id}`)
+        const deletePromises = row.entryIds.map(entryId => 
+          api.delete(`/shop/${entryId}`)
         );
         
         await Promise.all(deletePromises);
@@ -654,6 +679,8 @@ function ShopDashboard() {
   const handleCancelReturn = () => {
     setIsCreatingReturn(false);
     setNewReturnRow({
+      rowKey: "",
+      entryIds: [],
       dno: "",
       type: "",
       color: "",
@@ -971,11 +998,10 @@ function ShopDashboard() {
                     </tr>
                   )}
                   {selectedFormType === "import" && filteredGroupedRows.map((row, idx) => {
-                    const rowKey = `${row.dno}_${row.color}`;
-                    const isEditing = editingImportRow === rowKey;
+                    const isEditing = editingImportRow === row.rowKey;
                     
                     return (
-                      <tr key={idx} className={isEditing ? "bg-blue-50" : ""}>
+                      <tr key={row.rowKey || idx} className={isEditing ? "bg-blue-50" : ""}>
                         {isEditing ? (
                           <>
                             <td className="px-6 py-4">
@@ -1027,7 +1053,7 @@ function ShopDashboard() {
                               </td>
                             ))}
                             <td className="px-6 py-4">
-                              <button onClick={() => handleUpdateImportRow(row.dno, row.color)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => handleUpdateImportRow(row)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
                               <button onClick={() => setEditingImportRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
                             </td>
                           </>
@@ -1043,8 +1069,8 @@ function ShopDashboard() {
                               <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
                             ))}
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <button onClick={() => handleEditImportRow(row.dno, row.color)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                              <button onClick={() => handleDeleteImportRow(row.dno, row.color)} className="text-red-600 hover:text-red-900">Delete</button>
+                              <button onClick={() => handleEditImportRow(row)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteImportRow(row)} className="text-red-600 hover:text-red-900">Delete</button>
                             </td>
                           </>
                         )}
@@ -1052,11 +1078,10 @@ function ShopDashboard() {
                     );
                   })}
                   {selectedFormType === "return" && filteredGroupedRows.map((row, idx) => {
-                    const rowKey = `${row.dno}_${row.color}`;
-                    const isEditing = editingReturnRow === rowKey;
+                    const isEditing = editingReturnRow === row.rowKey;
                     
                     return (
-                      <tr key={idx} className={isEditing ? "bg-blue-50" : ""}>
+                      <tr key={row.rowKey || idx} className={isEditing ? "bg-blue-50" : ""}>
                         {isEditing ? (
                           <>
                             <td className="px-6 py-4">
@@ -1108,7 +1133,7 @@ function ShopDashboard() {
                               </td>
                             ))}
                             <td className="px-6 py-4">
-                              <button onClick={() => handleUpdateReturnRow(row.dno, row.color)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button onClick={() => handleUpdateReturnRow(row)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
                               <button onClick={() => setEditingReturnRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
                             </td>
                           </>
@@ -1124,8 +1149,8 @@ function ShopDashboard() {
                               <td key={size} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sizes[size] || 0}</td>
                             ))}
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <button onClick={() => handleEditReturnRow(row.dno, row.color)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                              <button onClick={() => handleDeleteReturnRow(row.dno, row.color)} className="text-red-600 hover:text-red-900">Delete</button>
+                              <button onClick={() => handleEditReturnRow(row)} className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                              <button onClick={() => handleDeleteReturnRow(row)} className="text-red-600 hover:text-red-900">Delete</button>
                             </td>
                           </>
                         )}

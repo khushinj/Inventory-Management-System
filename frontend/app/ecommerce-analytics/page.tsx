@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, RefreshCw } from "lucide-react";
 import { api } from "../../lib/api";
 
 type Period = "last-10-days" | "last-month" | "last-3-months" | "last-6-months" | "last-year" | "custom";
@@ -482,11 +482,21 @@ export default function EcommerceAnalyticsPage() {
   const [onlineDailyReports, setOnlineDailyReports] = useState<OnlineDailyReport[]>([]);
   const [onlineInventory, setOnlineInventory] = useState<OnlineInventoryItem[]>([]);
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (period === "custom") return;
     setDateRange(getDateRangeByPeriod(period));
   }, [period]);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchData();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -516,6 +526,19 @@ export default function EcommerceAnalyticsPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleRefresh();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [handleRefresh]);
 
   const mrpMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -739,6 +762,15 @@ export default function EcommerceAnalyticsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">E-Commerce Inventory</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              title="Refresh data"
+            >
+              <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
+              <span className="text-sm font-medium sm:text-base">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+            </button>
             <div className="relative">
               <button
                 type="button"

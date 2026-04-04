@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { api } from "../../lib/api";
-import { FileText, Search, Filter, Eye, X, Trash2, Edit } from "lucide-react";
+import { FileText, Search, Filter, Eye, X, Trash2, Edit, Truck } from "lucide-react";
 
 type PurchaseOrderItem = {
   category: string;
@@ -425,6 +425,10 @@ export default function PurchaseOrdersPage() {
     order: PurchaseOrder,
     orderDelivered: DeliveredSizeMap[string] = {}
   ): PurchaseOrder["status"] => {
+    if (order.status === "completed") {
+      return "completed";
+    }
+
     let anyDelivered = false;
     let allComplete = true;
 
@@ -456,6 +460,26 @@ export default function PurchaseOrdersPage() {
     }
 
     return "partially pending";
+  };
+
+  const handleMarkAsShipped = async (order: PurchaseOrder) => {
+    const confirmed = window.confirm(
+      `Mark ${getOrderNumber(order)} as shipped? Status will be set to completed even if some quantities are still pending.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await updatePurchaseOrderData(order._id, {
+        status: "completed",
+        deliveredSizes: buildDeliveredSizesArray(order, deliveredSizes[order._id]),
+      });
+    } catch (error) {
+      console.error("Error marking purchase order as shipped:", error);
+      alert("Failed to mark purchase order as shipped");
+    }
   };
 
   const getOrderCompletion = (
@@ -819,6 +843,7 @@ export default function PurchaseOrdersPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredOrders.map((order) => {
             const completion = getOrderCompletion(order, deliveredSizes[order._id]);
+            const cardStatus = getDerivedStatus(order, deliveredSizes[order._id]);
 
             return (
             <div
@@ -832,10 +857,10 @@ export default function PurchaseOrdersPage() {
                 </h3>
                 <span
                   className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                    order.status
+                    cardStatus
                   )}`}
                 >
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  {cardStatus.charAt(0).toUpperCase() + cardStatus.slice(1)}
                 </span>
               </div>
 
@@ -897,6 +922,15 @@ export default function PurchaseOrdersPage() {
               </div>
 
               <div className="flex gap-2">
+                {cardStatus === "partially pending" && (
+                  <button
+                    onClick={() => handleMarkAsShipped(order)}
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-green-700 border border-green-300 rounded-lg hover:bg-green-50 transition-colors"
+                  >
+                    <Truck className="w-4 h-4" />
+                    Shipped
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setSelectedOrder(order);

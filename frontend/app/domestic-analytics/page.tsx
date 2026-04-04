@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 import { api } from "../../lib/api";
 
@@ -138,6 +138,40 @@ type PoSizeKey = (typeof poSizeKeys)[number];
 function toIsoDate(value?: string) {
   if (!value) return "";
   return value.split("T")[0] || "";
+}
+
+function isOrderCompleted(po: PurchaseOrder) {
+  return (po.status || "").trim().toLowerCase() === "completed";
+}
+
+function getOrderDeliveredSummary(po: PurchaseOrder) {
+  let totalOrdered = 0;
+  let totalDelivered = 0;
+  const completed = isOrderCompleted(po);
+
+  if (Array.isArray(po.items) && po.items.length > 0) {
+    po.items.forEach((item, index) => {
+      const deliveredItem = po.deliveredSizes?.[index] || {};
+
+      poSizeKeys.forEach((key) => {
+        const ordered = Number(item?.[key] || 0);
+        const deliveredRaw = Number(deliveredItem?.[key] || 0);
+        const clampedDelivered = Math.min(Math.max(deliveredRaw, 0), Math.max(ordered, 0));
+
+        totalOrdered += ordered;
+        totalDelivered += completed ? ordered : clampedDelivered;
+      });
+    });
+  } else {
+    totalOrdered = Number(po.totalQuantity || 0);
+    totalDelivered = completed ? totalOrdered : 0;
+  }
+
+  return {
+    ordered: totalOrdered,
+    delivered: totalDelivered,
+    pending: Math.max(totalOrdered - totalDelivered, 0),
+  };
 }
 
 function normalizeCityKey(city?: string) {
@@ -403,6 +437,7 @@ function RegionPieChart({ data, onSelect }: { data: RegionPoint[]; onSelect: (re
   const center = size / 2;
   const radius = 108;
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  const hasMoreThan8 = data.length > 8;
 
   const chartData = total > 0 ? data : [{ label: "No Data", value: 1, percentage: 0, color: "#94a3b8", deliveredPercent: 0, pendingPercent: 0, totalOrders: 0 }];
 
@@ -440,73 +475,97 @@ function RegionPieChart({ data, onSelect }: { data: RegionPoint[]; onSelect: (re
   const activeSlice = slices.find((slice) => slice.label === hoveredRegion) ?? null;
 
   return (
-    <div className="relative flex items-center justify-center px-2 pb-16 pt-2 sm:px-4 sm:pb-20">
-      <svg viewBox={`0 0 ${size} ${size}`} className="h-[300px] w-[300px] overflow-visible sm:h-[340px] sm:w-[340px]">
-        {slices.map((slice) => (
-          <path
-            key={slice.label}
-            d={slice.path}
-            fill={slice.color}
-            stroke="#ffffff"
-            strokeWidth="2"
-            style={{ cursor: "pointer", opacity: hoveredRegion === slice.label ? 0.8 : 1 }}
-            onMouseEnter={() => setHoveredRegion(slice.label)}
-            onMouseLeave={() => setHoveredRegion(null)}
-            onClick={() => onSelect(slice.label)}
-          />
-        ))}
+    <div className="flex flex-col items-center">
+      <div className="relative flex items-center justify-center px-2 pt-2 sm:px-4" style={{ paddingBottom: hasMoreThan8 ? "32px" : "64px" }}>
+        <svg viewBox={`0 0 ${size} ${size}`} className="h-[300px] w-[300px] overflow-visible sm:h-[340px] sm:w-[340px]">
+          {slices.map((slice) => (
+            <path
+              key={slice.label}
+              d={slice.path}
+              fill={slice.color}
+              stroke="#ffffff"
+              strokeWidth="2"
+              style={{ cursor: "pointer", opacity: hoveredRegion === slice.label ? 0.8 : 1 }}
+              onMouseEnter={() => setHoveredRegion(slice.label)}
+              onMouseLeave={() => setHoveredRegion(null)}
+              onClick={() => onSelect(slice.label)}
+            />
+          ))}
 
-        {slices.map((slice) => {
-          const angle = (Math.PI * slice.midAngle) / 180;
-          const connectorStartRadius = radius + 6;
-          const connectorEndRadius = radius + 24;
-          const textRadius = radius + 30;
-          const startX = center + connectorStartRadius * Math.cos(angle);
-          const startY = center + connectorStartRadius * Math.sin(angle);
-          const endX = center + connectorEndRadius * Math.cos(angle);
-          const endY = center + connectorEndRadius * Math.sin(angle);
-          const labelX = Math.min(size - 28, Math.max(28, center + textRadius * Math.cos(angle)));
-          const labelY = Math.min(size - 24, Math.max(24, center + textRadius * Math.sin(angle)));
-          const isRightSide = Math.cos(angle) >= 0;
+          {!hasMoreThan8 && slices.map((slice) => {
+            const angle = (Math.PI * slice.midAngle) / 180;
+            const connectorStartRadius = radius + 6;
+            const connectorEndRadius = radius + 24;
+            const textRadius = radius + 30;
+            const startX = center + connectorStartRadius * Math.cos(angle);
+            const startY = center + connectorStartRadius * Math.sin(angle);
+            const endX = center + connectorEndRadius * Math.cos(angle);
+            const endY = center + connectorEndRadius * Math.sin(angle);
+            const labelX = Math.min(size - 28, Math.max(28, center + textRadius * Math.cos(angle)));
+            const labelY = Math.min(size - 24, Math.max(24, center + textRadius * Math.sin(angle)));
+            const isRightSide = Math.cos(angle) >= 0;
 
-          return (
-            <g key={`label-${slice.label}`} className="pointer-events-none">
-              <line x1={startX} y1={startY} x2={endX} y2={endY} stroke={slice.color} strokeWidth="1.5" opacity="0.75" />
-              <text
-                x={labelX}
-                y={labelY - 2}
-                textAnchor={isRightSide ? "start" : "end"}
-                fill="#0f172a"
-                fontSize="11"
-                fontWeight="600"
-              >
-                {slice.label}
-              </text>
-              <text
-                x={labelX}
-                y={labelY + 12}
-                textAnchor={isRightSide ? "start" : "end"}
-                fill={slice.color}
-                fontSize="10"
-                fontWeight="600"
-              >
-                {slice.percentage}%
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+            return (
+              <g key={`label-${slice.label}`} className="pointer-events-none">
+                <line x1={startX} y1={startY} x2={endX} y2={endY} stroke={slice.color} strokeWidth="1.5" opacity="0.75" />
+                <text
+                  x={labelX}
+                  y={labelY - 2}
+                  textAnchor={isRightSide ? "start" : "end"}
+                  fill="#0f172a"
+                  fontSize="11"
+                  fontWeight="600"
+                >
+                  {slice.label}
+                </text>
+                <text
+                  x={labelX}
+                  y={labelY + 12}
+                  textAnchor={isRightSide ? "start" : "end"}
+                  fill={slice.color}
+                  fontSize="10"
+                  fontWeight="600"
+                >
+                  {slice.percentage}%
+                </text>
+              </g>
+            );
+          })}
+        </svg>
 
-      {activeSlice ? (
-        <div className="absolute bottom-1 left-1/2 min-w-[180px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs text-slate-700 shadow-lg backdrop-blur-sm sm:text-[13px]">
-          <div className="font-semibold text-slate-900">{activeSlice.label}: {formatINR(activeSlice.value)}</div>
-          <div className="mt-1 flex items-center justify-between gap-3 text-[11px] sm:text-xs">
-            <span className="text-green-600">Delivered {activeSlice.deliveredPercent}%</span>
-            <span className="text-orange-600">Pending {activeSlice.pendingPercent}%</span>
+        {activeSlice ? (
+          <div className="absolute bottom-1 left-1/2 min-w-[180px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs text-slate-700 shadow-lg backdrop-blur-sm sm:text-[13px]">
+            <div className="font-semibold text-slate-900">{activeSlice.label}: {formatINR(activeSlice.value)}</div>
+            <div className="mt-1 flex items-center justify-between gap-3 text-[11px] sm:text-xs">
+              <span className="text-green-600">Delivered {activeSlice.deliveredPercent}%</span>
+              <span className="text-orange-600">Pending {activeSlice.pendingPercent}%</span>
+            </div>
+            <div className="mt-1 text-[10px] text-slate-500 sm:text-[11px]">{activeSlice.totalOrders} orders</div>
           </div>
-          <div className="mt-1 text-[10px] text-slate-500 sm:text-[11px]">{activeSlice.totalOrders} orders</div>
+        ) : null}
+      </div>
+
+      {hasMoreThan8 && (
+        <div className="w-full mt-4">
+          <div className="grid grid-cols-2 gap-2 px-2 sm:grid-cols-3 lg:grid-cols-4">
+            {slices.map((slice) => (
+              <div
+                key={slice.label}
+                className="flex items-center gap-2 rounded-lg border border-slate-200/60 bg-slate-50 px-3 py-2 text-xs cursor-pointer hover:bg-slate-100 transition-colors"
+                onMouseEnter={() => setHoveredRegion(slice.label)}
+                onMouseLeave={() => setHoveredRegion(null)}
+                onClick={() => onSelect(slice.label)}
+              >
+                <div className="flex-shrink-0 w-3 h-3 rounded-full" style={{ backgroundColor: slice.color }}></div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-slate-900 truncate">{slice.label}</div>
+                  <div className="text-slate-600">{slice.percentage}%</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -518,6 +577,7 @@ function PocPieChart({ data }: { data: PocPoint[] }) {
   const center = size / 2;
   const radius = 110;
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  const hasMoreThan8 = data.length > 8;
 
   let startAngle = -90;
 
@@ -547,64 +607,88 @@ function PocPieChart({ data }: { data: PocPoint[] }) {
   });
 
   return (
-    <div className="relative flex justify-center pb-16">
-      <svg viewBox={`0 0 ${size} ${size}`} className="h-[320px] w-[320px]">
+    <div className="flex flex-col items-center">
+      <div className="relative flex justify-center" style={{ paddingBottom: hasMoreThan8 ? "32px" : "64px" }}>
+        <svg viewBox={`0 0 ${size} ${size}`} className="h-[320px] w-[320px]">
 
-        {/* PIE */}
-        {slices.map((slice, index) => (
-          <path
-            key={index}
-            d={slice.path}
-            fill={slice.color}
-            stroke="#fff"
-            strokeWidth="2"
-            style={{
-              cursor: "pointer",
-              opacity: hovered?.label === slice.label ? 0.8 : 1,
-            }}
-            onMouseEnter={() => setHovered(slice)}
-            onMouseLeave={() => setHovered(null)}
-          />
-        ))}
-
-        {/* LABELS */}
-        {slices.map((slice, index) => {
-          const angle = (Math.PI * slice.midAngle) / 180;
-
-          const labelRadius = radius + 25;
-
-          const x = center + labelRadius * Math.cos(angle);
-          const y = center + labelRadius * Math.sin(angle);
-
-          return (
-            <text
+          {/* PIE */}
+          {slices.map((slice, index) => (
+            <path
               key={index}
-              x={x}
-              y={y}
-              textAnchor="middle"
-              fontSize="11"
-              fill="#0f172a"
-              fontWeight="600"
-            >
-              {slice.label}
-            </text>
-          );
-        })}
-      </svg>
+              d={slice.path}
+              fill={slice.color}
+              stroke="#fff"
+              strokeWidth="2"
+              style={{
+                cursor: "pointer",
+                opacity: hovered?.label === slice.label ? 0.8 : 1,
+              }}
+              onMouseEnter={() => setHovered(slice)}
+              onMouseLeave={() => setHovered(null)}
+            />
+          ))}
 
-      {/* TOOLTIP */}
-      {hovered && (
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 min-w-[200px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-lg">
-          <div className="font-semibold text-slate-900">
-            {hovered.label}
+          {/* LABELS - Only show if <= 8 items */}
+          {!hasMoreThan8 && slices.map((slice, index) => {
+            const angle = (Math.PI * slice.midAngle) / 180;
+
+            const labelRadius = radius + 25;
+
+            const x = center + labelRadius * Math.cos(angle);
+            const y = center + labelRadius * Math.sin(angle);
+
+            return (
+              <text
+                key={index}
+                x={x}
+                y={y}
+                textAnchor="middle"
+                fontSize="11"
+                fill="#0f172a"
+                fontWeight="600"
+              >
+                {slice.label}
+              </text>
+            );
+          })}
+        </svg>
+
+        {/* TOOLTIP */}
+        {hovered && (
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 min-w-[200px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-lg">
+            <div className="font-semibold text-slate-900">
+              {hovered.label}
+            </div>
+
+            <div className="mt-1 text-blue-600 font-medium">
+              {formatINR(hovered.value)}
+            </div>
+
+            <div className="mt-1 text-slate-500">
+              {hovered.percentage}% of total
+            </div>
           </div>
+        )}
+      </div>
 
-          <div className="mt-1 text-blue-600 font-medium">
-            {formatINR(hovered.value)}
-          </div>
-
-          <div className="mt-1 text-slate-500">
-            {hovered.percentage}% of total
+      {/* LEGEND - Show if > 8 items */}
+      {hasMoreThan8 && (
+        <div className="w-full mt-4">
+          <div className="grid grid-cols-2 gap-2 px-2 sm:grid-cols-3 lg:grid-cols-4">
+            {slices.map((slice) => (
+              <div
+                key={slice.label}
+                className="flex items-center gap-2 rounded-lg border border-slate-200/60 bg-slate-50 px-3 py-2 text-xs cursor-pointer hover:bg-slate-100 transition-colors"
+                onMouseEnter={() => setHovered(slice)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div className="flex-shrink-0 w-3 h-3 rounded-full" style={{ backgroundColor: slice.color }}></div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-slate-900 truncate">{slice.label}</div>
+                  <div className="text-slate-600">{slice.percentage}%</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -629,6 +713,7 @@ export default function DomesticAnalyticsPage() {
   const [overallCompletion, setOverallCompletion] = useState<number>(0);
   const allPurchaseOrdersRef = useRef<PurchaseOrder[]>([]);
   const [pocDistribution, setPocDistribution] = useState<PocPoint[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRegionClick = (regionLabel: string) => {
     setSelectedRegion(regionLabel);
@@ -670,24 +755,9 @@ export default function DomesticAnalyticsPage() {
     let totalDelivered = 0;
 
     allPurchaseOrders.forEach((po) => {
-      if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes)) {
-        po.items.forEach((item, index) => {
-          const deliveredItem = po.deliveredSizes?.[index] || {};
-
-          poSizeKeys.forEach((key) => {
-            const ordered = Number(item?.[key] || 0);
-            const delivered = Number(deliveredItem?.[key] || 0);
-
-            totalOrdered += ordered;
-            totalDelivered += Math.min(delivered, ordered);
-          });
-        });
-      } else {
-        totalOrdered += po.totalQuantity || 0;
-        if (po.status === "completed") {
-          totalDelivered += po.totalQuantity || 0;
-        }
-      }
+      const summary = getOrderDeliveredSummary(po);
+      totalOrdered += summary.ordered;
+      totalDelivered += summary.delivered;
     });
 
     const percent =
@@ -739,9 +809,31 @@ export default function DomesticAnalyticsPage() {
     }
   }, [dateRange]);
 
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchAnalyticsData();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchAnalyticsData]);
+
   useEffect(() => {
     fetchAnalyticsData();
   }, [fetchAnalyticsData]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleRefresh();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [handleRefresh]);
 
   const calculateMetrics = (
     dispatches: Transaction[],
@@ -789,29 +881,10 @@ export default function DomesticAnalyticsPage() {
   };
 
   const getDeliveredAndPending = (po: PurchaseOrder) => {
-    let totalOrdered = 0;
-    let totalDelivered = 0;
-
-    if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes)) {
-      po.items.forEach((item, index) => {
-        const deliveredItem = po.deliveredSizes?.[index] || {};
-
-        poSizeKeys.forEach((key) => {
-          const ordered = Number(item?.[key] || 0);
-          const delivered = Number(deliveredItem?.[key] || 0);
-
-          totalOrdered += ordered;
-          totalDelivered += Math.min(delivered, ordered);
-        });
-      });
-    } else {
-      totalOrdered = po.totalQuantity || 0;
-      totalDelivered = po.status === "completed" ? totalOrdered : 0;
-    }
-
+    const { delivered: totalDelivered, pending } = getOrderDeliveredSummary(po);
     return {
       delivered: totalDelivered,
-      pending: totalOrdered - totalDelivered,
+      pending,
     };
   };
 
@@ -825,19 +898,7 @@ export default function DomesticAnalyticsPage() {
       const current = ordersByDate.get(date) || 0;
       ordersByDate.set(date, current + 1);
 
-      let deliveredQty = 0;
-      if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes) && po.items.length > 0) {
-        po.items.forEach((item, itemIndex) => {
-          const deliveredForItem = po.deliveredSizes?.[itemIndex] || {};
-          poSizeKeys.forEach((key) => {
-            const ordered = Number((item as Record<PoSizeKey, number | undefined>)?.[key] || 0);
-            const deliveredRaw = Number((deliveredForItem as Record<PoSizeKey, number | undefined>)?.[key] || 0);
-            deliveredQty += Math.min(Math.max(deliveredRaw, 0), Math.max(ordered, 0));
-          });
-        });
-      } else {
-        deliveredQty = po.status === "completed" ? Number(po.totalQuantity || 0) : 0;
-      }
+      const deliveredQty = getOrderDeliveredSummary(po).delivered;
 
       const currentSales = salesByDate.get(date) || 0;
       salesByDate.set(date, currentSales + deliveredQty);
@@ -968,29 +1029,9 @@ export default function DomesticAnalyticsPage() {
     allPurchaseOrders.forEach((po) => {
       const regionKey = normalizeCityKey(po.city);
 
-      // 🔥 STEP 1: Calculate completion % for EACH PO
-      let totalOrdered = 0;
-      let totalDelivered = 0;
-
-      if (Array.isArray(po.items) && Array.isArray(po.deliveredSizes)) {
-        po.items.forEach((item, index) => {
-          const deliveredItem = po.deliveredSizes?.[index] || {};
-
-          poSizeKeys.forEach((key) => {
-            const ordered = Number(item?.[key] || 0);
-            const delivered = Number(deliveredItem?.[key] || 0);
-
-            totalOrdered += ordered;
-            totalDelivered += Math.min(delivered, ordered);
-          });
-        });
-      } else {
-        totalOrdered = po.totalQuantity || 0;
-        totalDelivered = po.status === "completed" ? totalOrdered : 0;
-      }
-
+      const summary = getOrderDeliveredSummary(po);
       const completionPercent =
-        totalOrdered > 0 ? (totalDelivered / totalOrdered) * 100 : 0;
+        summary.ordered > 0 ? (summary.delivered / summary.ordered) * 100 : 0;
 
       // 🔥 STEP 2: Aggregate by region
       const existing = regionMap.get(regionKey) || {
@@ -1016,7 +1057,6 @@ export default function DomesticAnalyticsPage() {
 
     const regions: RegionPoint[] = Array.from(regionMap.values())
       .sort((a, b) => b.sales - a.sales)
-      .slice(0, 6)
       .map((region, index) => {
         const avgCompletion =
           region.count > 0 ? region.totalCompletion / region.count : 0;
@@ -1068,7 +1108,6 @@ export default function DomesticAnalyticsPage() {
 
     const data: PocPoint[] = Array.from(pocMap.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
       .map(([poc, value], index) => ({
         label: poc,
         value,
@@ -1111,6 +1150,15 @@ export default function DomesticAnalyticsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Domestic Inventory</h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white px-4 py-2.5 text-slate-600 shadow-[0_8px_20px_rgba(15,23,42,0.05)] hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              title="Refresh data from purchase orders"
+            >
+              <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} />
+              <span className="text-sm font-medium sm:text-base">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
+            </button>
             <div ref={datePickerRef} className="relative">
               <button
                 type="button"

@@ -519,6 +519,8 @@ export default function ShopAnalyticsPage() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [handleRefresh]);
+
+  const trendSeries = useMemo(() => {
     const saleByDate = new Map<string, number>();
     const expenseByDate = new Map<string, number>();
     filteredReports.forEach((report) => {

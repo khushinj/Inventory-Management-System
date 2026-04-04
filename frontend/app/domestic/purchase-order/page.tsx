@@ -105,14 +105,17 @@ export default function PurchaseOrderEntryForm() {
   });
   const [existingDealerNames, setExistingDealerNames] = useState<string[]>([]);
   const [existingBuyerNames, setExistingBuyerNames] = useState<string[]>([]);
+  const [existingPocs, setExistingPocs] = useState<string[]>([]);
   const [showDealerSuggestions, setShowDealerSuggestions] = useState(false);
   const [showBuyerSuggestions, setShowBuyerSuggestions] = useState(false);
+  const [showPocSuggestions, setShowPocSuggestions] = useState(false);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [isCityDropdownSelected, setIsCityDropdownSelected] = useState(false);
   const [cityValidationError, setCityValidationError] = useState("");
   const [jobCardOptions, setJobCardOptions] = useState<JobCardOption[]>([]);
   const dealerInputRef = useRef<HTMLDivElement | null>(null);
   const buyerInputRef = useRef<HTMLDivElement | null>(null);
+  const pocInputRef = useRef<HTMLDivElement | null>(null);
   const cityInputRef = useRef<HTMLDivElement | null>(null);
 
   const [items, setItems] = useState<PurchaseOrderItem[]>([
@@ -161,6 +164,10 @@ export default function PurchaseOrderEntryForm() {
     ? existingBuyerNames.filter((name) => name.toLowerCase().includes(headerInfo.buyerName.trim().toLowerCase()))
     : [];
 
+  const filteredPocs = headerInfo.poc.trim()
+    ? existingPocs.filter((poc) => poc.toLowerCase().includes(headerInfo.poc.trim().toLowerCase())).slice(0, 10)
+    : [];
+
   const isCitySelectedFromDropdown = useCallback((cityValue: string) => {
     const normalizedInput = cityValue.trim().toLowerCase();
     return INDIA_CITIES.some((city) => city.toLowerCase() === normalizedInput);
@@ -182,6 +189,30 @@ export default function PurchaseOrderEntryForm() {
     });
 
     return Array.from(uniqueByLower.values()).sort((a, b) => a.localeCompare(b));
+  }, []);
+
+  const normalizeRecentValues = useCallback((entries: Array<{ value?: string; timestamp?: string }>) => {
+    const latestByLower = new Map<string, { value: string; time: number }>();
+
+    entries.forEach(({ value, timestamp }) => {
+      const trimmedValue = String(value || "").trim();
+      if (!trimmedValue) {
+        return;
+      }
+
+      const key = trimmedValue.toLowerCase();
+      const parsedTime = timestamp ? new Date(timestamp).getTime() : 0;
+      const time = Number.isFinite(parsedTime) ? parsedTime : 0;
+      const existing = latestByLower.get(key);
+
+      if (!existing || time >= existing.time) {
+        latestByLower.set(key, { value: trimmedValue, time });
+      }
+    });
+
+    return Array.from(latestByLower.values())
+      .sort((a, b) => b.time - a.time || a.value.localeCompare(b.value))
+      .map((entry) => entry.value);
   }, []);
 
   const handleHeaderChange = (field: string, value: string) => {
@@ -212,16 +243,23 @@ export default function PurchaseOrderEntryForm() {
           orders
             .map((order: { buyerName?: string }) => order.buyerName || "")
         );
+        const pocs = normalizeRecentValues(
+          orders.map((order: { poc?: string; updatedAt?: string; createdAt?: string; date?: string }) => ({
+            value: order.poc || "",
+            timestamp: order.updatedAt || order.createdAt || order.date || "",
+          }))
+        );
 
         setExistingDealerNames(dealerNames);
         setExistingBuyerNames(buyerNames);
+        setExistingPocs(pocs);
       } catch (error) {
         console.error("Failed to load dealer/buyer suggestions:", error);
       }
     };
 
     loadPartySuggestions();
-  }, [normalizeUniqueNames]);
+  }, [normalizeRecentValues, normalizeUniqueNames]);
 
   useEffect(() => {
     const loadJobCardOptions = async () => {
@@ -298,7 +336,7 @@ export default function PurchaseOrderEntryForm() {
   }, [items]);
 
   useEffect(() => {
-    if (!showCitySuggestions && !showDealerSuggestions && !showBuyerSuggestions) {
+    if (!showCitySuggestions && !showDealerSuggestions && !showBuyerSuggestions && !showPocSuggestions) {
       return;
     }
 
@@ -313,6 +351,10 @@ export default function PurchaseOrderEntryForm() {
         setShowBuyerSuggestions(false);
       }
 
+      if (pocInputRef.current && !pocInputRef.current.contains(target)) {
+        setShowPocSuggestions(false);
+      }
+
       if (cityInputRef.current && !cityInputRef.current.contains(target)) {
         setShowCitySuggestions(false);
       }
@@ -322,7 +364,7 @@ export default function PurchaseOrderEntryForm() {
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, [showCitySuggestions, showDealerSuggestions, showBuyerSuggestions]);
+  }, [showCitySuggestions, showDealerSuggestions, showBuyerSuggestions, showPocSuggestions]);
 
   const calculateItemValues = (item: PurchaseOrderItem): PurchaseOrderItem => {
     // Calculate QTY: sum of all sizes
@@ -826,18 +868,46 @@ export default function PurchaseOrderEntryForm() {
               ) : null}
             </div>
 
-            <div>
+            <div ref={pocInputRef} className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 POC (Point of Contact)
               </label>
               <input
                 type="text"
                 value={headerInfo.poc}
-                onChange={(e) => handleHeaderChange("poc", e.target.value)}
+                onChange={(e) => {
+                  handleHeaderChange("poc", e.target.value);
+                  setShowPocSuggestions(true);
+                }}
+                onFocus={() => {
+                  if (headerInfo.poc.trim()) {
+                    setShowPocSuggestions(true);
+                  }
+                }}
                 onKeyDown={handleKeyDown}
+                placeholder="Type POC name"
+                autoComplete="off"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 required
               />
+
+              {showPocSuggestions && filteredPocs.length > 0 ? (
+                <div className="absolute z-20 mt-2 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg" style={{ maxHeight: "220px" }}>
+                  {filteredPocs.map((poc) => (
+                    <button
+                      key={poc}
+                      type="button"
+                      onMouseDown={() => {
+                        handleHeaderChange("poc", poc);
+                        setShowPocSuggestions(false);
+                      }}
+                      className="block w-full border-b border-gray-100 px-4 py-2 text-left text-sm text-gray-700 last:border-b-0 hover:bg-blue-50"
+                    >
+                      {poc}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             <div>

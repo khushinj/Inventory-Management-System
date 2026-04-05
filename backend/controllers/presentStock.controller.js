@@ -1,11 +1,31 @@
 import PresentStock from "../models/PresentStock.js";
+import ProductionTracking from "../models/ProductionTracking.js";
 
 /**
  * Get all present stock entries
  */
 export const getAllPresentStockEntries = async (req, res) => {
   try {
-    const entries = await PresentStock.find().sort({ createdAt: -1 });
+    const productionEntries = await ProductionTracking.find({ finishing: { $gt: 0 } }).sort({ createdAt: -1 });
+    const productionIds = productionEntries.map((entry) => entry._id);
+
+    const savedStatuses = await PresentStock.find({ productionTrackingId: { $in: productionIds } }).select(
+      "productionTrackingId status"
+    );
+
+    const statusByProductionId = new Map(
+      savedStatuses.map((entry) => [String(entry.productionTrackingId), entry.status])
+    );
+
+    const entries = productionEntries.map((entry) => ({
+      _id: entry._id,
+      duo: entry.designNumber || "",
+      color: entry.color,
+      size: entry.size,
+      stockQty: entry.finishing || 0,
+      status: statusByProductionId.get(String(entry._id)) || "Packed",
+    }));
+
     res.json(entries);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -17,10 +37,22 @@ export const getAllPresentStockEntries = async (req, res) => {
  */
 export const getPresentStockEntryById = async (req, res) => {
   try {
-    const entry = await PresentStock.findById(req.params.id);
-    if (!entry) {
+    const productionEntry = await ProductionTracking.findById(req.params.id);
+    if (!productionEntry || productionEntry.finishing <= 0) {
       return res.status(404).json({ error: "Entry not found" });
     }
+
+    const savedStatus = await PresentStock.findOne({ productionTrackingId: productionEntry._id }).select("status");
+
+    const entry = {
+      _id: productionEntry._id,
+      duo: productionEntry.designNumber || "",
+      color: productionEntry.color,
+      size: productionEntry.size,
+      stockQty: productionEntry.finishing || 0,
+      status: savedStatus?.status || "Packed",
+    };
+
     res.json(entry);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -31,25 +63,9 @@ export const getPresentStockEntryById = async (req, res) => {
  * Create a new present stock entry
  */
 export const createPresentStockEntry = async (req, res) => {
-  try {
-    const { duo, color, size, status } = req.body;
-
-    if (!duo || !color || !size) {
-      return res.status(400).json({ error: "DUO, Color, and Size are required" });
-    }
-
-    const entry = new PresentStock({
-      duo: duo.trim(),
-      color: color.trim(),
-      size: size.trim(),
-      status: status || "In Cutting",
-    });
-
-    await entry.save();
-    res.status(201).json(entry);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
+  return res.status(405).json({
+    error: "Present stock entries are derived from production tracking. New entries are not allowed.",
+  });
 };
 
 /**
@@ -57,23 +73,37 @@ export const createPresentStockEntry = async (req, res) => {
  */
 export const updatePresentStockEntry = async (req, res) => {
   try {
-    const { duo, color, size, status } = req.body;
+    const { status } = req.body;
 
-    const updateData = {};
-    if (duo !== undefined) updateData.duo = duo.trim();
-    if (color !== undefined) updateData.color = color.trim();
-    if (size !== undefined) updateData.size = size.trim();
-    if (status !== undefined) updateData.status = status;
+    if (!["Packed", "Shipped"].includes(status)) {
+      return res.status(400).json({ error: "Status must be Packed or Shipped" });
+    }
 
-    const entry = await PresentStock.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-
-    if (!entry) {
+    const productionEntry = await ProductionTracking.findById(req.params.id);
+    if (!productionEntry || productionEntry.finishing <= 0) {
       return res.status(404).json({ error: "Entry not found" });
     }
+
+    await PresentStock.findOneAndUpdate(
+      { productionTrackingId: productionEntry._id },
+      {
+        productionTrackingId: productionEntry._id,
+        duo: productionEntry.designNumber || "",
+        color: productionEntry.color,
+        size: productionEntry.size,
+        status,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
+    );
+
+    const entry = {
+      _id: productionEntry._id,
+      duo: productionEntry.designNumber || "",
+      color: productionEntry.color,
+      size: productionEntry.size,
+      stockQty: productionEntry.finishing || 0,
+      status,
+    };
 
     res.json(entry);
   } catch (error) {
@@ -85,17 +115,9 @@ export const updatePresentStockEntry = async (req, res) => {
  * Delete a present stock entry
  */
 export const deletePresentStockEntry = async (req, res) => {
-  try {
-    const entry = await PresentStock.findByIdAndDelete(req.params.id);
-
-    if (!entry) {
-      return res.status(404).json({ error: "Entry not found" });
-    }
-
-    res.json({ message: "Entry deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  return res.status(405).json({
+    error: "Present stock entries are derived from production tracking. Deleting entries is not allowed.",
+  });
 };
 
 /**
@@ -103,27 +125,29 @@ export const deletePresentStockEntry = async (req, res) => {
  */
 export const getStatusCounts = async (req, res) => {
   try {
-    const counts = await PresentStock.aggregate([
-      {
-        $group: {
-          _id: "$status",
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
     const result = {
-      "In Cutting": 0,
-      "In Stitching": 0,
-      "In Finishing": 0,
       "Packed": 0,
       "Shipped": 0,
     };
 
-    counts.forEach((item) => {
-      if (result.hasOwnProperty(item._id)) {
-        result[item._id] = item.count;
-      }
+    const productionEntries = await ProductionTracking.find({ finishing: { $gt: 0 } }).select("_id");
+    const productionIds = productionEntries.map((entry) => String(entry._id));
+
+    if (productionIds.length === 0) {
+      return res.json(result);
+    }
+
+    const savedStatuses = await PresentStock.find({ productionTrackingId: { $in: productionIds } }).select(
+      "productionTrackingId status"
+    );
+
+    const statusByProductionId = new Map(
+      savedStatuses.map((entry) => [String(entry.productionTrackingId), entry.status])
+    );
+
+    productionIds.forEach((id) => {
+      const status = statusByProductionId.get(id) || "Packed";
+      result[status] += 1;
     });
 
     res.json(result);

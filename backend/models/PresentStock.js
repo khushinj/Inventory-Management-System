@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 
 const presentStockSchema = new mongoose.Schema(
   {
+    productionTrackingId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProductionTracking",
+      required: true,
+      unique: true,
+      index: true,
+    },
     duo: {
       type: String,
       required: true,
@@ -19,8 +26,8 @@ const presentStockSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["In Cutting", "In Stitching", "In Finishing", "Packed", "Shipped"],
-      default: "In Cutting",
+      enum: ["Packed", "Shipped"],
+      default: "Packed",
       required: true,
     },
   },

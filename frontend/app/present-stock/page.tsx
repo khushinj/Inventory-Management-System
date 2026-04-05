@@ -10,6 +10,7 @@ type StockEntry = {
   duo: string;
   color: string;
   size: string;
+  stockQty: number;
   status: "Packed" | "Shipped";
 };
 
@@ -57,12 +58,12 @@ export default function PresentStockPage() {
   const fetchStockData = async () => {
     try {
       setLoading(true);
-      // Fetch from present-stock endpoint or create mock data
       const res = await api.get("/present-stock");
       if (res.data && (res.data.success || Array.isArray(res.data))) {
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
         const normalizedData: StockEntry[] = data.map((entry: any) => ({
           ...entry,
+          stockQty: Number(entry.stockQty ?? 0),
           status: entry.status === "Shipped" ? "Shipped" : "Packed",
         }));
         setEntries(normalizedData);
@@ -122,6 +123,7 @@ export default function PresentStockPage() {
       DUO: e.duo,
       Colour: e.color,
       Size: e.size,
+      "Stock Qty": e.stockQty,
       Status: e.status,
     }));
 
@@ -178,13 +180,14 @@ export default function PresentStockPage() {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">DUO</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Colour</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Size</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Stock Qty</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {entries.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                       No stock entries found.
                     </td>
                   </tr>
@@ -214,6 +217,13 @@ export default function PresentStockPage() {
                         <td className="px-6 py-4">
                           <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
                             {entry.size || "-"}
+                          </div>
+                        </td>
+
+                        {/* Stock Qty */}
+                        <td className="px-6 py-4">
+                          <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
+                            {entry.stockQty}
                           </div>
                         </td>
 
@@ -261,7 +271,7 @@ export default function PresentStockPage() {
         {/* Info */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
-            <strong>Info:</strong> This page is read-only for DUO, Colour, and Size. Only status can be updated.
+            <strong>Info:</strong> Data on this page comes from production entries where finishing is greater than 0. Stock Qty is the finishing quantity. Only status can be updated.
           </p>
         </div>
       </div>

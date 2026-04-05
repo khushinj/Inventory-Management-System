@@ -23,7 +23,7 @@ export const getAllPresentStockEntries = async (req, res) => {
       color: entry.color,
       size: entry.size,
       stockQty: entry.finishing || 0,
-      status: statusByProductionId.get(String(entry._id)) || "Packed",
+      status: statusByProductionId.get(String(entry._id)) || "In Finishing",
     }));
 
     res.json(entries);
@@ -50,7 +50,7 @@ export const getPresentStockEntryById = async (req, res) => {
       color: productionEntry.color,
       size: productionEntry.size,
       stockQty: productionEntry.finishing || 0,
-      status: savedStatus?.status || "Packed",
+      status: savedStatus?.status || "In Finishing",
     };
 
     res.json(entry);
@@ -75,8 +75,8 @@ export const updatePresentStockEntry = async (req, res) => {
   try {
     const { status } = req.body;
 
-    if (!["Packed", "Shipped"].includes(status)) {
-      return res.status(400).json({ error: "Status must be Packed or Shipped" });
+    if (!["In Finishing", "Packed", "Shipped"].includes(status)) {
+      return res.status(400).json({ error: "Status must be In Finishing, Packed, or Shipped" });
     }
 
     const productionEntry = await ProductionTracking.findById(req.params.id);
@@ -126,6 +126,7 @@ export const deletePresentStockEntry = async (req, res) => {
 export const getStatusCounts = async (req, res) => {
   try {
     const result = {
+      "In Finishing": 0,
       "Packed": 0,
       "Shipped": 0,
     };
@@ -146,7 +147,7 @@ export const getStatusCounts = async (req, res) => {
     );
 
     productionIds.forEach((id) => {
-      const status = statusByProductionId.get(id) || "Packed";
+      const status = statusByProductionId.get(id) || "In Finishing";
       result[status] += 1;
     });
 

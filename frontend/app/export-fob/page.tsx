@@ -17,13 +17,13 @@ type OperationCard = {
 };
 
 const operations: OperationCard[] = [
-  {
-    title: "Shipped Order",
-    description: "Manage orders and their production status",
-    icon: FileText,
-    bgColor: "bg-slate-600",
-    href: "/export-fob/shipped-order",
-  },
+  // {
+  //   title: "Shipped Order",
+  //   description: "Manage orders and their production status",
+  //   icon: FileText,
+  //   bgColor: "bg-slate-600",
+  //   href: "/export-fob/shipped-order",
+  // },
   {
     title: "Present Stock",
     description: "Track inventory across production stages",

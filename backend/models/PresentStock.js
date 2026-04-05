@@ -9,6 +9,11 @@ const presentStockSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+    isTransferred: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     duo: {
       type: String,
       required: true,

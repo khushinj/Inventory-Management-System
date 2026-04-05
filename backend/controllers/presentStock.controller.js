@@ -6,7 +6,7 @@ import ProductionTracking from "../models/ProductionTracking.js";
  */
 export const getAllPresentStockEntries = async (req, res) => {
   try {
-    const transferredEntries = await PresentStock.find().sort({ updatedAt: -1 });
+    const transferredEntries = await PresentStock.find({ isTransferred: true }).sort({ updatedAt: -1 });
 
     if (transferredEntries.length === 0) {
       return res.json([]);
@@ -45,7 +45,10 @@ export const getAllPresentStockEntries = async (req, res) => {
  */
 export const getPresentStockEntryById = async (req, res) => {
   try {
-    const transferEntry = await PresentStock.findOne({ productionTrackingId: req.params.id });
+    const transferEntry = await PresentStock.findOne({
+      productionTrackingId: req.params.id,
+      isTransferred: true,
+    });
     if (!transferEntry) {
       return res.status(404).json({ error: "Entry not found" });
     }
@@ -98,6 +101,7 @@ export const transferProductionToPresentStock = async (req, res) => {
       {
         $set: {
           productionTrackingId: productionEntry._id,
+          isTransferred: true,
           duo: productionEntry.designNumber || "",
           color: productionEntry.color,
           size: productionEntry.size,
@@ -136,7 +140,10 @@ export const updatePresentStockEntry = async (req, res) => {
       return res.status(400).json({ error: "Status must be Packed or Shipped" });
     }
 
-    const transferEntry = await PresentStock.findOne({ productionTrackingId: req.params.id });
+    const transferEntry = await PresentStock.findOne({
+      productionTrackingId: req.params.id,
+      isTransferred: true,
+    });
     if (!transferEntry) {
       return res.status(404).json({ error: "Entry not found" });
     }
@@ -187,6 +194,11 @@ export const getStatusCounts = async (req, res) => {
     };
 
     const counts = await PresentStock.aggregate([
+      {
+        $match: {
+          isTransferred: true,
+        },
+      },
       {
         $group: {
           _id: "$status",

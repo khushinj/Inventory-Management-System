@@ -298,7 +298,7 @@ export default function ProductionTrackingPage() {
     try {
       setIsTransferring(true);
       await api.post(`/present-stock/transfer/${transferEntry._id}`);
-      alert("Item transferred to present stock with default status Packed.");
+      // alert("Item transferred to present stock with default status Packed.");
       setTransferEntry(null);
     } catch (error: any) {
       console.error("Error transferring entry to present stock:", error);
@@ -594,7 +594,7 @@ export default function ProductionTrackingPage() {
             <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
               <h2 className="text-xl font-semibold text-gray-900">Confirm Transfer</h2>
               <p className="mt-3 text-gray-700">
-                its production is done and it will be transferred to present stock
+                This design number's production is done and it will be transferred to present stock
               </p>
               <div className="mt-6 flex justify-end gap-3">
                 <button

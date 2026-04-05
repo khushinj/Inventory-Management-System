@@ -10,23 +10,17 @@ type StockEntry = {
   duo: string;
   color: string;
   size: string;
-  status: "In Cutting" | "In Stitching" | "In Finishing" | "Packed" | "Shipped";
+  status: "Packed" | "Shipped";
 };
 
 type StatusCounts = {
-  "In Cutting": number;
-  "In Stitching": number;
-  "In Finishing": number;
   "Packed": number;
   "Shipped": number;
 };
 
-const STATUS_OPTIONS = ["In Cutting", "In Stitching", "In Finishing", "Packed", "Shipped"] as const;
+const STATUS_OPTIONS = ["Packed", "Shipped"] as const;
 
 const STATUS_COLORS: Record<string, string> = {
-  "In Cutting": "bg-blue-100 text-blue-800 border-blue-300",
-  "In Stitching": "bg-purple-100 text-purple-800 border-purple-300",
-  "In Finishing": "bg-orange-100 text-orange-800 border-orange-300",
   "Packed": "bg-green-100 text-green-800 border-green-300",
   "Shipped": "bg-gray-100 text-gray-800 border-gray-300",
 };
@@ -67,7 +61,11 @@ export default function PresentStockPage() {
       const res = await api.get("/present-stock");
       if (res.data && (res.data.success || Array.isArray(res.data))) {
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-        setEntries(data);
+        const normalizedData: StockEntry[] = data.map((entry: any) => ({
+          ...entry,
+          status: entry.status === "Shipped" ? "Shipped" : "Packed",
+        }));
+        setEntries(normalizedData);
       }
     } catch (error) {
       console.error("Error fetching stock data:", error);
@@ -80,9 +78,6 @@ export default function PresentStockPage() {
 
   const getStatusCounts = (): StatusCounts => {
     return {
-      "In Cutting": entries.filter((e) => e.status === "In Cutting").length,
-      "In Stitching": entries.filter((e) => e.status === "In Stitching").length,
-      "In Finishing": entries.filter((e) => e.status === "In Finishing").length,
       "Packed": entries.filter((e) => e.status === "Packed").length,
       "Shipped": entries.filter((e) => e.status === "Shipped").length,
     };
@@ -159,7 +154,7 @@ export default function PresentStockPage() {
         </div>
 
         {/* Status Boxes */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {STATUS_OPTIONS.map((status) => {
             const count = counts[status];
             return (

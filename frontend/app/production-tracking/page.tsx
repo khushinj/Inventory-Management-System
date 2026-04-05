@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "../../lib/api";
 import { Plus, Trash2, Download, Scissors, Layout, CheckCircle2, Check } from "lucide-react";
 import * as XLSX from "xlsx";
+
+const UNSAVED_WARNING_MESSAGE = "Your entries will be lost if you go back without saving it.";
 
 type ProductionEntry = {
   _id?: string;
@@ -17,11 +20,15 @@ type ProductionEntry = {
 };
 
 export default function ProductionTrackingPage() {
+  const router = useRouter();
   const [entries, setEntries] = useState<ProductionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [tempValues, setTempValues] = useState<Record<string, Partial<ProductionEntry>>>({});
   const [transferEntry, setTransferEntry] = useState<ProductionEntry | null>(null);
   const [isTransferring, setIsTransferring] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const allowNextPopRef = useRef(false);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key !== "Enter") {
@@ -312,6 +319,75 @@ export default function ProductionTrackingPage() {
   const totals = getTotals();
   const hasNewEntries = entries.some((e) => e._id?.startsWith("temp-"));
 
+  useEffect(() => {
+    if (!hasNewEntries) {
+      return;
+    }
+
+    const handlePopState = () => {
+      if (allowNextPopRef.current) {
+        allowNextPopRef.current = false;
+        return;
+      }
+
+      setPendingNavigation("__BACK__");
+      setShowUnsavedModal(true);
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    const handleAnchorClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#")) return;
+
+      const resolvedUrl = new URL(href, window.location.href);
+      if (resolvedUrl.origin !== window.location.origin) return;
+
+      const nextPath = `${resolvedUrl.pathname}${resolvedUrl.search}${resolvedUrl.hash}`;
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (nextPath === currentPath) return;
+
+      event.preventDefault();
+      setPendingNavigation(nextPath);
+      setShowUnsavedModal(true);
+    };
+
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+    document.addEventListener("click", handleAnchorClick, true);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      document.removeEventListener("click", handleAnchorClick, true);
+    };
+  }, [hasNewEntries]);
+
+  const handleStayOnPage = () => {
+    setShowUnsavedModal(false);
+    setPendingNavigation(null);
+  };
+
+  const handleLeaveAnyway = () => {
+    const destination = pendingNavigation;
+    setShowUnsavedModal(false);
+    setPendingNavigation(null);
+
+    if (!destination) {
+      return;
+    }
+
+    if (destination === "__BACK__") {
+      allowNextPopRef.current = true;
+      window.history.back();
+      return;
+    }
+
+    router.push(destination);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -368,6 +444,36 @@ export default function ProductionTrackingPage() {
                 <CheckCircle2 className="w-6 h-6 text-green-600" />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="mb-6 flex gap-3 justify-between flex-wrap">
+          <button
+            onClick={handleAddRow}
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            Add Row
+          </button>
+
+          <div className="flex gap-3">
+            {hasNewEntries && (
+              <button
+                onClick={handleSaveNewEntries}
+                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                Save New Entries
+              </button>
+            )}
+            <button
+              onClick={handleExportExcel}
+              disabled={entries.length === 0}
+              className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="w-5 h-5" />
+              Export to Excel
+            </button>
           </div>
         </div>
 
@@ -552,36 +658,6 @@ export default function ProductionTrackingPage() {
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="mt-6 flex gap-3 justify-between flex-wrap">
-          <button
-            onClick={handleAddRow}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            Add Row
-          </button>
-
-          <div className="flex gap-3">
-            {hasNewEntries && (
-              <button
-                onClick={handleSaveNewEntries}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-              >
-                Save New Entries
-              </button>
-            )}
-            <button
-              onClick={handleExportExcel}
-              disabled={entries.length === 0}
-              className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download className="w-5 h-5" />
-              Export to Excel
-            </button>
-          </div>
-        </div>
-
         {/* Info */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
@@ -610,6 +686,29 @@ export default function ProductionTrackingPage() {
                   className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
                   {isTransferring ? "Transferring..." : "Yes"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showUnsavedModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+              <h2 className="text-xl font-semibold text-gray-900">Unsaved Entries</h2>
+              <p className="mt-3 text-gray-700">{UNSAVED_WARNING_MESSAGE}</p>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={handleStayOnPage}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+                >
+                  Stay
+                </button>
+                <button
+                  onClick={handleLeaveAnyway}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                >
+                  Leave anyway
                 </button>
               </div>
             </div>

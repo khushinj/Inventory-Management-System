@@ -6,25 +6,33 @@ import ProductionTracking from "../models/ProductionTracking.js";
  */
 export const getAllPresentStockEntries = async (req, res) => {
   try {
-    const productionEntries = await ProductionTracking.find({ finishing: { $gt: 0 } }).sort({ createdAt: -1 });
-    const productionIds = productionEntries.map((entry) => entry._id);
+    const transferredEntries = await PresentStock.find().sort({ updatedAt: -1 });
 
-    const savedStatuses = await PresentStock.find({ productionTrackingId: { $in: productionIds } }).select(
-      "productionTrackingId status"
-    );
+    if (transferredEntries.length === 0) {
+      return res.json([]);
+    }
 
-    const statusByProductionId = new Map(
-      savedStatuses.map((entry) => [String(entry.productionTrackingId), entry.status])
-    );
+    const productionIds = transferredEntries.map((entry) => entry.productionTrackingId);
+    const productionEntries = await ProductionTracking.find({ _id: { $in: productionIds } });
+    const productionById = new Map(productionEntries.map((entry) => [String(entry._id), entry]));
 
-    const entries = productionEntries.map((entry) => ({
-      _id: entry._id,
-      duo: entry.designNumber || "",
-      color: entry.color,
-      size: entry.size,
-      stockQty: entry.finishing || 0,
-      status: statusByProductionId.get(String(entry._id)) || "In Finishing",
-    }));
+    const entries = transferredEntries
+      .map((transferEntry) => {
+        const productionEntry = productionById.get(String(transferEntry.productionTrackingId));
+        if (!productionEntry) {
+          return null;
+        }
+
+        return {
+          _id: productionEntry._id,
+          duo: productionEntry.designNumber || "",
+          color: productionEntry.color,
+          size: productionEntry.size,
+          stockQty: productionEntry.finishing || 0,
+          status: transferEntry.status,
+        };
+      })
+      .filter(Boolean);
 
     res.json(entries);
   } catch (error) {
@@ -37,12 +45,15 @@ export const getAllPresentStockEntries = async (req, res) => {
  */
 export const getPresentStockEntryById = async (req, res) => {
   try {
-    const productionEntry = await ProductionTracking.findById(req.params.id);
-    if (!productionEntry || productionEntry.finishing <= 0) {
+    const transferEntry = await PresentStock.findOne({ productionTrackingId: req.params.id });
+    if (!transferEntry) {
       return res.status(404).json({ error: "Entry not found" });
     }
 
-    const savedStatus = await PresentStock.findOne({ productionTrackingId: productionEntry._id }).select("status");
+    const productionEntry = await ProductionTracking.findById(req.params.id);
+    if (!productionEntry) {
+      return res.status(404).json({ error: "Entry not found" });
+    }
 
     const entry = {
       _id: productionEntry._id,
@@ -50,7 +61,7 @@ export const getPresentStockEntryById = async (req, res) => {
       color: productionEntry.color,
       size: productionEntry.size,
       stockQty: productionEntry.finishing || 0,
-      status: savedStatus?.status || "In Finishing",
+      status: transferEntry.status,
     };
 
     res.json(entry);
@@ -69,32 +80,77 @@ export const createPresentStockEntry = async (req, res) => {
 };
 
 /**
+ * Transfer production entry to present stock
+ */
+export const transferProductionToPresentStock = async (req, res) => {
+  try {
+    const productionEntry = await ProductionTracking.findById(req.params.id);
+    if (!productionEntry) {
+      return res.status(404).json({ error: "Production entry not found" });
+    }
+
+    if ((productionEntry.finishing || 0) <= 0) {
+      return res.status(400).json({ error: "Only entries with finishing quantity greater than 0 can be transferred" });
+    }
+
+    const transferEntry = await PresentStock.findOneAndUpdate(
+      { productionTrackingId: productionEntry._id },
+      {
+        $set: {
+          productionTrackingId: productionEntry._id,
+          duo: productionEntry.designNumber || "",
+          color: productionEntry.color,
+          size: productionEntry.size,
+        },
+        $setOnInsert: {
+          status: "Packed",
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
+    );
+
+    res.json({
+      message: "Production entry transferred to present stock",
+      data: {
+        _id: productionEntry._id,
+        duo: productionEntry.designNumber || "",
+        color: productionEntry.color,
+        size: productionEntry.size,
+        stockQty: productionEntry.finishing || 0,
+        status: transferEntry.status,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
  * Update a present stock entry
  */
 export const updatePresentStockEntry = async (req, res) => {
   try {
     const { status } = req.body;
 
-    if (!["In Finishing", "Packed", "Shipped"].includes(status)) {
-      return res.status(400).json({ error: "Status must be In Finishing, Packed, or Shipped" });
+    if (!["Packed", "Shipped"].includes(status)) {
+      return res.status(400).json({ error: "Status must be Packed or Shipped" });
     }
 
-    const productionEntry = await ProductionTracking.findById(req.params.id);
-    if (!productionEntry || productionEntry.finishing <= 0) {
+    const transferEntry = await PresentStock.findOne({ productionTrackingId: req.params.id });
+    if (!transferEntry) {
       return res.status(404).json({ error: "Entry not found" });
     }
 
-    await PresentStock.findOneAndUpdate(
-      { productionTrackingId: productionEntry._id },
-      {
-        productionTrackingId: productionEntry._id,
-        duo: productionEntry.designNumber || "",
-        color: productionEntry.color,
-        size: productionEntry.size,
-        status,
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
-    );
+    const productionEntry = await ProductionTracking.findById(req.params.id);
+    if (!productionEntry) {
+      return res.status(404).json({ error: "Entry not found" });
+    }
+
+    transferEntry.status = status;
+    transferEntry.duo = productionEntry.designNumber || "";
+    transferEntry.color = productionEntry.color;
+    transferEntry.size = productionEntry.size;
+    await transferEntry.save();
 
     const entry = {
       _id: productionEntry._id,
@@ -126,29 +182,23 @@ export const deletePresentStockEntry = async (req, res) => {
 export const getStatusCounts = async (req, res) => {
   try {
     const result = {
-      "In Finishing": 0,
       "Packed": 0,
       "Shipped": 0,
     };
 
-    const productionEntries = await ProductionTracking.find({ finishing: { $gt: 0 } }).select("_id");
-    const productionIds = productionEntries.map((entry) => String(entry._id));
+    const counts = await PresentStock.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
-    if (productionIds.length === 0) {
-      return res.json(result);
-    }
-
-    const savedStatuses = await PresentStock.find({ productionTrackingId: { $in: productionIds } }).select(
-      "productionTrackingId status"
-    );
-
-    const statusByProductionId = new Map(
-      savedStatuses.map((entry) => [String(entry.productionTrackingId), entry.status])
-    );
-
-    productionIds.forEach((id) => {
-      const status = statusByProductionId.get(id) || "In Finishing";
-      result[status] += 1;
+    counts.forEach((item) => {
+      if (Object.prototype.hasOwnProperty.call(result, item._id)) {
+        result[item._id] = item.count;
+      }
     });
 
     res.json(result);

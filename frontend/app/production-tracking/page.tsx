@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../../lib/api";
-import { Plus, Trash2, Download, Scissors, Layout, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Download, Scissors, Layout, CheckCircle2, Check } from "lucide-react";
 import * as XLSX from "xlsx";
 
 type ProductionEntry = {
@@ -20,6 +20,8 @@ export default function ProductionTrackingPage() {
   const [entries, setEntries] = useState<ProductionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [tempValues, setTempValues] = useState<Record<string, Partial<ProductionEntry>>>({});
+  const [transferEntry, setTransferEntry] = useState<ProductionEntry | null>(null);
+  const [isTransferring, setIsTransferring] = useState(false);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key !== "Enter") {
@@ -266,6 +268,47 @@ export default function ProductionTrackingPage() {
     XLSX.writeFile(wb, "production-tracking.xlsx");
   };
 
+  const openTransferPopup = (entry: ProductionEntry) => {
+    if (!entry._id || entry._id.startsWith("temp-")) {
+      alert("Please save this row first before transferring.");
+      return;
+    }
+
+    const latestFinishing = Number(tempValues[entry._id]?.finishing ?? entry.finishing ?? 0);
+    if (latestFinishing <= 0) {
+      alert("Only entries with finishing quantity greater than 0 can be transferred.");
+      return;
+    }
+
+    setTransferEntry(entry);
+  };
+
+  const closeTransferPopup = () => {
+    if (isTransferring) {
+      return;
+    }
+    setTransferEntry(null);
+  };
+
+  const confirmTransferToPresentStock = async () => {
+    if (!transferEntry?._id) {
+      return;
+    }
+
+    try {
+      setIsTransferring(true);
+      await api.post(`/present-stock/transfer/${transferEntry._id}`);
+      alert("Item transferred to present stock with default status Packed.");
+      setTransferEntry(null);
+    } catch (error: any) {
+      console.error("Error transferring entry to present stock:", error);
+      const message = error?.response?.data?.error || "Failed to transfer item";
+      alert(message);
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
   const totals = getTotals();
   const hasNewEntries = entries.some((e) => e._id?.startsWith("temp-"));
 
@@ -470,15 +513,24 @@ export default function ProductionTrackingPage() {
                           />
                         </td>
 
-                        {/* Delete Action */}
+                        {/* Action */}
                         <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => handleDeleteRow(entry._id)}
-                            className="inline-flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              onClick={() => openTransferPopup(entry)}
+                              className="inline-flex items-center justify-center p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                              title="Transfer to Present Stock"
+                            >
+                              <Check className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteRow(entry._id)}
+                              className="inline-flex items-center justify-center p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -536,6 +588,33 @@ export default function ProductionTrackingPage() {
             <strong>Info:</strong> All cells are directly editable. Changes are auto-saved when you move to the next field (except for new entries, which require clicking "Save New Entries").
           </p>
         </div>
+
+        {transferEntry && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+              <h2 className="text-xl font-semibold text-gray-900">Confirm Transfer</h2>
+              <p className="mt-3 text-gray-700">
+                its production is done and it will be transferred to present stock
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={closeTransferPopup}
+                  disabled={isTransferring}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  No
+                </button>
+                <button
+                  onClick={confirmTransferToPresentStock}
+                  disabled={isTransferring}
+                  className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {isTransferring ? "Transferring..." : "Yes"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

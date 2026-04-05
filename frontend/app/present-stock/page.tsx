@@ -11,28 +11,23 @@ type StockEntry = {
   color: string;
   size: string;
   stockQty: number;
-  status: "In Finishing" | "Packed" | "Shipped";
+  status: "Packed" | "Shipped";
 };
 
 type StatusCounts = {
-  "In Finishing": number;
   "Packed": number;
   "Shipped": number;
 };
 
-const STATUS_OPTIONS = ["In Finishing", "Packed", "Shipped"] as const;
+const STATUS_OPTIONS = ["Packed", "Shipped"] as const;
 
 const STATUS_COLORS: Record<string, string> = {
-  "In Finishing": "bg-orange-100 text-orange-800 border-orange-300",
   "Packed": "bg-green-100 text-green-800 border-green-300",
   "Shipped": "bg-gray-100 text-gray-800 border-gray-300",
 };
 
 const normalizeStatus = (status: unknown): StockEntry["status"] => {
-  if (status === "Packed" || status === "Shipped") {
-    return status;
-  }
-  return "In Finishing";
+  return status === "Shipped" ? "Shipped" : "Packed";
 };
 
 export default function PresentStockPage() {
@@ -89,7 +84,6 @@ export default function PresentStockPage() {
 
   const getStatusCounts = (): StatusCounts => {
     return {
-      "In Finishing": entries.filter((e) => e.status === "In Finishing").length,
       "Packed": entries.filter((e) => e.status === "Packed").length,
       "Shipped": entries.filter((e) => e.status === "Shipped").length,
     };
@@ -167,7 +161,7 @@ export default function PresentStockPage() {
         </div>
 
         {/* Status Boxes */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {STATUS_OPTIONS.map((status) => {
             const count = counts[status];
             return (

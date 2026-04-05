@@ -26,8 +26,8 @@ const presentStockSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["In Finishing", "Packed", "Shipped"],
-      default: "In Finishing",
+      enum: ["Packed", "Shipped"],
+      default: "Packed",
       required: true,
     },
   },

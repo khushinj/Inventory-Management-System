@@ -3,6 +3,7 @@ import {
   getAllPresentStockEntries,
   getPresentStockEntryById,
   createPresentStockEntry,
+  transferProductionToPresentStock,
   updatePresentStockEntry,
   deletePresentStockEntry,
   getStatusCounts,
@@ -15,6 +16,9 @@ router.get("/", getAllPresentStockEntries);
 
 // Get status counts summary
 router.get("/counts", getStatusCounts);
+
+// Transfer production entry to present stock
+router.post("/transfer/:id", transferProductionToPresentStock);
 
 // Get a single entry by ID
 router.get("/:id", getPresentStockEntryById);

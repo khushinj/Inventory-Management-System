@@ -32,7 +32,7 @@ const operations: OperationCard[] = [
     href: "/present-stock",
   },
   {
-    title: "Production Tracking",
+    title: "Production",
     description: "Monitor quantities across production stages",
     icon: Activity,
     bgColor: "bg-blue-500",

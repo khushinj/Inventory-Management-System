@@ -7,7 +7,7 @@ import * as XLSX from "xlsx";
 
 type StockEntry = {
   _id?: string;
-  duo: string;
+  dno: string;
   color: string;
   size: string;
   stockQty: number;
@@ -63,6 +63,7 @@ export default function PresentStockPage() {
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
         const normalizedData: StockEntry[] = data.map((entry: any) => ({
           ...entry,
+          dno: String(entry.dno ?? entry.duo ?? ""),
           stockQty: Number(entry.stockQty ?? 0),
           status: entry.status === "Shipped" ? "Shipped" : "Packed",
         }));
@@ -120,7 +121,7 @@ export default function PresentStockPage() {
 
   const handleExportExcel = () => {
     const data = entries.map((e) => ({
-      DUO: e.duo,
+      DNO: e.dno,
       Colour: e.color,
       Size: e.size,
       "Stock Qty": e.stockQty,
@@ -177,7 +178,7 @@ export default function PresentStockPage() {
             <table className="w-full">
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">DUO</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">DNO</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Colour</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Size</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Stock Qty</th>
@@ -199,10 +200,10 @@ export default function PresentStockPage() {
 
                     return (
                       <tr key={entry._id} className="hover:bg-gray-50">
-                        {/* DUO */}
+                        {/* DNO */}
                         <td className="px-6 py-4">
                           <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
-                            {entry.duo || "-"}
+                            {entry.dno || "-"}
                           </div>
                         </td>
 

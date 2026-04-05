@@ -29,6 +29,7 @@ export default function ProductionTrackingPage() {
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const allowNextPopRef = useRef(false);
+  const [searchDesignNumber, setSearchDesignNumber] = useState("");
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key !== "Enter") {
@@ -318,6 +319,14 @@ export default function ProductionTrackingPage() {
 
   const totals = getTotals();
   const hasNewEntries = entries.some((e) => e._id?.startsWith("temp-"));
+  const filteredEntries = entries.filter((entry) =>
+    entry.designNumber.toLowerCase().includes(searchDesignNumber.trim().toLowerCase())
+  );
+  const filteredTotals = {
+    cutting: filteredEntries.reduce((sum, e) => sum + (e.cutting || 0), 0),
+    stitching: filteredEntries.reduce((sum, e) => sum + (e.stitching || 0), 0),
+    finishing: filteredEntries.reduce((sum, e) => sum + (e.finishing || 0), 0),
+  };
 
   useEffect(() => {
     if (!hasNewEntries) {
@@ -479,6 +488,15 @@ export default function ProductionTrackingPage() {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="border-b border-gray-200 p-4 text-black">
+            <input
+              type="text"
+              value={searchDesignNumber}
+              onChange={(e) => setSearchDesignNumber(e.target.value)}
+              placeholder="Search by Design Number"
+              className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-100 border-b border-gray-200">
@@ -494,14 +512,16 @@ export default function ProductionTrackingPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {entries.length === 0 ? (
+                {filteredEntries.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                      No production entries yet. Click "Add Row" to create one.
+                      {entries.length === 0
+                        ? "No production entries yet. Click \"Add Row\" to create one."
+                        : "No matching design number found."}
                     </td>
                   </tr>
                 ) : (
-                  entries.map((entry) => {
+                  filteredEntries.map((entry) => {
                     const displayValues = {
                       designNumber: tempValues[entry._id || ""]?.designNumber ?? entry.designNumber,
                       color: tempValues[entry._id || ""]?.color ?? entry.color,
@@ -644,12 +664,12 @@ export default function ProductionTrackingPage() {
                 )}
 
                 {/* Total Row */}
-                {entries.length > 0 && (
+                {filteredEntries.length > 0 && (
                   <tr className="bg-blue-50 font-semibold">
                     <td colSpan={3} className="px-6 py-4 text-gray-700">Total</td>
-                    <td className="px-6 py-4 text-blue-600">{totals.cutting}</td>
-                    <td className="px-6 py-4 text-purple-600">{totals.stitching}</td>
-                    <td className="px-6 py-4 text-green-600">{totals.finishing}</td>
+                    <td className="px-6 py-4 text-blue-600">{filteredTotals.cutting}</td>
+                    <td className="px-6 py-4 text-purple-600">{filteredTotals.stitching}</td>
+                    <td className="px-6 py-4 text-green-600">{filteredTotals.finishing}</td>
                     <td colSpan={2}></td>
                   </tr>
                 )}

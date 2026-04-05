@@ -34,6 +34,7 @@ export default function PresentStockPage() {
   const [entries, setEntries] = useState<StockEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [tempValues, setTempValues] = useState<Record<string, Pick<StockEntry, "status">>>({});
+  const [searchDno, setSearchDno] = useState("");
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLSelectElement>) => {
     if (e.key !== "Enter") {
@@ -139,6 +140,9 @@ export default function PresentStockPage() {
   };
 
   const counts = getStatusCounts();
+  const filteredEntries = entries.filter((entry) =>
+    entry.dno.toLowerCase().includes(searchDno.trim().toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -178,6 +182,15 @@ export default function PresentStockPage() {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="border-b border-gray-200 p-4 text-black">
+            <input
+              type="text"
+              value={searchDno}
+              onChange={(e) => setSearchDno(e.target.value)}
+              placeholder="Search by Design Number (DNO)"
+              className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-100 border-b border-gray-200">
@@ -190,14 +203,14 @@ export default function PresentStockPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {entries.length === 0 ? (
+                {filteredEntries.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                      No stock entries found.
+                      {entries.length === 0 ? "No stock entries found." : "No matching design number found."}
                     </td>
                   </tr>
                 ) : (
-                  entries.map((entry) => {
+                  filteredEntries.map((entry) => {
                     const displayValues = {
                       status: tempValues[entry._id || ""]?.status ?? entry.status,
                     };

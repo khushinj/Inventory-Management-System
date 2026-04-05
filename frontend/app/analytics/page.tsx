@@ -71,7 +71,7 @@ const analyticsCards: CardItem[] = [
   },
   {
     title: "Export/FOB",
-    href: "/export-fob",
+    href: "/export-fob-analytics",
     icon: PackageCheck,
     iconBg: "bg-amber-600",
     iconColor: "text-white",

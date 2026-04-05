@@ -5,6 +5,8 @@ import {
   getTopProducts,
   getRecentActivityFeed,
 } from "../services/analytics.service.js";
+import ProductionTracking from "../models/ProductionTracking.js";
+import PresentStock from "../models/PresentStock.js";
 
 /**
  * GET /api/analytics/summary
@@ -178,6 +180,95 @@ export const getRecentActivity = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch recent activity",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/analytics/export-fob
+ * Get production-based export-fob data flattened by stage quantity
+ */
+export const getExportFobAnalytics = async (req, res) => {
+  try {
+    const status = req.query.status; // Optional: filter by status
+
+    const [productionTracking, presentStocks] = await Promise.all([
+      ProductionTracking.find().sort({ createdAt: -1 }).lean(),
+      PresentStock.find().sort({ createdAt: -1 }).lean(),
+    ]);
+
+    const stageMeta = [
+      { status: "In Cutting", qtyKey: "cutting" },
+      { status: "In Stitching", qtyKey: "stitching" },
+      { status: "In Finishing", qtyKey: "finishing" },
+    ];
+
+    const productionRows = productionTracking.flatMap((item) =>
+      stageMeta
+        .map((stage) => ({
+          ...stage,
+          qty: Number(item[stage.qtyKey] || 0),
+        }))
+        .filter((stage) => stage.qty > 0)
+        .map((stage) => ({
+          _id: `${item._id}-${stage.status}`,
+          sourceId: item._id,
+          type: "production-tracking",
+          designNumber: item.designNumber,
+          status: stage.status,
+          qty: stage.qty,
+          color: item.color,
+          size: item.size,
+          remarks: item.remarks,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        }))
+    );
+
+    const presentStockRows = presentStocks.map((item) => ({
+      _id: `${item._id}-${item.status}`,
+      sourceId: item._id,
+      type: "present-stock",
+      designNumber: item.duo,
+      status: item.status,
+      qty: 1,
+      color: item.color,
+      size: item.size,
+      remarks: null,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
+
+    const allData = [...productionRows, ...presentStockRows];
+
+    const filteredData = status ? allData.filter((item) => item.status === status) : allData;
+
+    const statusCounts = {
+      "In Cutting": allData.filter((item) => item.status === "In Cutting").reduce((sum, item) => sum + item.qty, 0),
+      "In Stitching": allData.filter((item) => item.status === "In Stitching").reduce((sum, item) => sum + item.qty, 0),
+      "In Finishing": allData.filter((item) => item.status === "In Finishing").reduce((sum, item) => sum + item.qty, 0),
+      Packed: allData.filter((item) => item.status === "Packed").reduce((sum, item) => sum + item.qty, 0),
+      Shipped: allData.filter((item) => item.status === "Shipped").reduce((sum, item) => sum + item.qty, 0),
+    };
+
+    res.status(200).json({
+      success: true,
+      data: {
+        items: filteredData,
+        statusCounts,
+        totalItems: allData.reduce((sum, item) => sum + item.qty, 0),
+        filteredCount: filteredData.reduce((sum, item) => sum + item.qty, 0),
+        totalRecords: allData.length,
+        filteredRecords: filteredData.length,
+        selectedStatus: status || null,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getExportFobAnalytics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch export-fob analytics",
       error: error.message,
     });
   }

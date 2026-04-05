@@ -6,6 +6,7 @@ import {
   getTopProductsController,
   getDashboard,
   getRecentActivity,
+  getExportFobAnalytics,
 } from "../controllers/analytics.controller.js";
 
 const router = express.Router();
@@ -32,5 +33,8 @@ router.get("/top-products", getTopProductsController);
 
 // GET /api/analytics/recent-activity - Unified recent feed across all areas
 router.get("/recent-activity", getRecentActivity);
+
+// GET /api/analytics/export-fob - Combined export-fob data with status information
+router.get("/export-fob", getExportFobAnalytics);
 
 export default router;

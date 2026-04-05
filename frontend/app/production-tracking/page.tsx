@@ -285,7 +285,7 @@ export default function ProductionTrackingPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Production Tracking</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Production</h1>
           <p className="text-lg text-gray-600">Monitor quantities across production stages</p>
         </div>
 

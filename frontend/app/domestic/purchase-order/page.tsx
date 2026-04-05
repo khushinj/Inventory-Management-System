@@ -1043,7 +1043,7 @@ export default function PurchaseOrderEntryForm() {
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">DIS</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">RATE</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">AMOUNT</th>
-                  <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">TGST %</th>
+                  <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">GST %</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">TAX</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">AMT</th>
                   <th className="px-3 py-3 text-center text-sm font-semibold text-gray-900 bg-gray-50">Actions</th>

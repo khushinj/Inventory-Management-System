@@ -38,6 +38,7 @@ type PurchaseOrder = {
   year?: number;
   dealerName: string;
   buyerName: string;
+  poc?: string;
   date: string;
   deadline?: string;
   city: string;
@@ -156,6 +157,7 @@ export default function PurchaseOrdersPage() {
       status: order.status,
       dealerName: order.dealerName,
       buyerName: order.buyerName,
+      poc: order.poc || "",
       date: new Date(order.date).toISOString().split('T')[0],
       deadline: order.deadline ? new Date(order.deadline).toISOString().split('T')[0] : '',
       city: order.city,
@@ -265,6 +267,7 @@ export default function PurchaseOrdersPage() {
         status: (editFormData.status as PurchaseOrder["status"]) || editingOrder.status,
         dealerName: editFormData.dealerName || editingOrder.dealerName,
         buyerName: editFormData.buyerName || editingOrder.buyerName,
+        poc: typeof editFormData.poc === "string" ? editFormData.poc : (editingOrder.poc || ""),
         date: editFormData.date ? new Date(editFormData.date).toISOString() : editingOrder.date,
         deadline: editFormData.deadline ? new Date(editFormData.deadline).toISOString() : editingOrder.deadline,
         city: editFormData.city || editingOrder.city,
@@ -382,7 +385,8 @@ export default function PurchaseOrdersPage() {
         (order) =>
           order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
           order.dealerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.buyerName.toLowerCase().includes(searchTerm.toLowerCase())
+          order.buyerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (order.poc || "").toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -873,6 +877,7 @@ export default function PurchaseOrdersPage() {
               <div className="mb-4">
                 <p className="text-lg font-semibold text-gray-900">{order.buyerName}</p>
                 <p className="text-sm text-gray-600">{order.dealerName}</p>
+                <p className="text-sm text-gray-500">POC: {order.poc || "-"}</p>
               </div>
 
               {/* Dates */}
@@ -1038,6 +1043,10 @@ export default function PurchaseOrdersPage() {
                   <div>
                     <p className="text-sm text-gray-600">Company</p>
                     <p className="text-base font-semibold text-gray-900">{selectedOrder.dealerName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">POC</p>
+                    <p className="text-base font-semibold text-gray-900">{selectedOrder.poc || "-"}</p>
                   </div>
                 </div>
               </div>
@@ -1247,6 +1256,20 @@ export default function PurchaseOrdersPage() {
                     onChange={(e) => handleEditFormChange("buyerName", e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
+                  />
+                </div>
+
+                {/* POC */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    POC (Point of Contact)
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.poc || ""}
+                    onChange={(e) => handleEditFormChange("poc", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter POC name"
                   />
                 </div>
 

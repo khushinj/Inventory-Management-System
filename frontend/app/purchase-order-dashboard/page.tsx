@@ -61,6 +61,7 @@ export default function PurchaseOrdersPage() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
@@ -318,6 +319,8 @@ export default function PurchaseOrdersPage() {
 
   useEffect(() => {
     fetchPurchaseOrders();
+    const roleMatch = document.cookie.match(/(?:^|; )ims_user_role=([^;]+)/);
+    setIsAdmin(roleMatch?.[1] === "admin");
   }, []);
 
   useEffect(() => {
@@ -785,16 +788,18 @@ export default function PurchaseOrdersPage() {
         </button>
       </div>
 
-      {/* Total Order Value */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-700 text-sm mb-1">Total Order Value</p>
-            <p className="text-4xl font-bold text-blue-900">{formatCurrency(totalValue)}</p>
+      {/* Total Order Value (Admin Only) */}
+      {isAdmin && (
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-700 text-sm mb-1">Total Order Value</p>
+              <p className="text-4xl font-bold text-blue-900">{formatCurrency(totalValue)}</p>
+            </div>
+            <FileText className="w-16 h-16 text-blue-300" />
           </div>
-          <FileText className="w-16 h-16 text-blue-300" />
         </div>
-      </div>
+      )}
 
       {/* Search and Filter */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">

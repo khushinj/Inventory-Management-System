@@ -836,7 +836,7 @@ export default function DomesticAnalyticsPage() {
   }, [handleRefresh]);
 
   const calculateMetrics = (
-    dispatches: Transaction[],
+    _dispatches: Transaction[],
     inventory: InventoryItem[],
     jobCards: JobCard[],
     allPurchaseOrders: PurchaseOrder[]
@@ -848,11 +848,8 @@ export default function DomesticAnalyticsPage() {
       mrpMap.set(key, jc.mrp || 0);
     });
 
-    // 1. Total Sale (from dispatch transactions)
-    const totalSale = dispatches.reduce((sum, t) => {
-      const mrp = t.mrp || mrpMap.get(normalizeDno(t.dno)) || 0;
-      return sum + t.qty * mrp;
-    }, 0);
+    // 1. Total Sale (from purchase orders)
+    const totalSale = allPurchaseOrders.reduce((sum, po) => sum + (po.grandTotal || 0), 0);
 
     // 2. Avg Order Value (same basis as purchase-order dashboard)
     const totalOrderValue = allPurchaseOrders.reduce((sum, po) => sum + (po.grandTotal || 0), 0);

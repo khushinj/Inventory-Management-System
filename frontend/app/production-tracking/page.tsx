@@ -95,7 +95,7 @@ export default function ProductionTrackingPage() {
       finishing: 0,
       remarks: "",
     };
-    setEntries([...entries, newEntry]);
+    setEntries((prevEntries) => [newEntry, ...prevEntries]);
     setTempValues({
       ...tempValues,
       [newId]: newEntry,
@@ -103,8 +103,15 @@ export default function ProductionTrackingPage() {
   };
 
   const handleDeleteRow = async (id: string | undefined) => {
-    if (!id) {
-      setEntries(entries.filter((e) => e._id !== id));
+    if (!id || id.startsWith("temp-")) {
+      setEntries((prevEntries) => prevEntries.filter((entry) => entry._id !== id));
+      if (id) {
+        setTempValues((prevValues) => {
+          const nextValues = { ...prevValues };
+          delete nextValues[id];
+          return nextValues;
+        });
+      }
       return;
     }
 

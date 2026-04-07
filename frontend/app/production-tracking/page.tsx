@@ -14,8 +14,11 @@ type ProductionEntry = {
   color: string;
   size: string;
   cutting: number;
+  cuttingDate?: string;
   stitching: number;
+  stitchingDate?: string;
   finishing: number;
+  finishingDate?: string;
   remarks: string;
 };
 
@@ -30,6 +33,30 @@ export default function ProductionTrackingPage() {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const allowNextPopRef = useRef(false);
   const [searchDesignNumber, setSearchDesignNumber] = useState("");
+
+  const formatDateInput = (value: string | undefined) => {
+    if (!value) {
+      return "";
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const normalizeProductionEntry = (entry: ProductionEntry): ProductionEntry => ({
+    ...entry,
+    cuttingDate: formatDateInput(entry.cuttingDate),
+    stitchingDate: formatDateInput(entry.stitchingDate),
+    finishingDate: formatDateInput(entry.finishingDate),
+  });
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key !== "Enter") {
@@ -65,7 +92,7 @@ export default function ProductionTrackingPage() {
       const res = await api.get("/production-tracking");
       if (res.data && (res.data.success || Array.isArray(res.data))) {
         const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-        setEntries(data);
+        setEntries(data.map((entry: ProductionEntry) => normalizeProductionEntry(entry)));
       }
     } catch (error) {
       console.error("Error fetching production data:", error);
@@ -85,14 +112,18 @@ export default function ProductionTrackingPage() {
 
   const handleAddRow = () => {
     const newId = `temp-${Date.now()}`;
+    const today = formatDateInput(new Date().toISOString());
     const newEntry: ProductionEntry = {
       _id: newId,
       designNumber: "",
       color: "",
       size: "",
       cutting: 0,
+      cuttingDate: today,
       stitching: 0,
+      stitchingDate: today,
       finishing: 0,
+      finishingDate: today,
       remarks: "",
     };
     setEntries((prevEntries) => [newEntry, ...prevEntries]);
@@ -136,52 +167,52 @@ export default function ProductionTrackingPage() {
 
     const numericFields = ["cutting", "stitching", "finishing"];
     const parsedValue = numericFields.includes(field) ? parseInt(value) || 0 : value;
+    const currentEntry = entries.find((entry) => entry._id === id);
+    const previousValue = currentEntry?.[field];
 
-    setTempValues({
-      ...tempValues,
+    setTempValues((prevValues) => ({
+      ...prevValues,
       [id]: {
-        ...tempValues[id],
+        ...prevValues[id],
         [field]: parsedValue,
       },
-    });
+    }));
+
+    if (id.startsWith("temp-")) {
+      return;
+    }
+
+    setEntries((prevEntries) =>
+      prevEntries.map((entry) => (entry._id === id ? { ...entry, [field]: parsedValue as any } : entry))
+    );
+
+    void api
+      .put(`/production-tracking/${id}`, {
+        [field]: parsedValue,
+      })
+      .catch((error) => {
+        console.error("Error updating entry:", error);
+        setEntries((prevEntries) =>
+          prevEntries.map((entry) =>
+            entry._id === id ? { ...entry, [field]: previousValue as any } : entry
+          )
+        );
+        setTempValues((prevValues) => ({
+          ...prevValues,
+          [id]: {
+            ...prevValues[id],
+            [field]: previousValue as any,
+          },
+        }));
+        alert("Failed to update entry");
+      });
   };
 
   const handleCellBlur = async (id: string | undefined, field: keyof ProductionEntry) => {
     if (!id) return;
 
-    const entry = entries.find((e) => e._id === id);
-    const newValue = tempValues[id]?.[field];
-
-    if (newValue === undefined || entry?.[field] === newValue) {
-      return;
-    }
-
-    // Update local state immediately
-    setEntries(
-      entries.map((e) =>
-        e._id === id ? { ...e, [field]: newValue as any } : e
-      )
-    );
-
-    // If it's a new entry (temp id), don't save to backend
     if (id.startsWith("temp-")) {
       return;
-    }
-
-    // Save to backend
-    try {
-      await api.put(`/production-tracking/${id}`, {
-        [field]: newValue,
-      });
-    } catch (error) {
-      console.error("Error updating entry:", error);
-      const originalEntry = tempValues[id];
-      setEntries(
-        entries.map((e) =>
-          e._id === id ? { ...e, [field]: originalEntry?.[field] } : e
-        )
-      );
-      alert("Failed to update entry");
     }
   };
 
@@ -199,8 +230,11 @@ export default function ProductionTrackingPage() {
           color: String(draft.color ?? entry.color ?? "").trim(),
           size: String(draft.size ?? entry.size ?? "").trim(),
           cutting: Number(draft.cutting ?? entry.cutting ?? 0) || 0,
+            cuttingDate: String(draft.cuttingDate ?? entry.cuttingDate ?? formatDateInput(new Date().toISOString())).trim(),
           stitching: Number(draft.stitching ?? entry.stitching ?? 0) || 0,
+            stitchingDate: String(draft.stitchingDate ?? entry.stitchingDate ?? formatDateInput(new Date().toISOString())).trim(),
           finishing: Number(draft.finishing ?? entry.finishing ?? 0) || 0,
+            finishingDate: String(draft.finishingDate ?? entry.finishingDate ?? formatDateInput(new Date().toISOString())).trim(),
           remarks: String(draft.remarks ?? entry.remarks ?? "").trim(),
         };
       });
@@ -226,14 +260,19 @@ export default function ProductionTrackingPage() {
             color: entry.color,
             size: entry.size,
             cutting: entry.cutting || 0,
+            cuttingDate: entry.cuttingDate || formatDateInput(new Date().toISOString()),
             stitching: entry.stitching || 0,
+            stitchingDate: entry.stitchingDate || formatDateInput(new Date().toISOString()),
             finishing: entry.finishing || 0,
+            finishingDate: entry.finishingDate || formatDateInput(new Date().toISOString()),
             remarks: entry.remarks || "",
           })
         )
       );
 
-      const savedRows = savedEntries.map((response) => response.data?.data || response.data);
+      const savedRows = savedEntries.map((response) =>
+        normalizeProductionEntry(response.data?.data || response.data)
+      );
 
       setEntries(
         entries.map((e) => {
@@ -262,8 +301,11 @@ export default function ProductionTrackingPage() {
       Color: e.color,
       Size: e.size,
       Cutting: e.cutting,
+      "Cutting Date": e.cuttingDate ? e.cuttingDate : "",
       Stitching: e.stitching,
+      "Stitching Date": e.stitchingDate ? e.stitchingDate : "",
       Finishing: e.finishing,
+      "Finishing Date": e.finishingDate ? e.finishingDate : "",
       Remarks: e.remarks,
     }));
 
@@ -272,8 +314,11 @@ export default function ProductionTrackingPage() {
       Color: "TOTAL",
       Size: "",
       Cutting: totals.cutting,
+      "Cutting Date": "",
       Stitching: totals.stitching,
+      "Stitching Date": "",
       Finishing: totals.finishing,
+      "Finishing Date": "",
       Remarks: "",
     });
 
@@ -505,23 +550,26 @@ export default function ProductionTrackingPage() {
             />
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="min-w-[1500px] w-full table-auto">
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Design Number</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Color</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Size</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Cutting</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Stitching</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Finishing</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Remarks</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Action</th>
+                  <th className="min-w-[12rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Design Number</th>
+                  <th className="min-w-[10rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Color</th>
+                  <th className="min-w-[9rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Size</th>
+                  <th className="min-w-[8rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Cutting</th>
+                  <th className="min-w-[12rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Cutting Date</th>
+                  <th className="min-w-[8rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Stitching</th>
+                  <th className="min-w-[12rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Stitching Date</th>
+                  <th className="min-w-[8rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Finishing</th>
+                  <th className="min-w-[12rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Finishing Date</th>
+                  <th className="min-w-[12rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Remarks</th>
+                  <th className="min-w-[8rem] px-6 py-4 text-center text-sm font-semibold text-gray-700">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredEntries.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
                       {entries.length === 0
                         ? "No production entries yet. Click \"Add Row\" to create one."
                         : "No matching design number found."}
@@ -534,8 +582,11 @@ export default function ProductionTrackingPage() {
                       color: tempValues[entry._id || ""]?.color ?? entry.color,
                       size: tempValues[entry._id || ""]?.size ?? entry.size,
                       cutting: tempValues[entry._id || ""]?.cutting ?? entry.cutting,
+                      cuttingDate: tempValues[entry._id || ""]?.cuttingDate ?? entry.cuttingDate,
                       stitching: tempValues[entry._id || ""]?.stitching ?? entry.stitching,
+                      stitchingDate: tempValues[entry._id || ""]?.stitchingDate ?? entry.stitchingDate,
                       finishing: tempValues[entry._id || ""]?.finishing ?? entry.finishing,
+                      finishingDate: tempValues[entry._id || ""]?.finishingDate ?? entry.finishingDate,
                       remarks: tempValues[entry._id || ""]?.remarks ?? entry.remarks,
                     };
 
@@ -551,7 +602,7 @@ export default function ProductionTrackingPage() {
                             }
                             onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "designNumber")}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full min-w-[11rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="e.g., DSN-001"
                           />
                         </td>
@@ -566,7 +617,7 @@ export default function ProductionTrackingPage() {
                             }
                             onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "color")}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full min-w-[10rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="e.g., Red"
                           />
                         </td>
@@ -581,7 +632,7 @@ export default function ProductionTrackingPage() {
                             }
                             onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "size")}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full min-w-[9rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="e.g., M"
                           />
                         </td>
@@ -596,8 +647,22 @@ export default function ProductionTrackingPage() {
                             }
                             onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "cutting")}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full min-w-[8rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="0"
+                          />
+                        </td>
+
+                        {/* Cutting Date */}
+                        <td className="px-6 py-4">
+                          <input
+                            type="date"
+                            value={displayValues.cuttingDate || ""}
+                            onChange={(e) =>
+                              handleCellChange(entry._id, "cuttingDate" as keyof ProductionEntry, e.target.value)
+                            }
+                            onKeyDown={handleKeyDown}
+                            onBlur={() => handleCellBlur(entry._id, "cuttingDate" as keyof ProductionEntry)}
+                            className="w-full min-w-[12rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                           />
                         </td>
 
@@ -611,8 +676,22 @@ export default function ProductionTrackingPage() {
                             }
                             onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "stitching")}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full min-w-[8rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="0"
+                          />
+                        </td>
+
+                        {/* Stitching Date */}
+                        <td className="px-6 py-4">
+                          <input
+                            type="date"
+                            value={displayValues.stitchingDate || ""}
+                            onChange={(e) =>
+                              handleCellChange(entry._id, "stitchingDate" as keyof ProductionEntry, e.target.value)
+                            }
+                            onKeyDown={handleKeyDown}
+                            onBlur={() => handleCellBlur(entry._id, "stitchingDate" as keyof ProductionEntry)}
+                            className="w-full min-w-[12rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                           />
                         </td>
 
@@ -626,8 +705,22 @@ export default function ProductionTrackingPage() {
                             }
                             onKeyDown={handleKeyDown}
                             onBlur={() => handleCellBlur(entry._id, "finishing")}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full min-w-[8rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                             placeholder="0"
+                          />
+                        </td>
+
+                        {/* Finishing Date */}
+                        <td className="px-6 py-4">
+                          <input
+                            type="date"
+                            value={displayValues.finishingDate || ""}
+                            onChange={(e) =>
+                              handleCellChange(entry._id, "finishingDate" as keyof ProductionEntry, e.target.value)
+                            }
+                            onKeyDown={handleKeyDown}
+                            onBlur={() => handleCellBlur(entry._id, "finishingDate" as keyof ProductionEntry)}
+                            className="w-full min-w-[12rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                           />
                         </td>
 
@@ -675,8 +768,11 @@ export default function ProductionTrackingPage() {
                   <tr className="bg-blue-50 font-semibold">
                     <td colSpan={3} className="px-6 py-4 text-gray-700">Total</td>
                     <td className="px-6 py-4 text-blue-600">{filteredTotals.cutting}</td>
+                    <td></td>
                     <td className="px-6 py-4 text-purple-600">{filteredTotals.stitching}</td>
+                    <td></td>
                     <td className="px-6 py-4 text-green-600">{filteredTotals.finishing}</td>
+                    <td></td>
                     <td colSpan={2}></td>
                   </tr>
                 )}

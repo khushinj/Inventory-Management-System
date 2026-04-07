@@ -21,13 +21,25 @@ const productionTrackingSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    cuttingDate: {
+      type: Date,
+      default: null,
+    },
     stitching: {
       type: Number,
       default: 0,
     },
+    stitchingDate: {
+      type: Date,
+      default: null,
+    },
     finishing: {
       type: Number,
       default: 0,
+    },
+    finishingDate: {
+      type: Date,
+      default: null,
     },
     remarks: {
       type: String,

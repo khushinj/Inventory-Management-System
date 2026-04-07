@@ -46,7 +46,19 @@ export const getProductionTrackingEntryById = async (req, res) => {
 // Create production tracking entry
 export const createProductionTrackingEntry = async (req, res) => {
   try {
-    const { designNumber, color, size, cutting, stitching, finishing, remarks } = req.body;
+    const {
+      designNumber,
+      color,
+      size,
+      cutting,
+      cuttingDate,
+      stitching,
+      stitchingDate,
+      finishing,
+      finishingDate,
+      remarks,
+    } = req.body;
+    const today = new Date().toISOString();
 
     if (!color || !size) {
       return res
@@ -62,8 +74,11 @@ export const createProductionTrackingEntry = async (req, res) => {
       color: color.trim(),
       size: size.trim(),
       cutting: cutting || 0,
+      cuttingDate: cuttingDate || today,
       stitching: stitching || 0,
+      stitchingDate: stitchingDate || today,
       finishing: finishing || 0,
+      finishingDate: finishingDate || today,
       remarks: remarks ? remarks.trim() : "",
     });
 
@@ -84,15 +99,29 @@ export const createProductionTrackingEntry = async (req, res) => {
 export const updateProductionTrackingEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    const { designNumber, color, size, cutting, stitching, finishing, remarks } = req.body;
+    const {
+      designNumber,
+      color,
+      size,
+      cutting,
+      cuttingDate,
+      stitching,
+      stitchingDate,
+      finishing,
+      finishingDate,
+      remarks,
+    } = req.body;
 
     const updateData = {};
     if (designNumber !== undefined) updateData.designNumber = designNumber.trim();
     if (color !== undefined) updateData.color = color.trim();
     if (size !== undefined) updateData.size = size.trim();
     if (cutting !== undefined) updateData.cutting = cutting;
+    if (cuttingDate !== undefined) updateData.cuttingDate = cuttingDate || null;
     if (stitching !== undefined) updateData.stitching = stitching;
+    if (stitchingDate !== undefined) updateData.stitchingDate = stitchingDate || null;
     if (finishing !== undefined) updateData.finishing = finishing;
+    if (finishingDate !== undefined) updateData.finishingDate = finishingDate || null;
     if (remarks !== undefined) updateData.remarks = remarks.trim();
 
     const updatedEntry = await ProductionTracking.findByIdAndUpdate(

@@ -1,5 +1,6 @@
 import express from "express";
 import StockReturned from "../models/StockReturned.js";
+import ProductionTracking from "../models/ProductionTracking.js";
 
 const router = express.Router();
 
@@ -42,6 +43,61 @@ router.post("/migrate-type-field", async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+router.post("/migrate-production-dates", async (req, res) => {
+  try {
+    const entriesToMigrate = await ProductionTracking.find({
+      $or: [
+        { cuttingDate: { $exists: false } },
+        { cuttingDate: null },
+        { stitchingDate: { $exists: false } },
+        { stitchingDate: null },
+        { finishingDate: { $exists: false } },
+        { finishingDate: null },
+      ],
+    });
+
+    let modifiedCount = 0;
+
+    for (const entry of entriesToMigrate) {
+      const fallbackDate = entry.createdAt || new Date();
+      let needsUpdate = false;
+
+      if (!entry.cuttingDate) {
+        entry.cuttingDate = fallbackDate;
+        needsUpdate = true;
+      }
+
+      if (!entry.stitchingDate) {
+        entry.stitchingDate = fallbackDate;
+        needsUpdate = true;
+      }
+
+      if (!entry.finishingDate) {
+        entry.finishingDate = fallbackDate;
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
+        await entry.save();
+        modifiedCount += 1;
+      }
+    }
+
+    res.json({
+      success: true,
+      message: "Production dates migration completed successfully",
+      documentsFound: entriesToMigrate.length,
+      documentsModified: modifiedCount,
+    });
+  } catch (error) {
+    console.error("Production dates migration error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
     });
   }
 });

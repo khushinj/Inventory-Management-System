@@ -73,6 +73,9 @@ type PurchaseOrder = {
   poc?: string;
   buyerName?: string;
   items?: Array<{
+    designNumber?: string;
+    color?: string;
+    qty?: number;
     s?: number;
     m?: number;
     l?: number;
@@ -94,6 +97,13 @@ type PurchaseOrder = {
     xxxxxl?: number;
     xxxxxxl?: number;
   }>;
+};
+
+type UndeliveredShipmentRow = {
+  date: string;
+  dno: string;
+  color: string;
+  qty: number;
 };
 
 type JobCard = {
@@ -175,6 +185,17 @@ function getOrderDeliveredSummary(po: PurchaseOrder) {
   };
 }
 
+function getPendingQuantity(item: NonNullable<PurchaseOrder["items"]>[number], deliveredItem: NonNullable<PurchaseOrder["deliveredSizes"]>[number] | undefined) {
+  const orderedQty =
+    typeof item.qty === "number"
+      ? item.qty
+      : poSizeKeys.reduce((sum, key) => sum + Number(item?.[key] || 0), 0);
+
+  const deliveredQty = poSizeKeys.reduce((sum, key) => sum + Number(deliveredItem?.[key] || 0), 0);
+
+  return Math.max(orderedQty - deliveredQty, 0);
+}
+
 function normalizeCityKey(city?: string) {
   const normalized = (city || "Unknown").trim().replace(/\s+/g, " ").toUpperCase();
   if (normalized.includes("DILSHAD GARDEN") && normalized.includes("DELHI")) {
@@ -192,6 +213,18 @@ function formatCityLabel(city?: string) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatDisplayDate(dateStr: string) {
+  try {
+    return new Date(dateStr).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
 }
 
 function getDateRangeByPeriod(periodType: Exclude<PeriodType, "custom">) {
@@ -707,6 +740,7 @@ export default function DomesticAnalyticsPage() {
   const [slowMovingArticles, setSlowMovingArticles] = useState<MovingItem[]>([]);
   const [fastMovingArticles, setFastMovingArticles] = useState<MovingItem[]>([]);
   const [orderTable, setOrderTable] = useState<OrderRow[]>([]);
+  const [undeliveredShipmentRows, setUndeliveredShipmentRows] = useState<UndeliveredShipmentRow[]>([]);
   const [regionDistribution, setRegionDistribution] = useState<RegionPoint[]>([]);
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => getDateRangeByPeriod("last-10-days"));
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -815,6 +849,7 @@ export default function DomesticAnalyticsPage() {
       calculateSalesOrderSeries(dispatchTransactions, purchaseOrders);
       calculateMovingArticles(dispatchTransactions, inventoryItems);
       calculateOrderTable(purchaseOrders);
+      calculateUndeliveredShipmentRows(purchaseOrders);
       calculateRegionDistribution(allPurchaseOrders);
       calculatePocDistribution(allPurchaseOrders);
     } catch (error) {
@@ -1015,6 +1050,33 @@ export default function DomesticAnalyticsPage() {
     setOrderTable(rows.length > 0 ? rows : [
       { date: "No orders", orderCount: 0, orderValueAmount: 0, orderValue: "₹0" }
     ]);
+  };
+
+  const calculateUndeliveredShipmentRows = (purchaseOrders: PurchaseOrder[]) => {
+    const rows: UndeliveredShipmentRow[] = [];
+
+    purchaseOrders.forEach((po) => {
+      if (!Array.isArray(po.items) || po.items.length === 0) {
+        return;
+      }
+
+      po.items.forEach((item, index) => {
+        const pendingQty = getPendingQuantity(item, po.deliveredSizes?.[index]);
+
+        if (pendingQty <= 0) {
+          return;
+        }
+
+        rows.push({
+          date: formatDisplayDate(po.date),
+          dno: item.designNumber || "-",
+          color: item.color || "-",
+          qty: pendingQty,
+        });
+      });
+    });
+
+    setUndeliveredShipmentRows(rows.length > 0 ? rows : []);
   };
 
   const orderTableTotals = useMemo(() => {
@@ -1406,6 +1468,58 @@ export default function DomesticAnalyticsPage() {
                       </td>
                     </tr>
                   )}
+                </tbody>
+              </table>
+            </div>
+          </DashboardCard>
+        </div>
+
+        <div className="mt-6">
+          <DashboardCard>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+              Undelivered Shipped Articles from Purchase Orders
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Purchase order items with pending quantity in the selected date range.
+            </p>
+
+            <div className="mt-6 max-h-[420px] overflow-auto rounded-xl border border-slate-200">
+              <table className="min-w-[900px] w-full text-left">
+                <thead className="sticky top-0 z-10 bg-slate-50">
+                  <tr className="border-b border-slate-200 text-sm text-slate-500 sm:text-base">
+                    <th className="px-5 py-4 font-semibold">Date</th>
+                    <th className="px-5 py-4 font-semibold">DNO</th>
+                    <th className="px-5 py-4 font-semibold">Color</th>
+                    <th className="px-5 py-4 font-semibold">Pending Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {undeliveredShipmentRows.length > 0 ? (
+                    undeliveredShipmentRows.map((row, index) => (
+                      <tr key={`${row.dno}-${row.color}-${row.date}-${index}`} className="border-b border-slate-200 text-sm text-slate-700 last:border-b-0 sm:text-base">
+                        <td className="px-5 py-4">{row.date}</td>
+                        <td className="px-5 py-4">{row.dno}</td>
+                        <td className="px-5 py-4">{row.color}</td>
+                        <td className="px-5 py-4 font-semibold text-orange-600">{row.qty}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
+                        No undelivered shipped articles found.
+                      </td>
+                    </tr>
+                  )}
+                  {undeliveredShipmentRows.length > 0 ? (
+                    <tr className="border-t-2 border-slate-300 text-sm font-semibold text-slate-800 sm:text-base">
+                      <td className="sticky bottom-0 bg-slate-50 px-5 py-4">Total</td>
+                      <td className="sticky bottom-0 bg-slate-50 px-5 py-4"></td>
+                      <td className="sticky bottom-0 bg-slate-50 px-5 py-4"></td>
+                      <td className="sticky bottom-0 bg-slate-50 px-5 py-4 text-orange-600">
+                        {undeliveredShipmentRows.reduce((sum, row) => sum + row.qty, 0)}
+                      </td>
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
             </div>

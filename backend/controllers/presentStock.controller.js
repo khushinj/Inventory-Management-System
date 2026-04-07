@@ -6,7 +6,7 @@ import ProductionTracking from "../models/ProductionTracking.js";
  */
 export const getAllPresentStockEntries = async (req, res) => {
   try {
-    const transferredEntries = await PresentStock.find({ isTransferred: true }).sort({ updatedAt: -1 });
+    const transferredEntries = await PresentStock.find({ isTransferred: true }).sort({ transferredAt: -1, updatedAt: -1 });
 
     if (transferredEntries.length === 0) {
       return res.json([]);
@@ -30,6 +30,7 @@ export const getAllPresentStockEntries = async (req, res) => {
           size: productionEntry.size,
           stockQty: productionEntry.finishing || 0,
           status: transferEntry.status,
+          transferredAt: transferEntry.transferredAt || transferEntry.createdAt,
         };
       })
       .filter(Boolean);
@@ -65,6 +66,7 @@ export const getPresentStockEntryById = async (req, res) => {
       size: productionEntry.size,
       stockQty: productionEntry.finishing || 0,
       status: transferEntry.status,
+      transferredAt: transferEntry.transferredAt || transferEntry.createdAt,
     };
 
     res.json(entry);
@@ -108,10 +110,16 @@ export const transferProductionToPresentStock = async (req, res) => {
         },
         $setOnInsert: {
           status: "Packed",
+          transferredAt: new Date(),
         },
       },
       { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
     );
+
+    if (!transferEntry.transferredAt) {
+      transferEntry.transferredAt = new Date();
+      await transferEntry.save();
+    }
 
     res.json({
       message: "Production entry transferred to present stock",
@@ -122,6 +130,7 @@ export const transferProductionToPresentStock = async (req, res) => {
         size: productionEntry.size,
         stockQty: productionEntry.finishing || 0,
         status: transferEntry.status,
+        transferredAt: transferEntry.transferredAt,
       },
     });
   } catch (error) {
@@ -166,6 +175,7 @@ export const updatePresentStockEntry = async (req, res) => {
       size: productionEntry.size,
       stockQty: productionEntry.finishing || 0,
       status,
+      transferredAt: transferEntry.transferredAt || transferEntry.createdAt,
     };
 
     res.json(entry);

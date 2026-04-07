@@ -12,6 +12,7 @@ type StockEntry = {
   size: string;
   stockQty: number;
   status: "Packed" | "Shipped";
+  transferredAt?: string;
 };
 
 type StatusCounts = {
@@ -71,6 +72,7 @@ export default function PresentStockPage() {
           dno: String(entry.dno ?? entry.duo ?? ""),
           stockQty: Number(entry.stockQty ?? 0),
           status: normalizeStatus(entry.status),
+          transferredAt: entry.transferredAt,
         }));
         setEntries(normalizedData);
       }
@@ -88,6 +90,19 @@ export default function PresentStockPage() {
       "Packed": entries.filter((e) => e.status === "Packed").length,
       "Shipped": entries.filter((e) => e.status === "Shipped").length,
     };
+  };
+
+  const formatDateOnly = (dateString: string) => {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+      return "-";
+    }
+
+    return date.toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const handleStatusChange = (id: string | undefined, value: StockEntry["status"]) => {
@@ -131,6 +146,7 @@ export default function PresentStockPage() {
       Size: e.size,
       "Stock Qty": e.stockQty,
       Status: e.status,
+      "Transferred Date": e.transferredAt ? formatDateOnly(e.transferredAt) : "-",
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -199,13 +215,14 @@ export default function PresentStockPage() {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Colour</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Size</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Stock Qty</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Transferred Date</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredEntries.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                       {entries.length === 0 ? "No stock entries found." : "No matching design number found."}
                     </td>
                   </tr>
@@ -242,6 +259,13 @@ export default function PresentStockPage() {
                         <td className="px-6 py-4">
                           <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
                             {entry.stockQty}
+                          </div>
+                        </td>
+
+                        {/* Transferred Date */}
+                        <td className="px-6 py-4">
+                          <div className="w-full px-3 py-2 text-gray-900">
+                            {entry.transferredAt ? formatDateOnly(entry.transferredAt) : "-"}
                           </div>
                         </td>
 

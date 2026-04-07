@@ -29,6 +29,11 @@ const presentStockSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    transferredAt: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
     status: {
       type: String,
       enum: ["Packed", "Shipped"],

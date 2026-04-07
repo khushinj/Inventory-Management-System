@@ -71,6 +71,7 @@ type PurchaseOrder = {
   totalQuantity: number;
   status?: string;
   poc?: string;
+  buyerName?: string;
   items?: Array<{
     s?: number;
     m?: number;
@@ -1354,6 +1355,7 @@ export default function DomesticAnalyticsPage() {
                 <thead className="bg-slate-50 sticky top-0">
                   <tr>
                     <th className="px-4 py-2">Date</th>
+                    <th className="px-4 py-2">Buyer Name</th>
                     <th className="px-4 py-2">Value</th>
                     <th className="px-4 py-2">Delivered Qty</th>
                     <th className="px-4 py-2">Pending Qty</th>
@@ -1364,6 +1366,7 @@ export default function DomesticAnalyticsPage() {
                     regionOrders.map((po) => (
                       <tr key={po._id} className="border-t">
                         <td className="px-4 py-2">{formatDate(po.date)}</td>
+                        <td className="px-4 py-2">{po.buyerName || "N/A"}</td>
                         <td className="px-4 py-2">{formatINR(po.grandTotal)}</td>
 
                         {(() => {
@@ -1384,7 +1387,7 @@ export default function DomesticAnalyticsPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={3} className="text-center py-4 text-slate-400">
+                      <td colSpan={5} className="text-center py-4 text-slate-400">
                         No data
                       </td>
                     </tr>

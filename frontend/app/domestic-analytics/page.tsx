@@ -571,7 +571,7 @@ function RegionPieChart({ data, onSelect }: { data: RegionPoint[]; onSelect: (re
   );
 }
 
-function PocPieChart({ data }: { data: PocPoint[] }) {
+function PocPieChart({ data, onSelect }: { data: PocPoint[]; onSelect: (poc: string) => void }) {
   const [hovered, setHovered] = useState<PocPoint | null>(null);
 
   const size = 320;
@@ -626,6 +626,7 @@ function PocPieChart({ data }: { data: PocPoint[] }) {
               }}
               onMouseEnter={() => setHovered(slice)}
               onMouseLeave={() => setHovered(null)}
+              onClick={() => onSelect(slice.label)}
             />
           ))}
 
@@ -682,6 +683,7 @@ function PocPieChart({ data }: { data: PocPoint[] }) {
                 className="flex items-center gap-2 rounded-lg border border-slate-200/60 bg-slate-50 px-3 py-2 text-xs cursor-pointer hover:bg-slate-100 transition-colors"
                 onMouseEnter={() => setHovered(slice)}
                 onMouseLeave={() => setHovered(null)}
+                onClick={() => onSelect(slice.label)}
               >
                 <div className="flex-shrink-0 w-3 h-3 rounded-full" style={{ backgroundColor: slice.color }}></div>
                 <div className="flex-1 min-w-0">
@@ -711,6 +713,8 @@ export default function DomesticAnalyticsPage() {
   const datePickerRef = useRef<HTMLDivElement | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [regionOrders, setRegionOrders] = useState<PurchaseOrder[]>([]);
+  const [selectedPoc, setSelectedPoc] = useState<string | null>(null);
+  const [pocOrders, setPocOrders] = useState<PurchaseOrder[]>([]);
   const [overallCompletion, setOverallCompletion] = useState<number>(0);
   const allPurchaseOrdersRef = useRef<PurchaseOrder[]>([]);
   const [pocDistribution, setPocDistribution] = useState<PocPoint[]>([]);
@@ -726,6 +730,16 @@ export default function DomesticAnalyticsPage() {
     );
 
     setRegionOrders(filtered);
+  };
+
+  const handlePocClick = (pocLabel: string) => {
+    setSelectedPoc(pocLabel);
+
+    const filtered = allPurchaseOrdersRef.current.filter(
+      (po) => (po.poc || "Unknown").trim() === pocLabel
+    );
+
+    setPocOrders(filtered);
   };
   useEffect(() => {
     if (period === "custom") return;
@@ -1405,7 +1419,63 @@ export default function DomesticAnalyticsPage() {
             </h2>
 
             <div className="mt-6">
-              <PocPieChart data={pocDistribution} />
+              <PocPieChart
+                data={pocDistribution}
+                onSelect={(poc) => handlePocClick(poc)}
+              />
+            </div>
+          </DashboardCard>
+
+          {/* POC ORDERS TABLE */}
+          <DashboardCard className="mt-6">
+            <h2 className="text-xl text-black font-semibold">
+              {selectedPoc ? `${selectedPoc} Orders` : "Select POC"}
+            </h2>
+
+            <div className="mt-4 max-h-[320px] overflow-auto text-black">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-2">Date</th>
+                    <th className="px-4 py-2">Buyer Name</th>
+                    <th className="px-4 py-2">Value</th>
+                    <th className="px-4 py-2">Delivered Qty</th>
+                    <th className="px-4 py-2">Pending Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pocOrders.length > 0 ? (
+                    pocOrders.map((po) => (
+                      <tr key={po._id} className="border-t">
+                        <td className="px-4 py-2">{formatDate(po.date)}</td>
+                        <td className="px-4 py-2">{po.buyerName || "N/A"}</td>
+                        <td className="px-4 py-2">{formatINR(po.grandTotal)}</td>
+
+                        {(() => {
+                          const { delivered, pending } = getDeliveredAndPending(po);
+
+                          return (
+                            <>
+                              <td className="px-4 py-2 text-green-600 font-medium">
+                                {delivered}
+                              </td>
+                              <td className="px-4 py-2 text-orange-600 font-medium">
+                                {pending}
+                              </td>
+                            </>
+                          );
+                        })()}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="text-center py-4 text-slate-400">
+                        No data
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </DashboardCard>
         </div>

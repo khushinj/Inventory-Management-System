@@ -48,9 +48,14 @@ export const normalizeColor = (color) => {
  */
 export const normalizeSize = (size) => {
   if (!size) return '';
-  return String(size)
+  const normalized = String(size)
     .trim()
     .toUpperCase();
+
+  // Treat 2XL and XXL as the same inventory size.
+  if (normalized === '2XL') return 'XXL';
+
+  return normalized;
 };
 
 /**

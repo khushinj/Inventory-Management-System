@@ -69,9 +69,17 @@ export const createShopEntriesBulk = async (req, res) => {
 
 export const getShopEntries = async (req, res) => {
   try {
+    // Optimize by selecting only necessary fields
+    const txnFields = "_id dno qty mrp date createdAt color size formType";
+
     const results = await Promise.all(
       allowedShopForms.map((form) =>
-        getTransactionModel("shop", "", form).find().sort({ date: -1 }).lean()
+        getTransactionModel("shop", "", form)
+          .find()
+          .select(txnFields)
+          .sort({ date: -1 })
+          .lean()
+          .limit(600) // Limit to last 600 entries
       )
     );
 

@@ -643,7 +643,7 @@ function PocPieChart({ data, onSelect }: { data: PocPoint[]; onSelect: (poc: str
   return (
     <div className="flex flex-col items-center">
       <div className="relative flex justify-center" style={{ paddingBottom: hasMoreThan8 ? "32px" : "64px" }}>
-        <svg viewBox={`0 0 ${size} ${size}`} className="h-[320px] w-[320px]">
+        <svg viewBox={`0 0 ${size} ${size}`} className="h-[320px] w-[320px] overflow-visible">
 
           {/* PIE */}
           {slices.map((slice, index) => (
@@ -1170,7 +1170,7 @@ export default function DomesticAnalyticsPage() {
     const pocMap = new Map<string, number>();
 
     allPurchaseOrders.forEach((po) => {
-      const poc = (po.poc || "Unknown").trim();
+      const poc = (po.poc || "Unknown").trim().toUpperCase();
 
       const current = pocMap.get(poc) || 0;
       pocMap.set(poc, current + (po.grandTotal || 0));

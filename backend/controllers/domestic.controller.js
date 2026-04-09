@@ -108,12 +108,17 @@ export const getDomesticEntries = async (req, res) => {
       formsToFetch = [formType];
     }
 
+    // Optimize by selecting only necessary fields
+    const txnFields = "_id dno qty mrp date createdAt color size receiver supplier channel formType";
+
     const collections = await Promise.all(
       formsToFetch.map((form) =>
         getTransactionModel("warehouse", "domestic", form)
           .find(channel ? { channel } : {})
+          .select(txnFields)
           .sort({ date: -1 })
           .lean()
+          .limit(1000) // Limit to last 1000 entries
       )
     );
 

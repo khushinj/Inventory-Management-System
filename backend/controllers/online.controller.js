@@ -23,12 +23,17 @@ export const createOnlineEntry = async (req, res) => {
 
 export const getOnlineEntries = async (req, res) => {
   try {
+    // Optimize by selecting only necessary fields
+    const txnFields = "_id dno qty mrp date createdAt color size channel formType platform";
+
     const collections = await Promise.all(
       allowedOnlineForms.map((form) =>
         getTransactionModel("warehouse", "online", form)
           .find()
+          .select(txnFields)
           .sort({ date: -1 })
           .lean()
+          .limit(800) // Limit to last 800 entries
           .catch((err) => {
             console.error(`Error fetching online form collection '${form}':`, err.message);
             return [];

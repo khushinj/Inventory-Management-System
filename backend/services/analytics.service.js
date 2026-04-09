@@ -376,7 +376,7 @@ export const getTopProducts = async (days = 30, limit = 10) => {
 export const getRecentActivityFeed = async (hours = 24, limit) => {
   try {
     const lookbackHours = Number.isFinite(Number(hours)) ? Math.max(1, Number(hours)) : 24;
-    const maxItems = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Math.max(1, Number(limit)) : null;
+    const maxItems = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Math.max(1, Number(limit)) : 100;
 
     const startDate = new Date(Date.now() - lookbackHours * 60 * 60 * 1000);
     const txnFilter = {
@@ -393,14 +393,20 @@ export const getRecentActivityFeed = async (hours = 24, limit) => {
       ],
     };
 
+    // Select only necessary fields to reduce payload size and improve query speed
+    const txnFields = "_id dno qty mrp date createdAt color size receiver supplier channel platform formType";
+    const reportFields = "_id date updatedAt createdAt qty totalQuantity totalSale note";
+    const srFields = "_id dno totalQuantity mrp color type date createdAt";
+    const poFields = "_id date updatedAt createdAt totalQuantity grandTotal orderNumber buyerName dealerName";
+
     const shopQueries = SHOP_FORMS.map((formType) =>
-      getTransactionModel("shop", "", formType).find(txnFilter).lean()
+      getTransactionModel("shop", "", formType).find(txnFilter).select(txnFields).lean().limit(200)
     );
     const domesticQueries = DOMESTIC_FORMS.map((formType) =>
-      getTransactionModel("warehouse", "domestic", formType).find(txnFilter).lean()
+      getTransactionModel("warehouse", "domestic", formType).find(txnFilter).select(txnFields).lean().limit(200)
     );
     const onlineQueries = ONLINE_FORMS.map((formType) =>
-      getTransactionModel("warehouse", "online", formType).find(txnFilter).lean()
+      getTransactionModel("warehouse", "online", formType).find(txnFilter).select(txnFields).lean().limit(200)
     );
 
     const [
@@ -415,10 +421,10 @@ export const getRecentActivityFeed = async (hours = 24, limit) => {
       Promise.all(shopQueries),
       Promise.all(domesticQueries),
       Promise.all(onlineQueries),
-      DailyReport.find(reportFilter).lean(),
-      OnlineDailyReport.find(reportFilter).lean(),
-      StockReturned.find(reportFilter).lean(),
-      PurchaseOrder.find(reportFilter).lean(),
+      DailyReport.find(reportFilter).select(reportFields).lean().limit(500),
+      OnlineDailyReport.find(reportFilter).select(reportFields).lean().limit(500),
+      StockReturned.find(reportFilter).select(srFields).lean().limit(500),
+      PurchaseOrder.find(reportFilter).select(poFields).lean().limit(500),
     ]);
 
     const activities = [
@@ -433,7 +439,8 @@ export const getRecentActivityFeed = async (hours = 24, limit) => {
       .filter((item) => item.activityAt)
       .sort((a, b) => new Date(b.activityAt).getTime() - new Date(a.activityAt).getTime());
 
-    const finalActivities = maxItems ? activities.slice(0, maxItems) : activities;
+    // Limit to maxItems (default 100) for performance
+    const finalActivities = activities.slice(0, maxItems);
 
     return {
       since: startDate.toISOString(),

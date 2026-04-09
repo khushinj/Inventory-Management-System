@@ -60,7 +60,11 @@ export const createMultipleJobCards = async (req, res) => {
 // Get all job card entries
 export const getAllJobCards = async (req, res) => {
   try {
-    const jobCards = await JobCard.find().sort({ createdAt: -1 });
+    // Select only necessary fields for performance and add .lean() to return plain objects
+    const jobCards = await JobCard.find()
+      .select("_id designNumber mrp color size qty image cutting createdAt")
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(jobCards);
   } catch (err) {
     res.status(500).json({ error: err.message });

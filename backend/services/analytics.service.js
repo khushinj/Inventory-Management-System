@@ -3,6 +3,7 @@ import PurchaseOrder from "../models/PurchaseOrder.js";
 import StockReturned from "../models/StockReturned.js";
 import DailyReport from "../models/DailyReport.js";
 import OnlineDailyReport from "../models/OnlineDailyReport.js";
+import JobCard from "../models/JobCard.js";
 import { getWarehouseInventorySummary } from "./warehouseInventory.service.js";
 
 const SHOP_FORMS = ["import", "sales", "return", "purchase"];
@@ -23,6 +24,8 @@ const toTimestamp = (value) => {
   const dt = value ? new Date(value) : null;
   return dt && !Number.isNaN(dt.getTime()) ? dt.toISOString() : null;
 };
+
+const normalizeKeyPart = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
 
 const normalizeTxn = (entry, area, source) => ({
   id: String(entry._id),
@@ -95,6 +98,24 @@ const normalizePurchaseOrder = (entry) => ({
     orderNumber: entry.orderNumber || null,
     buyerName: entry.buyerName || null,
     dealerName: entry.dealerName || null,
+  },
+});
+
+const normalizeJobCardEntry = (entry) => ({
+  id: entry.id,
+  area: "jobcard",
+  source: "jobcard-dashboard",
+  activityType: "jobcard-entry",
+  date: toTimestamp(entry.createdAt),
+  activityAt: toTimestamp(entry.createdAt),
+  designNumber: entry.designNumber || null,
+  quantity: Number(entry.quantity || 0),
+  amount: null,
+  channel: null,
+  platform: null,
+  metadata: {
+    brand: entry.brand || null,
+    fabric: entry.fabric || null,
   },
 });
 
@@ -398,6 +419,7 @@ export const getRecentActivityFeed = async (hours = 24, limit) => {
     const reportFields = "_id date updatedAt createdAt qty totalQuantity totalSale note";
     const srFields = "_id dno totalQuantity mrp color type date createdAt";
     const poFields = "_id date updatedAt createdAt totalQuantity grandTotal orderNumber buyerName dealerName";
+    const jobCardFields = "_id designNumber brand fabric createdAt cutting";
 
     const shopQueries = SHOP_FORMS.map((formType) =>
       getTransactionModel("shop", "", formType).find(txnFilter).select(txnFields).lean().limit(200)
@@ -417,6 +439,7 @@ export const getRecentActivityFeed = async (hours = 24, limit) => {
       onlineDailyReports,
       stockReturned,
       purchaseOrders,
+      jobCards,
     ] = await Promise.all([
       Promise.all(shopQueries),
       Promise.all(domesticQueries),
@@ -425,7 +448,44 @@ export const getRecentActivityFeed = async (hours = 24, limit) => {
       OnlineDailyReport.find(reportFilter).select(reportFields).lean().limit(500),
       StockReturned.find(reportFilter).select(srFields).lean().limit(500),
       PurchaseOrder.find(reportFilter).select(poFields).lean().limit(500),
+      JobCard.find({ createdAt: { $gte: startDate } }).select(jobCardFields).lean().limit(500),
     ]);
+
+    const jobCardByDesign = jobCards.reduce((acc, card) => {
+      const designKey = normalizeKeyPart(card.designNumber);
+      if (!designKey) return acc;
+
+      const cuttingRows = Array.isArray(card.cutting) ? card.cutting : [];
+      const cuttingQty = cuttingRows.reduce((sum, row) => sum + Number(row?.quantity || 0), 0);
+      const existing = acc.get(designKey);
+
+      if (!existing) {
+        acc.set(designKey, {
+          id: String(card._id),
+          createdAt: card.createdAt,
+          designNumber: card.designNumber,
+          quantity: cuttingQty,
+          brand: card.brand || null,
+          fabric: card.fabric || null,
+        });
+        return acc;
+      }
+
+      existing.quantity += cuttingQty;
+      if (new Date(card.createdAt).getTime() > new Date(existing.createdAt).getTime()) {
+        existing.createdAt = card.createdAt;
+        existing.id = String(card._id);
+        existing.designNumber = card.designNumber;
+        existing.brand = card.brand || null;
+        existing.fabric = card.fabric || null;
+      }
+
+      return acc;
+    }, new Map());
+
+    const jobCardActivities = Array.from(jobCardByDesign.values()).map((entry) =>
+      normalizeJobCardEntry(entry)
+    );
 
     const activities = [
       ...shopResults.flat().map((item) => normalizeTxn(item, "shop", "shop-entry")),
@@ -435,6 +495,7 @@ export const getRecentActivityFeed = async (hours = 24, limit) => {
       ...onlineDailyReports.map((item) => normalizeDailyReport(item, "online", "online-daily-report")),
       ...stockReturned.map((item) => normalizeStockReturned(item)),
       ...purchaseOrders.map((item) => normalizePurchaseOrder(item)),
+      ...jobCardActivities,
     ]
       .filter((item) => item.activityAt)
       .sort((a, b) => new Date(b.activityAt).getTime() - new Date(a.activityAt).getTime());

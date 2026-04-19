@@ -160,7 +160,7 @@ export const getDashboard = async (req, res) => {
 
 /**
  * GET /api/analytics/recent-activity
- * Get unified activity feed across shop, domestic, and online areas
+ * Get unified activity feed across shop, domestic, online, and jobcard areas
  */
 export const getRecentActivity = async (req, res) => {
   try {

@@ -16,7 +16,7 @@ type CardItem = {
 
 type RecentActivityItem = {
   id: string;
-  area: "shop" | "domestic" | "online" | string;
+  area: "shop" | "domestic" | "online" | "jobcard" | string;
   source: string;
   activityType: string;
   date: string | null;
@@ -184,6 +184,7 @@ function areaLabel(value: string) {
   if (value === "shop") return "Shop";
   if (value === "domestic") return "Domestic";
   if (value === "online") return "Online";
+  if (value === "jobcard") return "Job Card";
   return value;
 }
 
@@ -276,6 +277,46 @@ function ActivityTable({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function JobCardActivityTable({
+  title,
+  rows,
+  titleClassName,
+}: {
+  title: string;
+  rows: DisplayActivityItem[];
+  titleClassName: string;
+}) {
+  return (
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className={`px-6 py-4 text-4xl font-bold tracking-tight text-white ${titleClassName}`}>{title}</div>
+      {rows.length === 0 ? (
+        <div className="px-6 py-8 text-sm font-medium text-slate-600">No job card activity in last 24 hours.</div>
+      ) : (
+        <div className="max-h-[360px] overflow-auto">
+          <table className="min-w-[560px] w-full divide-y divide-slate-200">
+            <thead className="sticky top-0 bg-slate-100">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Design/Ref</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">Cutting Qty</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Activity Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {rows.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-50/70">
+                  <td className="px-4 py-3 text-sm font-medium text-slate-700">{item.designNumber || item.source}</td>
+                  <td className="px-4 py-3 text-right text-sm text-slate-700">{item.quantity || 0}</td>
+                  <td className="px-4 py-3 text-sm text-slate-600">{item.displayTime}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </section>
@@ -386,6 +427,7 @@ export default function AnalyticsPage() {
       shop: activityRows.filter((item) => item.area.toLowerCase() === "shop"),
       domestic: activityRows.filter((item) => item.area.toLowerCase() === "domestic"),
       online: activityRows.filter((item) => item.area.toLowerCase() === "online"),
+      jobcard: activityRows.filter((item) => item.area.toLowerCase() === "jobcard"),
     };
   }, [activityRows]);
 
@@ -411,25 +453,38 @@ export default function AnalyticsPage() {
         <div className="mt-20">
           <SectionTitle label="Last 24 Hours Activity" />
           {loadingRecent ? (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-              <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div className="bg-blue-600 px-6 py-4 text-4xl font-bold tracking-tight text-white">Shop</div>
-                <div className="px-6 py-8 text-sm font-medium text-slate-600">Loading recent activity...</div>
-              </section>
-              <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div className="bg-emerald-600 px-6 py-4 text-4xl font-bold tracking-tight text-white">Domestic</div>
-                <div className="px-6 py-8 text-sm font-medium text-slate-600">Loading recent activity...</div>
-              </section>
-              <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div className="bg-violet-600 px-6 py-4 text-4xl font-bold tracking-tight text-white">Online</div>
-                <div className="px-6 py-8 text-sm font-medium text-slate-600">Loading recent activity...</div>
-              </section>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                  <div className="bg-blue-600 px-6 py-4 text-4xl font-bold tracking-tight text-white">Shop</div>
+                  <div className="px-6 py-8 text-sm font-medium text-slate-600">Loading recent activity...</div>
+                </section>
+                <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                  <div className="bg-emerald-600 px-6 py-4 text-4xl font-bold tracking-tight text-white">Domestic</div>
+                  <div className="px-6 py-8 text-sm font-medium text-slate-600">Loading recent activity...</div>
+                </section>
+                <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                  <div className="bg-violet-600 px-6 py-4 text-4xl font-bold tracking-tight text-white">Online</div>
+                  <div className="px-6 py-8 text-sm font-medium text-slate-600">Loading recent activity...</div>
+                </section>
+              </div>
+              <div className="grid grid-cols-1">
+                <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                  <div className="bg-slate-700 px-6 py-4 text-4xl font-bold tracking-tight text-white">Job Card</div>
+                  <div className="px-6 py-6 text-sm font-medium text-slate-600">Loading recent activity...</div>
+                </section>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-              <ActivityTable title="Shop" rows={groupedActivities.shop} titleClassName="bg-blue-600" />
-              <ActivityTable title="Domestic" rows={groupedActivities.domestic} titleClassName="bg-emerald-600" />
-              <ActivityTable title="Online" rows={groupedActivities.online} titleClassName="bg-violet-600" />
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <ActivityTable title="Shop" rows={groupedActivities.shop} titleClassName="bg-blue-600" />
+                <ActivityTable title="Domestic" rows={groupedActivities.domestic} titleClassName="bg-emerald-600" />
+                <ActivityTable title="Online" rows={groupedActivities.online} titleClassName="bg-violet-600" />
+              </div>
+              <div className="grid grid-cols-1">
+                <JobCardActivityTable title="Job Card" rows={groupedActivities.jobcard} titleClassName="bg-slate-700" />
+              </div>
             </div>
           )}
         </div>

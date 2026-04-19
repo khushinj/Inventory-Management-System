@@ -61,6 +61,13 @@ function formatDateLabel(value: string) {
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
+function toLocalIsoDate(value: Date) {
+  const year = value.getFullYear();
+  const month = `${value.getMonth() + 1}`.padStart(2, "0");
+  const day = `${value.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function getDateRangeByPeriod(period: Exclude<Period, "custom">): DateRange {
   const now = new Date();
   let start: Date;
@@ -84,8 +91,8 @@ function getDateRangeByPeriod(period: Exclude<Period, "custom">): DateRange {
   }
 
   return {
-    start: start.toISOString().split("T")[0],
-    end: end.toISOString().split("T")[0],
+    start: toLocalIsoDate(start),
+    end: toLocalIsoDate(end),
   };
 }
 

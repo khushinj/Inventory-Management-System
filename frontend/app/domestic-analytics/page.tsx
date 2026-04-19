@@ -234,6 +234,13 @@ function formatDisplayDate(dateStr: string) {
   }
 }
 
+function toLocalIsoDate(value: Date) {
+  const year = value.getFullYear();
+  const month = `${value.getMonth() + 1}`.padStart(2, "0");
+  const day = `${value.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function getDateRangeByPeriod(periodType: Exclude<PeriodType, "custom">) {
   const now = new Date();
   let start: Date;
@@ -257,8 +264,8 @@ function getDateRangeByPeriod(periodType: Exclude<PeriodType, "custom">) {
   }
 
   return {
-    start: start.toISOString().split("T")[0],
-    end: end.toISOString().split("T")[0],
+    start: toLocalIsoDate(start),
+    end: toLocalIsoDate(end),
   };
 }
 
@@ -373,7 +380,7 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
           {/* X labels */}
           {data.map((point, index) => (
             <text
-              key={`x-label-${point.label}`}
+              key={`x-label-${point.label}-${index}`}
               x={toX(index)}
               y={topPad + chartHeight + 26}
               textAnchor="middle"
@@ -409,7 +416,7 @@ function SalesOrdersChart({ data }: { data: SeriesPoint[] }) {
 
             return (
               <g
-                key={`dot-${point.label}`}
+                key={`dot-${point.label}-${index}`}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
                 style={{ cursor: "pointer" }}

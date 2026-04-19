@@ -47,6 +47,13 @@ type PocPoint = {
   color: string;
 };
 
+type SizeDistributionPoint = {
+  label: string;
+  value: number;
+  percentage: number;
+  color: string;
+};
+
 type Transaction = {
   dno: string;
   qty: number;
@@ -732,6 +739,94 @@ function PocPieChart({ data, onSelect }: { data: PocPoint[]; onSelect: (poc: str
   );
 }
 
+function SizeBreakdownPieChart({ data }: { data: SizeDistributionPoint[] }) {
+  const [hovered, setHovered] = useState<SizeDistributionPoint | null>(null);
+  const size = 320;
+  const center = size / 2;
+  const radius = 108;
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  let startAngle = -90;
+  const slices = data.map((item) => {
+    const angle = (item.value / Math.max(total, 1)) * 360;
+    const endAngle = startAngle + angle;
+
+    const x1 = center + radius * Math.cos((Math.PI * startAngle) / 180);
+    const y1 = center + radius * Math.sin((Math.PI * startAngle) / 180);
+    const x2 = center + radius * Math.cos((Math.PI * endAngle) / 180);
+    const y2 = center + radius * Math.sin((Math.PI * endAngle) / 180);
+    const largeArcFlag = angle > 180 ? 1 : 0;
+
+    const path = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+    const slice = { ...item, path };
+    startAngle = endAngle;
+    return slice;
+  });
+
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">
+      <div className="relative flex justify-center">
+        <svg viewBox={`0 0 ${size} ${size}`} className="h-[320px] w-[320px]">
+          {slices.map((slice) => (
+            <path
+              key={slice.label}
+              d={slice.path}
+              fill={slice.color}
+              stroke="#fff"
+              strokeWidth="2"
+              style={{ cursor: "pointer", opacity: hovered?.label === slice.label ? 0.8 : 1 }}
+              onMouseEnter={() => setHovered(slice)}
+              onMouseLeave={() => setHovered(null)}
+            />
+          ))}
+
+          <circle cx={center} cy={center} r="56" fill="#fff" />
+          <text x={center} y={center - 4} textAnchor="middle" className="fill-slate-700 text-[13px] font-semibold">
+            Total Qty
+          </text>
+          <text x={center} y={center + 18} textAnchor="middle" className="fill-slate-900 text-[18px] font-bold">
+            {total.toLocaleString()}
+          </text>
+        </svg>
+
+        {hovered ? (
+          <div className="absolute bottom-0 left-1/2 min-w-[200px] -translate-x-1/2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-lg">
+            <div className="font-semibold text-slate-900">Size {hovered.label}</div>
+            <div className="mt-1 text-blue-600 font-medium">{hovered.value.toLocaleString()} pcs</div>
+            <div className="mt-1 text-slate-500">{hovered.percentage}% share</div>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="max-h-[320px] overflow-auto rounded-xl border border-slate-200">
+        <table className="w-full text-left">
+          <thead className="sticky top-0 z-10 bg-slate-50">
+            <tr className="text-sm text-slate-500 sm:text-base">
+              <th className="px-4 py-3 font-semibold">Size</th>
+              <th className="px-4 py-3 font-semibold">Qty</th>
+              <th className="px-4 py-3 font-semibold">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item) => (
+              <tr key={item.label} className="border-t border-slate-200 text-sm text-slate-700 sm:text-base">
+                <td className="px-4 py-3">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    {item.label.toUpperCase()}
+                  </span>
+                </td>
+                <td className="px-4 py-3">{item.value.toLocaleString()}</td>
+                <td className="px-4 py-3">{item.percentage}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function DomesticAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodType>("last-10-days");
@@ -750,6 +845,7 @@ export default function DomesticAnalyticsPage() {
   const [selectedPoc, setSelectedPoc] = useState<string | null>(null);
   const [pocOrders, setPocOrders] = useState<PurchaseOrder[]>([]);
   const [overallCompletion, setOverallCompletion] = useState<number>(0);
+  const [sizeDistribution, setSizeDistribution] = useState<SizeDistributionPoint[]>([]);
   const allPurchaseOrdersRef = useRef<PurchaseOrder[]>([]);
   const [pocDistribution, setPocDistribution] = useState<PocPoint[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -852,6 +948,7 @@ export default function DomesticAnalyticsPage() {
       calculateUndeliveredShipmentRows(purchaseOrders);
       calculateRegionDistribution(allPurchaseOrders);
       calculatePocDistribution(allPurchaseOrders);
+      calculateSizeDistribution(purchaseOrders);
     } catch (error) {
       console.error("Error fetching analytics data:", error);
     } finally {
@@ -1203,6 +1300,54 @@ export default function DomesticAnalyticsPage() {
     );
   };
 
+  const calculateSizeDistribution = (purchaseOrders: PurchaseOrder[]) => {
+    const sizeTotals: Record<PoSizeKey, number> = {
+      s: 0,
+      m: 0,
+      l: 0,
+      xl: 0,
+      xxl: 0,
+      xxxl: 0,
+      xxxxl: 0,
+      xxxxxl: 0,
+      xxxxxxl: 0,
+    };
+
+    purchaseOrders.forEach((po) => {
+      (po.items || []).forEach((item) => {
+        poSizeKeys.forEach((sizeKey) => {
+          sizeTotals[sizeKey] += Number(item?.[sizeKey] || 0);
+        });
+      });
+    });
+
+    const total = poSizeKeys.reduce((sum, sizeKey) => sum + sizeTotals[sizeKey], 0);
+    const colors = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#f97316", "#84cc16", "#14b8a6"];
+
+    const distribution = poSizeKeys
+      .map((sizeKey, index) => ({
+        label: sizeKey,
+        value: sizeTotals[sizeKey],
+        percentage: total > 0 ? Number(((sizeTotals[sizeKey] / total) * 100).toFixed(2)) : 0,
+        color: colors[index % colors.length],
+      }))
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value);
+
+    setSizeDistribution(
+      distribution.length > 0
+        ? distribution
+        : [
+            {
+              label: "No Data",
+              value: 1,
+              percentage: 100,
+              color: "#94a3b8",
+            },
+          ]
+    );
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
@@ -1409,6 +1554,18 @@ export default function DomesticAnalyticsPage() {
         </div>
 
         {/* 🔥 PIE + TABLE */}
+        <div className="mt-6">
+          <DashboardCard>
+            <h2 className="text-xl text-black font-semibold">Size Wise Selling Breakdown</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Percentage share by size from purchase orders in selected date range.
+            </p>
+            <div className="mt-5">
+              <SizeBreakdownPieChart data={sizeDistribution} />
+            </div>
+          </DashboardCard>
+        </div>
+
         <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1.5fr_1fr]">
 
           {/* PIE */}

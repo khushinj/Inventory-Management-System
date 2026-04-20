@@ -95,6 +95,25 @@ function getSizeSummary(item: PurchaseOrderPdfItem): string {
     .join(", ");
 }
 
+function getSizesWithQty(item: PurchaseOrderPdfItem): string {
+  const sizes: Array<[string, number]> = [
+    ["S", item.s],
+    ["M", item.m],
+    ["L", item.l],
+    ["XL", item.xl],
+    ["2XL", item.xxl],
+    ["3XL", item.xxxl],
+    ["4XL", item.xxxxl],
+    ["5XL", item.xxxxxl],
+    ["6XL", item.xxxxxxl],
+  ];
+
+  return sizes
+    .filter(([, qty]) => qty > 0)
+    .map(([label, qty]) => `${label}:${qty}`)
+    .join(",");
+}
+
 const DEFAULT_PARTY_ADDRESS_LINES = [
   "UNIT NO-210, PEARLS CORPORATE",
   "PLOT NO-09, MANGLAM PLACE,",
@@ -112,7 +131,7 @@ function getHeaderLayoutMetrics() {
     companySecondaryStartY + (companySecondaryLines * companyLineHeight);
 
   const consigneeY = companyBottomY + 4;
-  const sectionHeight = 36;
+  const sectionHeight = 16;
   const buyerY = consigneeY + sectionHeight;
   const dividerY = buyerY + sectionHeight + 2;
   const tableStartY = dividerY + 3;
@@ -148,20 +167,6 @@ function drawPartySection(
   doc.setFont("helvetica", "bold");
   const nameLines = doc.splitTextToSize(partyName || "VIRGO CLOTHING CULTURE PVT LTD ( DELHI", maxTextWidth);
   doc.text(nameLines, startX + 2, textY);
-  textY += nameLines.length * 3.8;
-
-  doc.setFont("helvetica", "normal");
-  const partyLines = [
-    ...DEFAULT_PARTY_ADDRESS_LINES,
-    `${city || "Delhi"} - 110085, India`,
-    `GSTIN/UIN        : ${DEFAULT_GSTIN}`,
-    `State Name     : ${DEFAULT_STATE_LINE}`,
-  ];
-
-  partyLines.forEach((line) => {
-    doc.text(line, startX + 2, textY);
-    textY += 3.8;
-  });
 }
 
 function drawHeader(doc: jsPDF, pageNumber: number, headerInfo: PurchaseOrderPdfHeader): void {
@@ -227,23 +232,26 @@ function drawFooter(doc: jsPDF): void {
 }
 
 export function generatePurchaseOrderPdf({ headerInfo, items, summary }: GeneratePurchaseOrderPdfArgs): void {
-  const doc = new jsPDF();
+  const doc = new jsPDF({ orientation: "landscape" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const { tableStartY } = getHeaderLayoutMetrics();
 
   const tableData = items.map((item, index) => {
     const sizeSummary = getSizeSummary(item);
-    const description = `${item.designNumber}${item.color ? ` (${item.color})` : ""}${sizeSummary ? ` ${sizeSummary}` : ""}`;
+    const sizesWithQty = getSizesWithQty(item);
+    const description = `${item.designNumber}${item.color ? ` (${item.color})` : ""}`;
 
     return [
       String(index + 1),
       description || "-",
+      sizesWithQty,
       item.qty.toFixed(3),
+      item.mrp.toFixed(2),
+      `${item.dis || 0}%`,
       item.rate.toFixed(2),
-      "PCS",
-      `${item.dis || 0}`,
       item.amt.toFixed(2),
+      (item.tax || 0).toFixed(2),
       formatDate(headerInfo.deadline || headerInfo.date),
       "-",
     ];
@@ -252,7 +260,7 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
   autoTable(doc, {
     startY: tableStartY,
     margin: { top: tableStartY, left: 10, right: 10, bottom: 18 },
-    head: [["Sl No.", "Description of Goods", "Quantity", "Rate", "per", "Disc. %", "Amount", "Due on", "HSN/SAC"]],
+    head: [["Sl No.", "Description", "Qty (Sizes)", "Total Qty", "MRP", "Discount", "Rate", "Amount", "GST", "Due on", "HSN/SAC"]],
     body: tableData,
     theme: "grid",
     styles: {
@@ -272,15 +280,17 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
       lineWidth: 0.15,
     },
     columnStyles: {
-      0: { cellWidth: 8, halign: "center" },
-      1: { cellWidth: 64 },
-      2: { cellWidth: 18, halign: "right" },
-      3: { cellWidth: 18, halign: "right" },
-      4: { cellWidth: 12, halign: "center" },
-      5: { cellWidth: 14, halign: "right" },
-      6: { cellWidth: 22, halign: "right" },
-      7: { cellWidth: 16, halign: "center" },
-      8: { cellWidth: 18, halign: "center" },
+      0: { cellWidth: 10, halign: "center" },
+      1: { cellWidth: 45 },
+      2: { cellWidth: 50, halign: "center" },
+      3: { cellWidth: 16, halign: "right" },
+      4: { cellWidth: 16, halign: "right" },
+      5: { cellWidth: 16, halign: "right" },
+      6: { cellWidth: 16, halign: "right" },
+      7: { cellWidth: 18, halign: "right" },
+      8: { cellWidth: 16, halign: "right" },
+      9: { cellWidth: 16, halign: "center" },
+      10: { cellWidth: 18, halign: "center" },
     },
     showHead: "everyPage",
     didDrawPage: (data) => {
@@ -301,8 +311,8 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.text("Total", 10, finalY);
-  doc.text(`${summary.totalQuantity.toFixed(3)} PCS`, 100, finalY, { align: "right" });
-  doc.text(`Rs ${summary.grandTotal.toFixed(2)}`, 198, finalY, { align: "right" });
+  doc.text(`${summary.totalQuantity.toFixed(3)} PCS`, 180, finalY, { align: "right" });
+  doc.text(`Rs ${summary.grandTotal.toFixed(2)}`, 280, finalY, { align: "right" });
 
   finalY += 6;
   doc.setFont("helvetica", "normal");

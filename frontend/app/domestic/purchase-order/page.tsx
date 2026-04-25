@@ -428,6 +428,7 @@ export default function PurchaseOrderEntryForm() {
 
   const addRow = () => {
     const newId = Math.max(...items.map((item) => item.id), 0) + 1;
+    const previousItem = items[items.length - 1];
     setItems([
       ...items,
       {
@@ -445,7 +446,7 @@ export default function PurchaseOrderEntryForm() {
         xxxxxxl: 0,
         qty: 0,
         mrp: 0,
-        dis: 0,
+        dis: previousItem?.dis || 0,
         rate: 0,
         amount: 0,
         tgst: 0,

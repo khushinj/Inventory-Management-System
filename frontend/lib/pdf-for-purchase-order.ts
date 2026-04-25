@@ -11,6 +11,9 @@ export type PurchaseOrderPdfHeader = {
 };
 
 export type PurchaseOrderPdfItem = {
+  category?: string;
+  itemName?: string;
+  hsn?: string;
   designNumber: string;
   color: string;
   s: number;
@@ -76,25 +79,6 @@ function formatDate(date: string): string {
   });
 }
 
-function getSizeSummary(item: PurchaseOrderPdfItem): string {
-  const sizes: Array<[string, number]> = [
-    ["S", item.s],
-    ["M", item.m],
-    ["L", item.l],
-    ["XL", item.xl],
-    ["2XL", item.xxl],
-    ["3XL", item.xxxl],
-    ["4XL", item.xxxxl],
-    ["5XL", item.xxxxxl],
-    ["6XL", item.xxxxxxl],
-  ];
-
-  return sizes
-    .filter(([, qty]) => qty > 0)
-    .map(([label]) => label)
-    .join(", ");
-}
-
 function getSizesWithQty(item: PurchaseOrderPdfItem): string {
   const sizes: Array<[string, number]> = [
     ["S", item.s],
@@ -114,14 +98,32 @@ function getSizesWithQty(item: PurchaseOrderPdfItem): string {
     .join(",");
 }
 
-const DEFAULT_PARTY_ADDRESS_LINES = [
-  "UNIT NO-210, PEARLS CORPORATE",
-  "PLOT NO-09, MANGLAM PLACE,",
-  "DISTRICT CENTRE SEC-03 ROHINI",
-];
+function formatAmount(value: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number.isFinite(value) ? value : 0);
+}
 
-const DEFAULT_GSTIN = "07AACCV6406A1ZR";
-const DEFAULT_STATE_LINE = "Delhi, Code : 07";
+function formatRate(value: number): string {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
+function getItemName(item: PurchaseOrderPdfItem): string {
+  return item.itemName?.trim() || item.designNumber || "-";
+}
+
+function getItemCategory(item: PurchaseOrderPdfItem): string {
+  return item.category?.trim() || "-";
+}
+
+function getItemHsn(item: PurchaseOrderPdfItem): string {
+  return item.hsn?.trim() || "-";
+}
 
 function getHeaderLayoutMetrics() {
   const companySecondaryStartY = 20;
@@ -149,7 +151,6 @@ function drawPartySection(
   doc: jsPDF,
   sectionTitle: string,
   partyName: string,
-  city: string,
   startX: number,
   startY: number,
   width: number,
@@ -162,11 +163,10 @@ function drawPartySection(
   doc.text(sectionTitle, startX + 2, startY + 4);
 
   const maxTextWidth = width - 4;
-  let textY = startY + 8.5;
 
   doc.setFont("helvetica", "bold");
   const nameLines = doc.splitTextToSize(partyName || "VIRGO CLOTHING CULTURE PVT LTD ( DELHI", maxTextWidth);
-  doc.text(nameLines, startX + 2, textY);
+  doc.text(nameLines, startX + 2, startY + 9);
 }
 
 function drawHeader(doc: jsPDF, pageNumber: number, headerInfo: PurchaseOrderPdfHeader): void {
@@ -195,7 +195,6 @@ function drawHeader(doc: jsPDF, pageNumber: number, headerInfo: PurchaseOrderPdf
     doc,
     "Consignee (Ship to)",
     headerInfo.dealerName,
-    headerInfo.city,
     blockX,
     consigneeY,
     blockWidth,
@@ -206,7 +205,6 @@ function drawHeader(doc: jsPDF, pageNumber: number, headerInfo: PurchaseOrderPdf
     doc,
     "Buyer (Bill to)",
     headerInfo.buyerName,
-    headerInfo.city,
     blockX,
     buyerY,
     blockWidth,
@@ -238,36 +236,42 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
   const { tableStartY } = getHeaderLayoutMetrics();
 
   const tableData = items.map((item, index) => {
-    const sizeSummary = getSizeSummary(item);
     const sizesWithQty = getSizesWithQty(item);
-    const description = `${item.designNumber}${item.color ? ` (${item.color})` : ""}`;
+    const qty = [item.s, item.m, item.l, item.xl, item.xxl, item.xxxl, item.xxxxl, item.xxxxxl]
+      .reduce((total, sizeQty) => total + (Number(sizeQty) || 0), 0);
 
     return [
       String(index + 1),
-      description || "-",
-      sizesWithQty,
-      item.qty.toFixed(3),
-      item.mrp.toFixed(2),
-      `${item.dis || 0}%`,
-      item.rate.toFixed(2),
-      item.amt.toFixed(2),
-      (item.tax || 0).toFixed(2),
-      formatDate(headerInfo.deadline || headerInfo.date),
-      "-",
+      getItemCategory(item),
+      getItemName(item),
+      item.color || "-",
+      getItemHsn(item),
+      item.s > 0 ? String(item.s) : "",
+      item.m > 0 ? String(item.m) : "",
+      item.l > 0 ? String(item.l) : "",
+      item.xl > 0 ? String(item.xl) : "",
+      item.xxl > 0 ? String(item.xxl) : "",
+      item.xxxl > 0 ? String(item.xxxl) : "",
+      item.xxxxl > 0 ? String(item.xxxxl) : "",
+      item.xxxxxl > 0 ? String(item.xxxxxl) : "",
+      String(qty || item.qty || 0),
+      formatRate(item.mrp),
+      formatRate(item.rate),
+      formatAmount(item.amt),
     ];
   });
 
   autoTable(doc, {
     startY: tableStartY,
     margin: { top: tableStartY, left: 10, right: 10, bottom: 18 },
-    head: [["Sl No.", "Description", "Qty (Sizes)", "Total Qty", "MRP", "Discount", "Rate", "Amount", "GST", "Due on", "HSN/SAC"]],
+    head: [["SR", "CATEGORY", "ITEM NAME", "COLOR", "HSN", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "QTY", "MRP", "RATE", "AMOUNT"]],
     body: tableData,
     theme: "grid",
     styles: {
-      fontSize: 8,
+      fontSize: 6.5,
       lineColor: [0, 0, 0],
       lineWidth: 0.1,
-      cellPadding: 1.5,
+      cellPadding: 1,
       overflow: "linebreak",
     },
     headStyles: {
@@ -280,17 +284,23 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
       lineWidth: 0.15,
     },
     columnStyles: {
-      0: { cellWidth: 10, halign: "center" },
-      1: { cellWidth: 45 },
-      2: { cellWidth: 50, halign: "center" },
-      3: { cellWidth: 16, halign: "right" },
-      4: { cellWidth: 16, halign: "right" },
-      5: { cellWidth: 16, halign: "right" },
-      6: { cellWidth: 16, halign: "right" },
-      7: { cellWidth: 18, halign: "right" },
-      8: { cellWidth: 16, halign: "right" },
-      9: { cellWidth: 16, halign: "center" },
-      10: { cellWidth: 18, halign: "center" },
+      0: { cellWidth: 8, halign: "center" },
+      1: { cellWidth: 24 },
+      2: { cellWidth: 54 },
+      3: { cellWidth: 16 },
+      4: { cellWidth: 18, halign: "center" },
+      5: { cellWidth: 9, halign: "center" },
+      6: { cellWidth: 9, halign: "center" },
+      7: { cellWidth: 9, halign: "center" },
+      8: { cellWidth: 9, halign: "center" },
+      9: { cellWidth: 9, halign: "center" },
+      10: { cellWidth: 9, halign: "center" },
+      11: { cellWidth: 9, halign: "center" },
+      12: { cellWidth: 9, halign: "center" },
+      13: { cellWidth: 14, halign: "center" },
+      14: { cellWidth: 16, halign: "right" },
+      15: { cellWidth: 16, halign: "right" },
+      16: { cellWidth: 20, halign: "right" },
     },
     showHead: "everyPage",
     didDrawPage: (data) => {

@@ -121,10 +121,6 @@ function getItemCategory(item: PurchaseOrderPdfItem): string {
   return item.category?.trim() || "-";
 }
 
-function getItemHsn(item: PurchaseOrderPdfItem): string {
-  return item.hsn?.trim() || "-";
-}
-
 function getHeaderLayoutMetrics() {
   const companySecondaryStartY = 20;
   const companyLineHeight = 3.2;
@@ -245,7 +241,6 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
       getItemCategory(item),
       getItemName(item),
       item.color || "-",
-      getItemHsn(item),
       item.s > 0 ? String(item.s) : "",
       item.m > 0 ? String(item.m) : "",
       item.l > 0 ? String(item.l) : "",
@@ -264,7 +259,7 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
   autoTable(doc, {
     startY: tableStartY,
     margin: { top: tableStartY, left: 10, right: 10, bottom: 18 },
-    head: [["SR", "CATEGORY", "ITEM NAME", "COLOR", "HSN", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "QTY", "MRP", "RATE", "AMOUNT"]],
+    head: [["SR", "CATEGORY", "ITEM NAME", "COLOR", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "QTY", "MRP", "RATE", "AMOUNT"]],
     body: tableData,
     theme: "grid",
     styles: {
@@ -288,7 +283,7 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
       1: { cellWidth: 24 },
       2: { cellWidth: 54 },
       3: { cellWidth: 16 },
-      4: { cellWidth: 18, halign: "center" },
+      4: { cellWidth: 9, halign: "center" },
       5: { cellWidth: 9, halign: "center" },
       6: { cellWidth: 9, halign: "center" },
       7: { cellWidth: 9, halign: "center" },
@@ -296,11 +291,10 @@ export function generatePurchaseOrderPdf({ headerInfo, items, summary }: Generat
       9: { cellWidth: 9, halign: "center" },
       10: { cellWidth: 9, halign: "center" },
       11: { cellWidth: 9, halign: "center" },
-      12: { cellWidth: 9, halign: "center" },
-      13: { cellWidth: 14, halign: "center" },
+      12: { cellWidth: 14, halign: "center" },
+      13: { cellWidth: 16, halign: "right" },
       14: { cellWidth: 16, halign: "right" },
-      15: { cellWidth: 16, halign: "right" },
-      16: { cellWidth: 20, halign: "right" },
+      15: { cellWidth: 20, halign: "right" },
     },
     showHead: "everyPage",
     didDrawPage: (data) => {

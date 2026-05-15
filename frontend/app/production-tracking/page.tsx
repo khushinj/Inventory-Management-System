@@ -7,12 +7,49 @@ import { Plus, Trash2, Download, Scissors, Layout, CheckCircle2, Check } from "l
 import * as XLSX from "xlsx";
 
 const UNSAVED_WARNING_MESSAGE = "Your entries will be lost if you go back without saving it.";
+const SAMPLE_SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+
+const createEmptySizes = () =>
+  SAMPLE_SIZES.reduce((accumulator, size) => {
+    accumulator[size] = 0;
+    return accumulator;
+  }, {} as Record<string, number>);
+
+const normalizeSizes = (entry: Partial<ProductionEntry>) => {
+  const normalizedSizes = createEmptySizes();
+  const incomingSizes = entry.sizes && typeof entry.sizes === "object" ? entry.sizes : null;
+
+  if (incomingSizes) {
+    for (const [rawSize, quantity] of Object.entries(incomingSizes)) {
+      const normalizedSize = String(rawSize).trim().toUpperCase();
+      if (SAMPLE_SIZES.includes(normalizedSize)) {
+        normalizedSizes[normalizedSize] = Number(quantity) || 0;
+      }
+    }
+
+    return normalizedSizes;
+  }
+
+  const legacySize = String(entry.size || "").trim().toUpperCase();
+  if (legacySize) {
+    const normalizedSize = legacySize === "2XL" ? "XXL" : legacySize;
+    if (SAMPLE_SIZES.includes(normalizedSize)) {
+      normalizedSizes[normalizedSize] = 1;
+    }
+  }
+
+  return normalizedSizes;
+};
+
+const summarizeSizes = (sizes: Record<string, number>) =>
+  SAMPLE_SIZES.filter((size) => Number(sizes[size]) > 0).join(", ");
 
 type ProductionEntry = {
   _id?: string;
   designNumber: string;
   color: string;
-  size: string;
+  size?: string;
+  sizes?: Record<string, number>;
   cutting: number;
   cuttingDate?: string;
   stitching: number;
@@ -51,12 +88,18 @@ export default function ProductionTrackingPage() {
     return `${year}-${month}-${day}`;
   };
 
-  const normalizeProductionEntry = (entry: ProductionEntry): ProductionEntry => ({
-    ...entry,
-    cuttingDate: formatDateInput(entry.cuttingDate),
-    stitchingDate: formatDateInput(entry.stitchingDate),
-    finishingDate: formatDateInput(entry.finishingDate),
-  });
+  const normalizeProductionEntry = (entry: ProductionEntry): ProductionEntry => {
+    const sizes = normalizeSizes(entry);
+
+    return {
+      ...entry,
+      size: entry.size || summarizeSizes(sizes),
+      sizes,
+      cuttingDate: formatDateInput(entry.cuttingDate),
+      stitchingDate: formatDateInput(entry.stitchingDate),
+      finishingDate: formatDateInput(entry.finishingDate),
+    };
+  };
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key !== "Enter") {
@@ -118,6 +161,7 @@ export default function ProductionTrackingPage() {
       designNumber: "",
       color: "",
       size: "",
+      sizes: createEmptySizes(),
       cutting: 0,
       cuttingDate: today,
       stitching: 0,
@@ -208,6 +252,79 @@ export default function ProductionTrackingPage() {
       });
   };
 
+  const handleSizeChange = (id: string | undefined, sizeKey: string, value: string) => {
+    if (!id) return;
+
+    const parsedValue = parseInt(value) || 0;
+    const currentEntry = entries.find((entry) => entry._id === id);
+    const previousSizes =
+      normalizeSizes({
+        ...currentEntry,
+        sizes: tempValues[id]?.sizes || currentEntry?.sizes,
+        size: tempValues[id]?.size || currentEntry?.size,
+      });
+    const nextSizes = {
+      ...previousSizes,
+      [sizeKey]: parsedValue,
+    };
+
+    const sizeSummary = summarizeSizes(nextSizes);
+
+    setTempValues((prevValues) => ({
+      ...prevValues,
+      [id]: {
+        ...prevValues[id],
+        sizes: nextSizes,
+        size: sizeSummary,
+      },
+    }));
+
+    if (id.startsWith("temp-")) {
+      return;
+    }
+
+    setEntries((prevEntries) =>
+      prevEntries.map((entry) =>
+        entry._id === id
+          ? {
+              ...entry,
+              sizes: nextSizes,
+              size: sizeSummary,
+            }
+          : entry
+      )
+    );
+
+    void api
+      .put(`/production-tracking/${id}`, {
+        sizes: nextSizes,
+        size: sizeSummary,
+      })
+      .catch((error) => {
+        console.error("Error updating size entry:", error);
+        setEntries((prevEntries) =>
+          prevEntries.map((entry) =>
+            entry._id === id
+              ? {
+                  ...entry,
+                  sizes: previousSizes,
+                  size: summarizeSizes(previousSizes),
+                }
+              : entry
+          )
+        );
+        setTempValues((prevValues) => ({
+          ...prevValues,
+          [id]: {
+            ...prevValues[id],
+            sizes: previousSizes,
+            size: summarizeSizes(previousSizes),
+          },
+        }));
+        alert("Failed to update size entry");
+      });
+  };
+
   const handleCellBlur = async (id: string | undefined, field: keyof ProductionEntry) => {
     if (!id) return;
 
@@ -222,13 +339,16 @@ export default function ProductionTrackingPage() {
       .map((entry) => {
         const entryId = entry._id || "";
         const draft = tempValues[entryId] || {};
+        const sizes = normalizeSizes({ ...entry, ...draft });
+        const sizeSummary = summarizeSizes(sizes);
 
         return {
           ...entry,
           ...draft,
           designNumber: String(draft.designNumber ?? entry.designNumber ?? "").trim(),
           color: String(draft.color ?? entry.color ?? "").trim(),
-          size: String(draft.size ?? entry.size ?? "").trim(),
+          size: sizeSummary,
+          sizes,
           cutting: Number(draft.cutting ?? entry.cutting ?? 0) || 0,
             cuttingDate: String(draft.cuttingDate ?? entry.cuttingDate ?? formatDateInput(new Date().toISOString())).trim(),
           stitching: Number(draft.stitching ?? entry.stitching ?? 0) || 0,
@@ -246,8 +366,13 @@ export default function ProductionTrackingPage() {
 
     // Validate entries
     for (const entry of newEntries) {
-      if (!entry.designNumber || !entry.color || !entry.size) {
-        alert("Please fill in all required fields (Design Number, Color, Size)");
+      if (!entry.designNumber || !entry.color) {
+        alert("Please fill in all required fields (Design Number, Color)");
+        return;
+      }
+
+      if (Object.values(entry.sizes || {}).every((qty) => Number(qty) <= 0)) {
+        alert("Please enter at least one size quantity");
         return;
       }
     }
@@ -259,6 +384,7 @@ export default function ProductionTrackingPage() {
             designNumber: entry.designNumber,
             color: entry.color,
             size: entry.size,
+            sizes: entry.sizes,
             cutting: entry.cutting || 0,
             cuttingDate: entry.cuttingDate || formatDateInput(new Date().toISOString()),
             stitching: entry.stitching || 0,
@@ -296,10 +422,24 @@ export default function ProductionTrackingPage() {
 
   const handleExportExcel = () => {
     const totals = getTotals();
+    const sizeTotals = SAMPLE_SIZES.reduce(
+      (accumulator, size) => {
+        accumulator[size] = entries.reduce(
+          (sum, entry) => sum + Number(normalizeSizes(entry)[size] || 0),
+          0
+        );
+        return accumulator;
+      },
+      {} as Record<string, number>
+    );
+
     const data = entries.map((e) => ({
       "Design Number": e.designNumber,
       Color: e.color,
-      Size: e.size,
+      Size: e.size || summarizeSizes(normalizeSizes(e)),
+      ...Object.fromEntries(
+        SAMPLE_SIZES.map((size) => [`${size} Qty`, Number(normalizeSizes(e)[size] || 0)])
+      ),
       Cutting: e.cutting,
       "Cutting Date": e.cuttingDate ? e.cuttingDate : "",
       Stitching: e.stitching,
@@ -313,6 +453,7 @@ export default function ProductionTrackingPage() {
       "Design Number": "",
       Color: "TOTAL",
       Size: "",
+      ...Object.fromEntries(SAMPLE_SIZES.map((size) => [`${size} Qty`, sizeTotals[size] || 0])),
       Cutting: totals.cutting,
       "Cutting Date": "",
       Stitching: totals.stitching,
@@ -550,12 +691,12 @@ export default function ProductionTrackingPage() {
             />
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-[1500px] w-full table-auto">
+            <table className="min-w-[2200px] w-full table-auto">
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
                   <th className="min-w-[12rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Design Number</th>
                   <th className="min-w-[10rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Color</th>
-                  <th className="min-w-[9rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Size</th>
+                  <th className="min-w-[48rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Sizes</th>
                   <th className="min-w-[8rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Cutting</th>
                   <th className="min-w-[12rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Cutting Date</th>
                   <th className="min-w-[8rem] px-6 py-4 text-left text-sm font-semibold text-gray-700">Stitching</th>
@@ -581,6 +722,12 @@ export default function ProductionTrackingPage() {
                       designNumber: tempValues[entry._id || ""]?.designNumber ?? entry.designNumber,
                       color: tempValues[entry._id || ""]?.color ?? entry.color,
                       size: tempValues[entry._id || ""]?.size ?? entry.size,
+                      sizes: SAMPLE_SIZES.reduce((accumulator, size) => {
+                        accumulator[size] = Number(
+                          tempValues[entry._id || ""]?.sizes?.[size] ?? entry.sizes?.[size] ?? 0
+                        );
+                        return accumulator;
+                      }, createEmptySizes()),
                       cutting: tempValues[entry._id || ""]?.cutting ?? entry.cutting,
                       cuttingDate: tempValues[entry._id || ""]?.cuttingDate ?? entry.cuttingDate,
                       stitching: tempValues[entry._id || ""]?.stitching ?? entry.stitching,
@@ -622,19 +769,30 @@ export default function ProductionTrackingPage() {
                           />
                         </td>
 
-                        {/* Size */}
-                        <td className="px-6 py-4">
-                          <input
-                            type="text"
-                            value={displayValues.size}
-                            onChange={(e) =>
-                              handleCellChange(entry._id, "size", e.target.value)
-                            }
-                            onKeyDown={handleKeyDown}
-                            onBlur={() => handleCellBlur(entry._id, "size")}
-                            className="w-full min-w-[9rem] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                            placeholder="e.g., M"
-                          />
+                        {/* Sizes */}
+                        <td className="px-6 py-4 align-top">
+                          <div className="grid grid-cols-3 gap-4 xl:grid-cols-9">
+                            {SAMPLE_SIZES.map((sizeOption) => (
+                              <div
+                                key={sizeOption}
+                                className="min-h-[7rem] min-w-[5.75rem] rounded-xl bg-white p-3"
+                              >
+                                <div className="mb-2 text-center text-sm font-medium tracking-wide text-gray-700">
+                                  {sizeOption}
+                                </div>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={displayValues.sizes[sizeOption] || ""}
+                                  onChange={(e) => handleSizeChange(entry._id, sizeOption, e.target.value)}
+                                  onKeyDown={handleKeyDown}
+                                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-center text-base font-normal text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="0"
+                                  aria-label={`${sizeOption} quantity`}
+                                />
+                              </div>
+                            ))}
+                          </div>
                         </td>
 
                         {/* Cutting */}

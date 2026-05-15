@@ -1,4 +1,38 @@
 import ProductionTracking from "../models/ProductionTracking.js";
+import { normalizeSize } from "../utils/normalization.js";
+
+const SAMPLE_SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+
+const createEmptySizes = () =>
+  SAMPLE_SIZES.reduce((accumulator, size) => {
+    accumulator[size] = 0;
+    return accumulator;
+  }, {});
+
+const normalizeProductionSizes = (sizesInput, legacySize = "") => {
+  const normalizedSizes = createEmptySizes();
+
+  if (sizesInput && typeof sizesInput === "object") {
+    for (const [rawSize, quantity] of Object.entries(sizesInput)) {
+      const normalizedSize = normalizeSize(rawSize);
+      if (SAMPLE_SIZES.includes(normalizedSize)) {
+        normalizedSizes[normalizedSize] = Number(quantity) || 0;
+      }
+    }
+
+    return normalizedSizes;
+  }
+
+  const normalizedLegacySize = normalizeSize(legacySize);
+  if (normalizedLegacySize && SAMPLE_SIZES.includes(normalizedLegacySize)) {
+    normalizedSizes[normalizedLegacySize] = 1;
+  }
+
+  return normalizedSizes;
+};
+
+const summarizeSizes = (sizes = {}) =>
+  SAMPLE_SIZES.filter((size) => Number(sizes[size]) > 0).join(", ");
 
 // Get all production tracking entries
 export const getAllProductionTrackingEntries = async (req, res) => {
@@ -50,6 +84,7 @@ export const createProductionTrackingEntry = async (req, res) => {
       designNumber,
       color,
       size,
+      sizes,
       cutting,
       cuttingDate,
       stitching,
@@ -60,19 +95,23 @@ export const createProductionTrackingEntry = async (req, res) => {
     } = req.body;
     const today = new Date().toISOString();
 
-    if (!color || !size) {
+    const normalizedSizes = normalizeProductionSizes(sizes, size);
+    const sizeSummary = summarizeSizes(normalizedSizes);
+
+    if (!color || Object.values(normalizedSizes).every((qty) => Number(qty) <= 0)) {
       return res
         .status(400)
         .json({
           success: false,
-          message: "Color and Size are required fields",
+          message: "Color and at least one size are required fields",
         });
     }
 
     const newEntry = new ProductionTracking({
       designNumber: designNumber ? designNumber.trim() : "",
       color: color.trim(),
-      size: size.trim(),
+      size: sizeSummary,
+      sizes: normalizedSizes,
       cutting: cutting || 0,
       cuttingDate: cuttingDate || today,
       stitching: stitching || 0,
@@ -103,6 +142,7 @@ export const updateProductionTrackingEntry = async (req, res) => {
       designNumber,
       color,
       size,
+      sizes,
       cutting,
       cuttingDate,
       stitching,
@@ -115,7 +155,11 @@ export const updateProductionTrackingEntry = async (req, res) => {
     const updateData = {};
     if (designNumber !== undefined) updateData.designNumber = designNumber.trim();
     if (color !== undefined) updateData.color = color.trim();
-    if (size !== undefined) updateData.size = size.trim();
+    if (sizes !== undefined || size !== undefined) {
+      const normalizedSizes = normalizeProductionSizes(sizes, size);
+      updateData.sizes = normalizedSizes;
+      updateData.size = summarizeSizes(normalizedSizes);
+    }
     if (cutting !== undefined) updateData.cutting = cutting;
     if (cuttingDate !== undefined) updateData.cuttingDate = cuttingDate || null;
     if (stitching !== undefined) updateData.stitching = stitching;

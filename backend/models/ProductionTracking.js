@@ -14,8 +14,12 @@ const productionTrackingSchema = new mongoose.Schema(
     },
     size: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
+    },
+    sizes: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     cutting: {
       type: Number,

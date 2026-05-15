@@ -8,7 +8,7 @@ import axios from "axios";
 const rawBase = process.env.NEXT_PUBLIC_API_URL || "/api";
 const baseURL = rawBase.endsWith("/api") ? rawBase : `${rawBase.replace(/\/$/, "")}/api`;
 
-console.log("API Base URL:", baseURL);
+// console.log("API Base URL:", baseURL);
 
 export const api = axios.create({
   baseURL,

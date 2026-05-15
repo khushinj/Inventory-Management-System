@@ -193,6 +193,12 @@ export const getExportFobAnalytics = async (req, res) => {
   try {
     const status = req.query.status; // Optional: filter by status
 
+    const summarizeSizes = (sizes = {}) =>
+      Object.entries(sizes)
+        .filter(([, quantity]) => Number(quantity) > 0)
+        .map(([size]) => size)
+        .join(", ");
+
     const [productionTracking, presentStocks] = await Promise.all([
       ProductionTracking.find().sort({ createdAt: -1 }).lean(),
       PresentStock.find().sort({ createdAt: -1 }).lean(),
@@ -219,7 +225,7 @@ export const getExportFobAnalytics = async (req, res) => {
           status: stage.status,
           qty: stage.qty,
           color: item.color,
-          size: item.size,
+          size: item.size || summarizeSizes(item.sizes || {}),
           remarks: item.remarks,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,

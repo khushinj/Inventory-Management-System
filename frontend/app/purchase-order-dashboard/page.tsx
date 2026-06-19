@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { api } from "../../lib/api";
-import { FileText, Search, Filter, Eye, X, Trash2, Edit, Truck } from "lucide-react";
+import { FileText, Search, Filter, Eye, X, Trash2, Edit, Truck, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 type PurchaseOrderItem = {
   category: string;
@@ -428,6 +429,70 @@ export default function PurchaseOrdersPage() {
     }).format(amount);
   };
 
+  const downloadExcel = () => {
+    const groupedRows = new Map<
+      string,
+      {
+        designNumber: string;
+        purchaseOrderNumbers: Set<string>;
+        pending: number;
+        delivered: number;
+        undelivered: number;
+      }
+    >();
+
+    filteredOrders.forEach((order) => {
+      const orderDelivered = deliveredSizes[order._id] || {};
+
+      order.items.forEach((item, itemIndex) => {
+        const designNumber = item.designNumber || "-";
+        const pending = Number(item.qty || 0);
+        const deliveredByItem = orderDelivered[itemIndex] || order.deliveredSizes?.[itemIndex] || {};
+        const delivered = sizeKeys.reduce((sum, key) => {
+          const value = deliveredByItem[key];
+          return sum + (typeof value === "number" && value > 0 ? value : 0);
+        }, 0);
+        const normalizedDelivered = Math.min(delivered, pending);
+        const undelivered = Math.max(pending - normalizedDelivered, 0);
+
+        if (!groupedRows.has(designNumber)) {
+          groupedRows.set(designNumber, {
+            designNumber,
+            purchaseOrderNumbers: new Set<string>(),
+            pending: 0,
+            delivered: 0,
+            undelivered: 0,
+          });
+        }
+
+        const row = groupedRows.get(designNumber)!;
+        row.purchaseOrderNumbers.add(getOrderNumber(order));
+        row.pending += pending;
+        row.delivered += normalizedDelivered;
+        row.undelivered += undelivered;
+      });
+    });
+
+    const excelData = Array.from(groupedRows.values()).map((row) => ({
+      "Design Number": row.designNumber,
+      "Purchase Order Numbers": Array.from(row.purchaseOrderNumbers).join(", ") || "-",
+      "Pending Quantity": row.pending,
+      Delivered: row.delivered,
+      Undelivered: row.undelivered,
+    }));
+
+    if (excelData.length === 0) {
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Purchase Orders");
+
+    const fileName = `Purchase_Orders_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   const getDerivedStatus = (
     order: PurchaseOrder,
     orderDelivered: DeliveredSizeMap[string] = {}
@@ -830,6 +895,15 @@ export default function PurchaseOrdersPage() {
             <option value="completed">Completed</option>
           </select>
         </div>
+        <button
+          type="button"
+          onClick={downloadExcel}
+          disabled={filteredOrders.length === 0}
+          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
+        >
+          <Download className="w-4 h-4" />
+          Export to Excel
+        </button>
       </div>
 
       {/* Results Count */}
@@ -1078,6 +1152,9 @@ export default function PurchaseOrdersPage() {
                             Product Name
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Purchase Order No.
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Size Breakdown
                           </th>
                           <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -1110,6 +1187,9 @@ export default function PurchaseOrdersPage() {
                                 <div>
                                   <p className="text-sm text-gray-600">{item.designNumber} - {item.color}</p>
                                 </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <p className="text-sm font-medium text-gray-900">{getOrderNumber(selectedOrder)}</p>
                               </td>
                               <td className="px-4 py-3">
                                 <p className="text-[10px] uppercase tracking-wide text-gray-500">Ordered Qty</p>
@@ -1338,6 +1418,7 @@ export default function PurchaseOrdersPage() {
                         <thead className="bg-gray-50 sticky top-0 z-10">
                           <tr>
                             <th className="px-3 py-2 text-left text-gray-700">Design</th>
+                            <th className="px-3 py-2 text-left text-gray-700">PO No.</th>
                             <th className="px-3 py-2 text-left text-gray-700">Color</th>
                             <th className="px-3 py-2 text-left text-gray-700">Sizes</th>
                             <th className="px-3 py-2 text-left text-gray-700">MRP</th>
@@ -1357,6 +1438,9 @@ export default function PurchaseOrdersPage() {
                                   onChange={(e) => handleEditItemChange(itemIndex, "designNumber", e.target.value)}
                                   className="w-36 px-2 py-1 border border-gray-300 rounded text-gray-900"
                                 />
+                              </td>
+                              <td className="px-3 py-2 text-gray-700 font-medium">
+                                {getOrderNumber(editingOrder as PurchaseOrder)}
                               </td>
                               <td className="px-3 py-2">
                                 <input

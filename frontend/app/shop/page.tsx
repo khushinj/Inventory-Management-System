@@ -73,7 +73,7 @@ const getInventoryExportCutoffKey = () => `${new Date().getFullYear()}-03-31`;
 
 const isWithinInventoryExportRange = (entry: Entry) => {
   const entryDateKey = getDateOnlyKey(entry.date || entry.createdAt || entry.updatedAt);
-  return !entryDateKey || entryDateKey <= getInventoryExportCutoffKey();
+  return entryDateKey === getInventoryExportCutoffKey();
 };
 
 function ShopDashboard() {
@@ -742,19 +742,7 @@ function ShopDashboard() {
   };
 
   const handleExportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredEntries.map(entry => ({
-      DNO: entry.dno,
-      Type: entry.type,
-      Color: entry.color,
-      Size: entry.size,
-      Quantity: entry.qty,
-      Date: entry.date?.split("T")[0],
-      Channel: entry.channel,
-      FormType: entry.formType,
-    })));
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Shop Transactions");
-    XLSX.writeFile(workbook, `shop_transactions_${selectedFormType}_${new Date().toISOString().split("T")[0]}.xlsx`);
+    handleDownloadInventoryExcel();
   };
 
   const handleImportFromExcel = (e: React.ChangeEvent<HTMLInputElement>) => {

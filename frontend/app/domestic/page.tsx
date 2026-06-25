@@ -58,6 +58,15 @@ const sortEntriesLatestFirst = (left: Entry, right: Entry) => getEntryTimestamp(
 const sortRowsLatestFirst = (left: SampleRow, right: SampleRow) =>
   (right.latestTimestamp || 0) - (left.latestTimestamp || 0);
 
+const getDateOnlyKey = (dateValue?: string) => {
+  if (!dateValue) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateValue.split("T")[0] || "";
+  }
+  return parsed.toISOString().split("T")[0];
+};
+
 const getInventoryExportCutoffTimestamp = () => {
   const cutoff = new Date();
   cutoff.setMonth(2, 31);
@@ -65,7 +74,10 @@ const getInventoryExportCutoffTimestamp = () => {
   return cutoff.getTime();
 };
 
-const isWithinInventoryExportRange = (entry: Entry) => getEntryTimestamp(entry) <= getInventoryExportCutoffTimestamp();
+const isWithinInventoryExportRange = (entry: Entry) => {
+  const entryDateKey = getDateOnlyKey(entry.date || entry.createdAt || entry.updatedAt);
+  return entryDateKey === `${new Date().getFullYear()}-03-31`;
+};
 
 const buildGroupedRowsFromEntries = (items: Entry[]) => {
   const grouped: { [key: string]: SampleRow } = {};
@@ -1226,21 +1238,7 @@ function DomesticDashboard() {
   };
 
   const handleExportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredEntries.map(entry => ({
-      DNO: entry.dno,
-      Type: entry.type,
-      Color: entry.color,
-      Size: entry.size,
-      Quantity: entry.qty,
-      Date: entry.date?.split("T")[0],
-      FormType: entry.formType,
-      Receiver: entry.receiver,
-      Supplier: entry.supplier,
-      TransferType: entry.transferType,
-    })));
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Domestic Transactions");
-    XLSX.writeFile(workbook, `domestic_transactions_${selectedFormType}_${new Date().toISOString().split("T")[0]}.xlsx`);
+    handleDownloadInventoryExcel();
   };
 
   const handleImportFromExcel = (e: React.ChangeEvent<HTMLInputElement>) => {

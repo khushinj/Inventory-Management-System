@@ -59,6 +59,40 @@ const sortEntriesLatestFirst = (left: Entry, right: Entry) => getEntryTimestamp(
 const sortRowsLatestFirst = (left: SampleRow, right: SampleRow) =>
   (right.latestTimestamp || 0) - (left.latestTimestamp || 0);
 
+const getInventoryExportCutoffTimestamp = () => {
+  const cutoff = new Date();
+  cutoff.setMonth(2, 31);
+  cutoff.setHours(23, 59, 59, 999);
+  return cutoff.getTime();
+};
+
+const isWithinInventoryExportRange = (entry: Entry) => getEntryTimestamp(entry) <= getInventoryExportCutoffTimestamp();
+
+const buildGroupedRowsFromEntries = (items: Entry[]) => {
+  const grouped: { [key: string]: SampleRow } = {};
+
+  items.forEach((entry) => {
+    if (entry.dno && entry.color && entry.size) {
+      const key = `${entry.dno}_${entry.color}`;
+      if (!grouped[key]) {
+        grouped[key] = {
+          dno: entry.dno,
+          type: entry.type || "",
+          color: entry.color,
+          latestTimestamp: 0,
+          sizes: {},
+        };
+      }
+
+      const normalizedSize = entry.size.toLowerCase() === "2xl" ? "XXL" : entry.size;
+      grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
+      grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
+    }
+  });
+
+  return Object.values(grouped).sort(sortRowsLatestFirst);
+};
+
 function OnlineDashboard() {
   const searchParams = useSearchParams();
   const [lockedFormType, setLockedFormType] = useState<string | null>(null);
@@ -267,6 +301,42 @@ function OnlineDashboard() {
 
   const filteredTransferRows = filterGroupedRows(transferRows);
   const filteredPurchaseRows = filterGroupedRows(purchaseRows);
+
+  const handleDownloadInventoryExcel = () => {
+    const workbook = XLSX.utils.book_new();
+    const inventorySheets = [
+      { rows: buildGroupedRowsFromEntries(entries.filter((entry) => entry.formType === "transfer" && isWithinInventoryExportRange(entry))), sheetName: "Transfer Inventory" },
+      { rows: buildGroupedRowsFromEntries(entries.filter((entry) => entry.formType === "purchase" && isWithinInventoryExportRange(entry))), sheetName: "Purchase Inventory" },
+    ];
+
+    let addedSheets = 0;
+
+    for (const { rows, sheetName } of inventorySheets) {
+      if (rows.length === 0) continue;
+
+      const excelRows = rows.map((row) => ({
+        DNO: row.dno,
+        Type: row.type,
+        Color: row.color,
+        ...SIZES.reduce((acc, size) => {
+          acc[size] = row.sizes[size] || 0;
+          return acc;
+        }, {} as Record<string, number>),
+        Total: SIZES.reduce((sum, size) => sum + (row.sizes[size] || 0), 0),
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      addedSheets += 1;
+    }
+
+    if (addedSheets === 0) {
+      alert("No inventory rows found on or before 31 March to export.");
+      return;
+    }
+
+    XLSX.writeFile(workbook, `online_inventory_upto_31_march_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
@@ -842,6 +912,12 @@ function OnlineDashboard() {
 
           {/* Excel Import/Export Buttons */}
           <div className="mb-6 flex gap-3">
+            <button
+              onClick={handleDownloadInventoryExcel}
+              className="bg-slate-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-2"
+            >
+              <span>📦</span> Download Inventory Excel
+            </button>
             <button
               onClick={handleExportToExcel}
               className="bg-amber-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-700 transition-colors flex items-center gap-2"

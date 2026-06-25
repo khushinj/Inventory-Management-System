@@ -58,6 +58,39 @@ const sortEntriesLatestFirst = (left: Entry, right: Entry) => getEntryTimestamp(
 const sortRowsLatestFirst = (left: SampleRow, right: SampleRow) =>
   (right.latestTimestamp || 0) - (left.latestTimestamp || 0);
 
+const getInventoryExportCutoffTimestamp = () => {
+  const cutoff = new Date();
+  cutoff.setMonth(2, 31);
+  cutoff.setHours(23, 59, 59, 999);
+  return cutoff.getTime();
+};
+
+const isWithinInventoryExportRange = (entry: Entry) => getEntryTimestamp(entry) <= getInventoryExportCutoffTimestamp();
+
+const buildGroupedRowsFromEntries = (items: Entry[]) => {
+  const grouped: { [key: string]: SampleRow } = {};
+
+  items.forEach((entry) => {
+    if (entry.dno && entry.color && entry.size) {
+      const key = `${entry.dno}_${entry.color}`;
+      if (!grouped[key]) {
+        grouped[key] = {
+          dno: entry.dno,
+          color: entry.color,
+          latestTimestamp: 0,
+          sizes: {},
+        };
+      }
+
+      const normalizedSize = entry.size.toLowerCase() === "2xl" ? "XXL" : entry.size;
+      grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
+      grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
+    }
+  });
+
+  return Object.values(grouped).sort(sortRowsLatestFirst);
+};
+
 function DomesticDashboard() {
   const searchParams = useSearchParams();
   const formTypeParam = searchParams.get("formType");
@@ -367,6 +400,43 @@ function DomesticDashboard() {
   const filteredProductionRows = filterGroupedRows(productionRows);
   const filteredPurchaseRows = filterGroupedRows(purchaseRows);
   const filteredDispatchRows = filterGroupedRows(dispatchRows);
+
+  const handleDownloadInventoryExcel = () => {
+    const workbook = XLSX.utils.book_new();
+    const inventorySheets = [
+      { rows: buildGroupedRowsFromEntries(entries.filter((entry) => entry.formType === "sample" && isWithinInventoryExportRange(entry))), sheetName: "Sample Inventory" },
+      { rows: buildGroupedRowsFromEntries(entries.filter((entry) => entry.formType === "production" && isWithinInventoryExportRange(entry))), sheetName: "Production Inventory" },
+      { rows: buildGroupedRowsFromEntries(entries.filter((entry) => entry.formType === "purchase" && isWithinInventoryExportRange(entry))), sheetName: "Purchase Inventory" },
+      { rows: buildGroupedRowsFromEntries(entries.filter((entry) => entry.formType === "dispatch" && isWithinInventoryExportRange(entry))), sheetName: "Dispatch Inventory" },
+    ];
+
+    let addedSheets = 0;
+
+    for (const { rows, sheetName } of inventorySheets) {
+      if (rows.length === 0) continue;
+
+      const excelRows = rows.map((row) => ({
+        DNO: row.dno,
+        Color: row.color,
+        ...SAMPLE_SIZES.reduce((acc, size) => {
+          acc[size] = row.sizes[size] || 0;
+          return acc;
+        }, {} as Record<string, number>),
+        Total: SAMPLE_SIZES.reduce((sum, size) => sum + (row.sizes[size] || 0), 0),
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      addedSheets += 1;
+    }
+
+    if (addedSheets === 0) {
+      alert("No inventory rows found on or before 31 March to export.");
+      return;
+    }
+
+    XLSX.writeFile(workbook, `domestic_inventory_upto_31_march_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
@@ -1425,6 +1495,12 @@ function DomesticDashboard() {
 
           {/* Excel Import/Export Buttons */}
           <div className="mb-6 flex gap-3">
+            <button
+              onClick={handleDownloadInventoryExcel}
+              className="bg-slate-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-2"
+            >
+              <span>📦</span> Download Inventory Excel
+            </button>
             <button
               onClick={handleExportToExcel}
               className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2"

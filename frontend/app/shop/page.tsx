@@ -69,6 +69,13 @@ const getDateOnlyKey = (dateValue?: string) => {
   return parsed.toISOString().split("T")[0];
 };
 
+const getInventoryExportCutoffKey = () => `${new Date().getFullYear()}-03-31`;
+
+const isWithinInventoryExportRange = (entry: Entry) => {
+  const entryDateKey = getDateOnlyKey(entry.date || entry.createdAt || entry.updatedAt);
+  return !entryDateKey || entryDateKey <= getInventoryExportCutoffKey();
+};
+
 function ShopDashboard() {
   const searchParams = useSearchParams();
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -258,6 +265,43 @@ function ShopDashboard() {
 
   const limitedEntries = filteredEntries.slice(0, 30);
   const filteredGroupedRows = buildGroupedRows(filteredEntries);
+
+  const handleDownloadInventoryExcel = () => {
+    const workbook = XLSX.utils.book_new();
+
+    const exportRows = (entriesToExport: Entry[], sheetName: string) => {
+      const groupedRows = buildGroupedRows(entriesToExport.filter(isWithinInventoryExportRange));
+      if (groupedRows.length === 0) return;
+
+      const excelRows = groupedRows.map((row) => ({
+        DNO: row.dno,
+        Type: row.type,
+        Color: row.color,
+        Date: row.date ? row.date.split("T")[0] : "",
+        ...SIZES.reduce((acc, size) => {
+          acc[size] = row.sizes[size] || 0;
+          return acc;
+        }, {} as Record<string, number>),
+        Total: SIZES.reduce((sum, size) => sum + (row.sizes[size] || 0), 0),
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    };
+
+    exportRows(entries.filter((entry) => entry.formType === "import"), "Shop Import Inventory");
+    exportRows(
+      entries.filter((entry) => entry.formType === "return" && entry.channel !== "domestic return"),
+      "Shop Return Inventory",
+    );
+
+    if (workbook.SheetNames.length === 0) {
+      alert("No inventory rows found on or before 31 March to export.");
+      return;
+    }
+
+    XLSX.writeFile(workbook, `shop_inventory_upto_31_march_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
 
   const handleEdit = (entry: Entry) => {
     setEditingEntry(entry._id);
@@ -770,6 +814,12 @@ function ShopDashboard() {
 
           {/* Excel Import/Export Buttons */}
           <div className="mb-6 flex gap-3">
+            <button
+              onClick={handleDownloadInventoryExcel}
+              className="bg-slate-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-800 transition-colors flex items-center gap-2"
+            >
+              <span>📦</span> Download Inventory Excel
+            </button>
             <button
               onClick={handleExportToExcel}
               className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2"

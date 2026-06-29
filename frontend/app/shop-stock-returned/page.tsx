@@ -28,6 +28,18 @@ type SampleRow = {
   _id?: string;
 };
 
+type ShopInventoryItem = {
+  designNumber: string;
+  color: string;
+  size: string;
+  import?: number;
+  customerReturn?: number;
+  stockReturn?: number;
+  sales?: number;
+  net?: number;
+  type?: string;
+};
+
 const SIZES = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
 
 const normalizeDesignNumber = (value: string) =>
@@ -35,6 +47,18 @@ const normalizeDesignNumber = (value: string) =>
 
 const normalizeColor = (value: string) =>
   value.trim().replace(/\s+/g, " ").toUpperCase();
+
+const getColorDotClass = (color: string) => {
+  const normalized = normalizeColor(color);
+
+  if (normalized.includes("PINK")) return "bg-pink-300";
+  if (normalized.includes("PURPLE")) return "bg-violet-400";
+  if (normalized.includes("NAVY")) return "bg-slate-800";
+  if (normalized.includes("RUST") || normalized.includes("BROWN") || normalized.includes("ORANGE")) return "bg-orange-700";
+  if (normalized.includes("OLIVE") || normalized.includes("GREEN")) return "bg-lime-700";
+  if (normalized.includes("BLUE")) return "bg-blue-500";
+  return "bg-gray-400";
+};
 
 const normalizeSizeKey = (value: string) => {
   const normalized = value.trim().toUpperCase();
@@ -72,7 +96,11 @@ const normalizeStockReturnRow = (row: SampleRow): SampleRow => {
 
 export default function StockReturnedPage() {
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [shopInventoryRows, setShopInventoryRows] = useState<ShopInventoryItem[]>([]);
   const [stockReturnedRows, setStockReturnedRows] = useState<SampleRow[]>([]);
+  const [activeTab, setActiveTab] = useState<"all-stock" | "transfer-history">("transfer-history");
+  const [selectedColors, setSelectedColors] = useState<Record<string, boolean>>({});
+  const [expandedDnos, setExpandedDnos] = useState<Record<string, boolean>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [newStockReturnedRow, setNewStockReturnedRow] = useState<SampleRow>({
@@ -119,11 +147,12 @@ export default function StockReturnedPage() {
   const stockReturnColorRef = useRef<HTMLInputElement>(null);
   const stockReturnMrpRef = useRef<HTMLInputElement>(null);
   const stockReturnDateRef = useRef<HTMLInputElement>(null);
-  const stockReturnSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const stockReturnSizeRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectedCount = Object.values(selectedColors).filter(Boolean).length;
 
   useEffect(() => {
-    fetchStockReturnEntries();
+    fetchAllStockData();
   }, []);
 
   const recalculateShopInventory = async () => {
@@ -134,23 +163,33 @@ export default function StockReturnedPage() {
     }
   };
 
-  const fetchStockReturnEntries = async () => {
+  const fetchAllStockData = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/stock-returned");
-      
-      if (res.data && Array.isArray(res.data)) {
-        setEntries(res.data);
-        
-        if (res.data.length > 0) {
-          convertToGroupedRows(res.data);
+      const [inventoryRes, stockReturnedRes] = await Promise.all([
+        api.get("/shop-inventory"),
+        api.get("/stock-returned"),
+      ]);
+
+      const inventoryRows = Array.isArray(inventoryRes.data?.data) ? inventoryRes.data.data : [];
+      setShopInventoryRows(inventoryRows);
+
+      if (stockReturnedRes.data && Array.isArray(stockReturnedRes.data)) {
+        setEntries(stockReturnedRes.data);
+
+        if (stockReturnedRes.data.length > 0) {
+          convertToGroupedRows(stockReturnedRes.data);
         } else {
           setStockReturnedRows([]);
         }
+      } else {
+        setEntries([]);
+        setStockReturnedRows([]);
       }
     } catch (error) {
-      console.error("Error fetching stock return entries:", error);
+      console.error("Error fetching stock inventory data:", error);
       setEntries([]);
+      setShopInventoryRows([]);
       setStockReturnedRows([]);
     } finally {
       setLoading(false);
@@ -226,7 +265,7 @@ export default function StockReturnedPage() {
 
       // Save to backend in background
       const totalQty = Object.values(normalizedRow.sizes).reduce((a, b) => a + b, 0);
-      
+
       const dataToSave = {
         dno: normalizedRow.dno,
         type: normalizedRow.type,
@@ -241,7 +280,7 @@ export default function StockReturnedPage() {
 
       const res = await api.post("/stock-returned", dataToSave);
       await recalculateShopInventory();
-      
+
       // Update the row with the real ID from backend
       setStockReturnedRows(prevRows =>
         prevRows.map(row =>
@@ -278,7 +317,7 @@ export default function StockReturnedPage() {
 
     try {
       const key = normalizedForm._id;
-      
+
       // Update local state immediately
       setStockReturnedRows(stockReturnedRows.map(row => {
         if (row._id === key) {
@@ -378,7 +417,7 @@ export default function StockReturnedPage() {
   };
 
   const downloadStockReturnEntries = () => {
-    const excelData = stockReturnedRows.flatMap((row) => 
+    const excelData = stockReturnedRows.flatMap((row) =>
       SIZES.map((size, index) => ({
         "DNO": index === 0 ? row.dno : "",
         "Type": index === 0 ? row.type : "",
@@ -408,6 +447,233 @@ export default function StockReturnedPage() {
     XLSX.writeFile(workbook, fileName);
   };
 
+  const getTransferHistoryGroups = (rows: SampleRow[]) => {
+    const groups = new Map<string, { dno: string; colors: Map<string, SampleRow[]> }>();
+
+    rows.forEach((row) => {
+      const dno = normalizeDesignNumber(row.dno || "");
+      const color = normalizeColor(row.color || "");
+      const groupKey = dno || row.dno || "UNKNOWN";
+      const colorKey = color || row.color || "UNKNOWN";
+
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, { dno: groupKey, colors: new Map() });
+      }
+
+      const dnoGroup = groups.get(groupKey)!;
+
+      if (!dnoGroup.colors.has(colorKey)) {
+        dnoGroup.colors.set(colorKey, []);
+      }
+
+      dnoGroup.colors.get(colorKey)!.push(row);
+    });
+
+    return Array.from(groups.values())
+      .sort((left, right) => left.dno.localeCompare(right.dno))
+      .map((group) => ({
+        ...group,
+        colors: Array.from(group.colors.entries())
+          .map(([color, rowsForColor]) => {
+            const sizeTotals = SIZES.reduce<{ [size: string]: number }>((accumulator, size) => {
+              accumulator[size] = rowsForColor.reduce(
+                (sum, row) => sum + (Number(row.sizes[size]) || 0),
+                0
+              );
+              return accumulator;
+            }, {});
+
+            const totalQuantity = Object.values(sizeTotals).reduce((sum, qty) => sum + qty, 0);
+
+            return {
+              color,
+              sizeTotals,
+              totalQuantity,
+              latestDate: rowsForColor
+                .map((row) => row.date)
+                .filter(Boolean)
+                .sort()
+                .slice(-1)[0] || "",
+            };
+          })
+          .sort((left, right) => left.color.localeCompare(right.color)),
+      }));
+  };
+
+  const transferHistoryGroups = getTransferHistoryGroups(stockReturnedRows);
+
+  const stockGroups = shopInventoryRows.reduce((acc, item) => {
+    const dno = normalizeDesignNumber(item.designNumber || "");
+    const color = normalizeColor(item.color || "");
+    const size = normalizeSizeKey(item.size || "");
+    const quantity = Number(item.net ?? item.import ?? 0) || 0;
+
+    if (!dno || !color || !size) return acc;
+
+    if (!acc[dno]) {
+      acc[dno] = {
+        dno,
+        colors: {},
+      };
+    }
+
+    if (!acc[dno].colors[color]) {
+      acc[dno].colors[color] = {
+        color,
+        sizeTotals: SIZES.reduce<{ [size: string]: number }>((sizes, currentSize) => {
+          sizes[currentSize] = 0;
+          return sizes;
+        }, {}),
+        totalQuantity: 0,
+      };
+    }
+
+    if (acc[dno].colors[color].sizeTotals.hasOwnProperty(size)) {
+      acc[dno].colors[color].sizeTotals[size] += quantity;
+      acc[dno].colors[color].totalQuantity += quantity;
+    }
+
+    return acc;
+  }, {} as Record<string, { dno: string; colors: Record<string, { color: string; sizeTotals: Record<string, number>; totalQuantity: number }> }>);
+
+  const stockGroupsList = Object.values(stockGroups)
+    .map((group) => ({
+      ...group,
+      colors: Object.values(group.colors)
+        .filter((colorGroup) => colorGroup.totalQuantity > 0)
+        .sort((a, b) => a.color.localeCompare(b.color)),
+    }))
+    .filter((group) => group.colors.length > 0)
+    .sort((a, b) => a.dno.localeCompare(b.dno));
+
+  const totalPieces = stockReturnedRows.reduce(
+    (sum, row) => sum + Object.values(row.sizes).reduce((rowSum, qty) => rowSum + (Number(qty) || 0), 0),
+    0
+  );
+
+  const totalShopStock = stockGroupsList.reduce(
+    (sum, group) => sum + group.colors.reduce((groupSum, colorGroup) => groupSum + colorGroup.totalQuantity, 0),
+    0
+  );
+
+  const totalTransferred = transferHistoryGroups.reduce(
+    (sum, group) => sum + group.colors.reduce((groupSum, colorGroup) => groupSum + colorGroup.totalQuantity, 0),
+    0
+  );
+
+  const isGroupSelected = (groupDno: string) => {
+    const group = stockGroupsList.find((item) => item.dno === groupDno);
+
+    if (!group || group.colors.length === 0) return false;
+
+    return group.colors.every((colorGroup) => selectedColors[`${groupDno}__${colorGroup.color}`]);
+  };
+
+  const toggleDnoSelection = (groupDno: string) => {
+    const group = stockGroupsList.find((item) => item.dno === groupDno);
+    if (!group) return;
+
+    const shouldSelectAll = !isGroupSelected(groupDno);
+
+    setSelectedColors((prev) => {
+      const next = { ...prev };
+
+      group.colors.forEach((colorGroup) => {
+        next[`${groupDno}__${colorGroup.color}`] = shouldSelectAll;
+      });
+
+      return next;
+    });
+  };
+
+  const toggleColorSelection = (groupDno: string, color: string) => {
+    const key = `${groupDno}__${color}`;
+    setSelectedColors((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const getSelectedItems = () => {
+    const items: { dno: string; color: string }[] = [];
+
+    stockGroupsList.forEach((group) => {
+      group.colors.forEach((colorGroup) => {
+        if (selectedColors[`${group.dno}__${colorGroup.color}`]) {
+          items.push({
+            dno: group.dno,
+            color: colorGroup.color,
+          });
+        }
+      });
+    });
+
+    return items;
+  };
+
+  const handleTransferSelected = async () => {
+    try {
+      const transfers = [];
+
+      for (const group of stockGroupsList) {
+        for (const colorGroup of group.colors) {
+          const key = `${group.dno}__${colorGroup.color}`;
+
+          if (!selectedColors[key]) continue;
+
+          const items = SIZES
+            .map((size) => ({
+              size,
+              qty: colorGroup.sizeTotals[size] || 0,
+            }))
+            .filter((item) => item.qty > 0);
+
+          const totalQuantity = items.reduce(
+            (sum, item) => sum + item.qty,
+            0
+          );
+
+          transfers.push({
+            dno: group.dno,
+            color: colorGroup.color,
+            items,
+            totalQuantity,
+            date: new Date().toISOString(),
+          });
+        }
+      }
+
+      if (transfers.length === 0) {
+        alert("Please select at least one color.");
+        return;
+      }
+
+      // Send one request per selected color
+      for (const transfer of transfers) {
+        await api.post("/stock-returned", transfer);
+      }
+
+      // Refresh inventory
+      await recalculateShopInventory();
+      await fetchAllStockData();
+
+      // Clear selection
+      setSelectedColors({});
+
+      alert("Transfer completed successfully.");
+    } catch (error) {
+      console.error(error);
+      alert("Transfer failed.");
+    }
+  };
+
+  const toggleGroupExpansion = (groupDno: string) => {
+    setExpandedDnos((prev) => ({
+      ...prev,
+      [groupDno]: !prev[groupDno],
+    }));
+  };
+
   const handleImportStockReturnEntries = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -429,13 +695,13 @@ export default function StockReturnedPage() {
 
       // Check if this is wide format (size columns) or long format (Size + Quantity columns)
       const firstRow = jsonData[0] as any;
-      const hasWideSizeColumns = jsonData.length > 0 && 
+      const hasWideSizeColumns = jsonData.length > 0 &&
         (firstRow?.hasOwnProperty('S') || firstRow?.hasOwnProperty('s') ||
-         firstRow?.hasOwnProperty('M') || firstRow?.hasOwnProperty('m'));
+          firstRow?.hasOwnProperty('M') || firstRow?.hasOwnProperty('m'));
 
       if (hasWideSizeColumns) {
         console.log("✅ Detected WIDE format (size columns: S, M, L, XL, etc.)");
-        
+
         // Wide format: One row per item with size columns
         jsonData.forEach((row: any, index: number) => {
           const dno = normalizeDesignNumber(
@@ -447,7 +713,7 @@ export default function StockReturnedPage() {
           const color = normalizeColor(
             row.Color?.toString() || row.color?.toString() || row.COLOR?.toString() || ""
           );
-          
+
           // Parse date - handle Excel serial numbers and string dates
           let date = new Date().toISOString().split("T")[0];
           const dateValue = row.Date || row.date || row.DATE;
@@ -466,7 +732,7 @@ export default function StockReturnedPage() {
               }
             }
           }
-          
+
           const mrp = parseFloat(
             row.MRP?.toString() || row.mrp?.toString() || row.Mrp?.toString() || "0"
           ) || 0;
@@ -504,7 +770,7 @@ export default function StockReturnedPage() {
         });
       } else {
         console.log("✅ Detected LONG format (Size and Quantity columns)");
-        
+
         // Long format: Multiple rows per item with Size and Quantity columns
         const tempGrouped: { [key: string]: SampleRow } = {};
 
@@ -518,7 +784,7 @@ export default function StockReturnedPage() {
           const color = normalizeColor(
             row.Color?.toString() || row.color?.toString() || row.COLOR?.toString() || ""
           );
-          
+
           // Parse date - handle Excel serial numbers and string dates
           let date = new Date().toISOString().split("T")[0];
           const dateValue = row.Date || row.date || row.DATE;
@@ -537,12 +803,12 @@ export default function StockReturnedPage() {
               }
             }
           }
-          
+
           const size = normalizeSizeKey(
             row.Size?.toString() || row.size?.toString() || row.SIZE?.toString() || ""
           );
           const qty = parseInt(
-            row.Quantity?.toString() || row.quantity?.toString() || row.QUANTITY?.toString() || 
+            row.Quantity?.toString() || row.quantity?.toString() || row.QUANTITY?.toString() ||
             row.Qty?.toString() || row.qty?.toString() || row.QTY?.toString() || "0"
           ) || 0;
           const mrp = parseFloat(
@@ -553,7 +819,7 @@ export default function StockReturnedPage() {
 
           if (dno && color && size && qty > 0) {
             const key = `${dno}_${color}`;
-            
+
             if (!tempGrouped[key]) {
               tempGrouped[key] = {
                 dno,
@@ -604,7 +870,7 @@ export default function StockReturnedPage() {
       // Save to backend
       for (const row of groupedData) {
         const totalQty = Object.values(row.sizes).reduce((a, b) => a + b, 0);
-        
+
         const dataToSave = {
           dno: row.dno,
           type: row.type,
@@ -623,7 +889,7 @@ export default function StockReturnedPage() {
       await recalculateShopInventory();
 
       // Refresh data
-      fetchStockReturnEntries();
+      fetchAllStockData();
       alert(`Successfully imported ${groupedData.length} entries!`);
     } catch (error) {
       console.error("Error importing stock return entries:", error);
@@ -637,425 +903,321 @@ export default function StockReturnedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-amber-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Stock Returned</h1>
-          <p className="text-gray-600">Manage returned stock entries with size-wise quantities</p>
+    <div className="min-h-screen bg-[#fafafa] px-4 py-0 text-sm font-medium text-gray-700">
+      <div className="mx-auto max-w-7xl">
+        <div className="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-700 text-white shadow-sm">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4 8 4 8-4zm0 10l-8 4-8-4m16-5l-8 4-8-4" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">Stock Manager</h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-5 text-sm text-gray-600">
+              <div>
+                <span className="mr-1">Stock:</span>
+                <span className="font-semibold text-gray-900">{totalShopStock}</span>
+              </div>
+              <div className="h-5 w-px bg-gray-300" />
+              <div>
+                <span className="mr-1">Transferred:</span>
+                <span className="font-semibold text-gray-900">{totalTransferred}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white px-4 pt-4 sm:px-6">
+          <div className="flex items-center gap-8 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab("all-stock")}
+              className={`flex items-center gap-2 border-b-2 px-2 pb-4 text-sm font-medium transition-colors ${activeTab === "all-stock"
+                ? "border-teal-600 text-teal-700"
+                : "border-transparent text-gray-500 hover:text-gray-800"
+                }`}
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4 8 4 8-4zm0 10l-8 4-8-4m0-10v10" />
+              </svg>
+              All Stock
+            </button>
+            <button
+              onClick={() => setActiveTab("transfer-history")}
+              className={`flex items-center gap-2 border-b-2 px-2 pb-4 text-sm font-medium transition-colors ${activeTab === "transfer-history"
+                ? "border-teal-600 text-teal-700"
+                : "border-transparent text-gray-500 hover:text-gray-800"
+                }`}
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7l-4 4 4 4m10-8l4 4-4 4M3 11h18" />
+              </svg>
+              Transfer History
+            </button>
+          </div>
         </div>
 
         {/* Stock Return Entries Table */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800">Stock Returned Entries</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                {stockReturnedRows.length} entries
-              </p>
-            </div>
-            <div className="flex gap-3">
-              {!isCreatingStockReturn && (
-                <button
-                  onClick={() => setIsCreatingStockReturn(true)}
-                  className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
-                >
-                  + Add Entry
-                </button>
-              )}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                Import from Excel
-              </button>
-              {stockReturnedRows.length > 0 && (
-                <button
-                  onClick={downloadStockReturnEntries}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  Export to Excel
-                </button>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx, .xls"
-                onChange={handleImportStockReturnEntries}
-                className="hidden"
-              />
-            </div>
-          </div>
+        <div className={`px-4 py-5 sm:px-6 ${activeTab === "transfer-history" ? "bg-[#fafafa]" : "bg-[#fafafa]"}`}>
+          {activeTab === "all-stock" ? (
+            <>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                  <p className="mt-2 text-gray-600">Loading entries...</p>
+                </div>
+              ) : stockGroupsList.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center text-gray-500">
+                  No stock returned entries. Click "Add Entry" to create one.
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {selectedCount > 0 && (
+                    <div className="sticky top-4 z-40 mb-4 flex justify-end">
+                      <button
+                        onClick={handleTransferSelected}
+                        className="rounded-xl bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-teal-700"
+                      >
+                        Transfer Selected ({selectedCount})
+                      </button>
+                    </div>
+                  )}
+                  {stockGroupsList.map((group) => {
+                    const dnoChecked = isGroupSelected(group.dno);
+                    const isExpanded = expandedDnos[group.dno] ?? true;
+                    const totalForGroup = group.colors.reduce((sum, colorGroup) => sum + colorGroup.totalQuantity, 0);
 
-          {loading ? (
+                    return (
+                      <div key={group.dno} className="text-sm overflow-hidden rounded-[20px] border border-gray-200 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]">
+                        <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-6">
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() => toggleGroupExpansion(group.dno)}
+                              className="flex h-5 w-5 items-center justify-center text-gray-500 transition-transform hover:text-gray-700"
+                              aria-label={isExpanded ? "Collapse group" : "Expand group"}
+                            >
+                              <svg
+                                className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : "rotate-0"}`}
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M5.23 7.21a1 1 0 011.4.02L10 10.585l3.37-3.355a1 1 0 111.4 1.42l-4.07 4.05a1 1 0 01-1.4 0l-4.05-4.03a1 1 0 01-.02-1.4z" />
+                              </svg>
+                            </button>
+                            <input
+                              type="checkbox"
+                              checked={dnoChecked}
+                              onChange={() => toggleDnoSelection(group.dno)}
+                              className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                            />
+                            <div className="flex items-center gap-4 text-md">
+                              <div className="uppercase tracking-[0.2em] text-gray-500">DNO</div>
+                              <div className="font-black leading-none text-gray-900">{group.dno}</div>
+                              <div className="font-medium text-gray-500">{group.colors.length} colors</div>
+                            </div>
+                          </div>
+                          <div className="font-mono text-[26px] font-normal tracking-tight text-teal-600">
+                            {totalForGroup} <span className="text-[18px]">pcs total</span>
+                          </div>
+                        </div>
+
+                        {isExpanded ? (
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead>
+                                <tr className="border-b border-gray-100 bg-[#f7f7f7] text-[11px] uppercase tracking-[0.22em] text-gray-500">
+                                  <th className="px-6 py-4 text-left">Color</th>
+                                  {SIZES.map((size) => (
+                                    <th key={size} className="px-4 py-4 text-center">{size}</th>
+                                  ))}
+                                  <th className="px-6 py-4 text-center">Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Array.from(group.colors.values()).map((colorGroup) => {
+                                  const colorKey = `${group.dno}__${colorGroup.color}`;
+                                  const colorChecked = !!selectedColors[colorKey];
+
+                                  return (
+                                    <tr key={colorKey} className="border-b border-gray-100">
+                                      <td className="px-6 py-6">
+                                        <div className="flex items-center gap-3">
+                                          <input
+                                            type="checkbox"
+                                            checked={colorChecked}
+                                            onChange={() => toggleColorSelection(group.dno, colorGroup.color)}
+                                            className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                                          />
+                                          <span className="inline-flex items-center gap-3 text-md font-medium text-gray-900">
+                                            <span className={`h-3.5 w-3.5 rounded-full ${getColorDotClass(colorGroup.color)}`} />
+                                            {colorGroup.color}
+                                          </span>
+                                        </div>
+                                      </td>
+                                      {SIZES.map((size) => {
+                                        const quantity = colorGroup.sizeTotals[size] || 0;
+                                        return (
+                                          <td key={size} className="px-4 py-6 text-center text-md font-medium text-gray-900">
+                                            {quantity || <span className="text-gray-300">-</span>}
+                                          </td>
+                                        );
+                                      })}
+                                      <td className="px-6 py-6 text-center text-[16px] font-bold text-teal-600">
+                                        {colorGroup.totalQuantity}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : loading ? (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-              <p className="mt-2 text-gray-600">Loading entries...</p>
+              <p className="mt-2 text-gray-600">Loading transfer history...</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-200 bg-gray-50">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">DNO</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Color</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">MRP</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Date</th>
-                    {SIZES.map((size) => (
-                      <th
-                        key={size}
-                        className="px-2 py-4 text-center text-sm font-semibold text-gray-700"
-                      >
-                        {size}
-                      </th>
-                    ))}
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {isCreatingStockReturn && (
-                    <tr className="border-b border-gray-200 bg-blue-50">
-                      <td className="px-6 py-4 min-w-[200px]">
-                        <input
-                          ref={stockReturnDnoRef}
-                          type="text"
-                          value={newStockReturnedRow.dno}
-                          onChange={(e) =>
-                            setNewStockReturnedRow({
-                              ...newStockReturnedRow,
-                              dno: e.target.value,
-                            })
-                          }
-                          onKeyDown={(e) =>
-                            handleStockReturnKeyDown(e, "dno", 0)
-                          }
-                          placeholder="DNO"
-                          className="w-full px-3 py-2 border rounded text-black bg-white"
-                          autoFocus
-                        />
-                      </td>
-                      <td className="px-6 py-4 min-w-[180px]">
-                        <input
-                          ref={stockReturnTypeRef}
-                          type="text"
-                          value={newStockReturnedRow.type}
-                          onChange={(e) =>
-                            setNewStockReturnedRow({
-                              ...newStockReturnedRow,
-                              type: e.target.value,
-                            })
-                          }
-                          onKeyDown={(e) =>
-                            handleStockReturnKeyDown(e, "type", 0)
-                          }
-                          placeholder="Type"
-                          className="w-full px-3 py-2 border rounded text-black bg-white"
-                        />
-                      </td>
-                      <td className="px-6 py-4 min-w-[180px]">
-                        <input
-                          ref={stockReturnColorRef}
-                          type="text"
-                          value={newStockReturnedRow.color}
-                          onChange={(e) =>
-                            setNewStockReturnedRow({
-                              ...newStockReturnedRow,
-                              color: e.target.value,
-                            })
-                          }
-                          onKeyDown={(e) =>
-                            handleStockReturnKeyDown(e, "color", 0)
-                          }
-                          placeholder="Color"
-                          className="w-full px-3 py-2 border rounded text-black bg-white"
-                        />
-                      </td>
-                      <td className="px-6 py-4 min-w-[120px]">
-                        <input
-                          ref={stockReturnMrpRef}
-                          type="number"
-                          value={newStockReturnedRow.mrp || ""}
-                          onChange={(e) =>
-                            setNewStockReturnedRow({
-                              ...newStockReturnedRow,
-                              mrp: parseFloat(e.target.value) || 0,
-                            })
-                          }
-                          onKeyDown={(e) =>
-                            handleStockReturnKeyDown(e, "mrp", 0)
-                          }
-                          placeholder="MRP"
-                          className="w-full px-3 py-2 border rounded text-black bg-white"
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <input
-                          ref={stockReturnDateRef}
-                          type="date"
-                          value={newStockReturnedRow.date}
-                          onChange={(e) =>
-                            setNewStockReturnedRow({
-                              ...newStockReturnedRow,
-                              date: e.target.value,
-                            })
-                          }
-                          onKeyDown={(e) =>
-                            handleStockReturnKeyDown(e, "date", 0)
-                          }
-                          className="w-full px-2 py-2 border rounded text-black bg-white"
-                        />
-                      </td>
-                      {SIZES.map((size) => (
-                        <td key={size} className="px-2 py-4">
-                          <input
-                            ref={(el) => {
-                              if (el) stockReturnSizeRefs.current[size] = el;
-                            }}
-                            type="number"
-                            value={
-                              newStockReturnedRow.sizes[size] || ""
-                            }
-                            onChange={(e) =>
-                              setNewStockReturnedRow({
-                                ...newStockReturnedRow,
-                                sizes: {
-                                  ...newStockReturnedRow.sizes,
-                                  [size]:
-                                    parseInt(e.target.value) || 0,
-                                },
-                              })
-                            }
-                            onKeyDown={(e) =>
-                              handleStockReturnKeyDown(
-                                e,
-                                "size",
-                                SIZES.indexOf(size)
-                              )
-                            }
-                            placeholder="0"
-                            className="w-16 px-2 py-2 border rounded text-black bg-white text-center"
-                          />
-                        </td>
-                      ))}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={handleSaveStockReturnRow}
-                          className="text-green-600 hover:text-green-900 mr-3 font-medium"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={handleCancelStockReturn}
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </tr>
-                  )}
-                  {stockReturnedRows.length === 0 && !isCreatingStockReturn ? (
-                    <tr>
-                      <td
-                        colSpan={SIZES.length + 5}
-                        className="px-6 py-12 text-center text-gray-500"
-                      >
-                        No stock returned entries. Click "Add Entry" to create one.
-                      </td>
-                    </tr>
-                  ) : (
-                    stockReturnedRows.map((row) => {
-                      const key = row._id || "";
-                      const isEditing = editingStockReturnRow === key;
+            <>
+              {transferHistoryGroups.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center text-gray-500">
+                  No transfer history available yet.
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {transferHistoryGroups.map((group) => {
+                    const isExpanded = expandedDnos[group.dno] ?? true;
+                    const totalForGroup = group.colors.reduce(
+                      (sum, colorGroup) => sum + colorGroup.totalQuantity,
+                      0
+                    );
 
-                      return (
-                        <tr key={key} className="border-b border-gray-100 hover:bg-gray-50">
-                          {isEditing ? (
-                            <>
-                              <td className="px-6 py-4 min-w-[200px]">
-                                <input
-                                  type="text"
-                                  value={editStockReturnForm.dno}
-                                  onChange={(e) =>
-                                    setEditStockReturnForm({
-                                      ...editStockReturnForm,
-                                      dno: e.target.value,
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 border rounded text-black bg-white"
-                                />
-                              </td>
-                              <td className="px-6 py-4 min-w-[180px]">
-                                <input
-                                  type="text"
-                                  value={editStockReturnForm.type}
-                                  onChange={(e) =>
-                                    setEditStockReturnForm({
-                                      ...editStockReturnForm,
-                                      type: e.target.value,
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 border rounded text-black bg-white"
-                                />
-                              </td>
-                              <td className="px-6 py-4 min-w-[180px]">
-                                <input
-                                  type="text"
-                                  value={editStockReturnForm.color}
-                                  onChange={(e) =>
-                                    setEditStockReturnForm({
-                                      ...editStockReturnForm,
-                                      color: e.target.value,
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 border rounded text-black bg-white"
-                                />
-                              </td>
-                              <td className="px-6 py-4 min-w-[120px]">
-                                <input
-                                  type="number"
-                                  value={editStockReturnForm.mrp || ""}
-                                  onChange={(e) =>
-                                    setEditStockReturnForm({
-                                      ...editStockReturnForm,
-                                      mrp: parseFloat(e.target.value) || 0,
-                                    })
-                                  }
-                                  className="w-full px-3 py-2 border rounded text-black bg-white"
-                                />
-                              </td>
-                              <td className="px-6 py-4">
-                                <input
-                                  type="date"
-                                  value={editStockReturnForm.date}
-                                  onChange={(e) =>
-                                    setEditStockReturnForm({
-                                      ...editStockReturnForm,
-                                      date: e.target.value,
-                                    })
-                                  }
-                                  className="w-full px-2 py-2 border rounded text-black bg-white"
-                                />
-                              </td>
-                              {SIZES.map((size) => (
-                                <td key={size} className="px-2 py-4">
-                                  <input
-                                    type="number"
-                                    value={
-                                      editStockReturnForm.sizes[size] || ""
-                                    }
-                                    onChange={(e) =>
-                                      setEditStockReturnForm({
-                                        ...editStockReturnForm,
-                                        sizes: {
-                                          ...editStockReturnForm.sizes,
-                                          [size]:
-                                            parseInt(e.target.value) || 0,
-                                        },
-                                      })
-                                    }
-                                    className="w-16 px-2 py-2 border rounded text-black bg-white text-center"
-                                  />
-                                </td>
-                              ))}
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <button
-                                  onClick={handleUpdateStockReturnRow}
-                                  className="text-green-600 hover:text-green-900 mr-3 font-medium"
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    setEditingStockReturnRow(null)
-                                  }
-                                  className="text-gray-600 hover:text-gray-900"
-                                >
-                                  Cancel
-                                </button>
-                              </td>
-                            </>
-                          ) : (
-                            <>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                {row.dno}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {row.type}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {row.color}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {row.mrp || "-"}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {row.date}
-                              </td>
-                              {SIZES.map((size) => (
-                                <td
-                                  key={size}
-                                  className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-900"
-                                >
-                                  {row.sizes[size] || "-"}
-                                </td>
-                              ))}
-                              <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <button
-                                  onClick={() =>
-                                    handleEditStockReturnRow(row)
-                                  }
-                                  className="text-blue-600 hover:text-blue-900 mr-3"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDeleteStockReturnRow(
-                                      row._id || ""
-                                    )
-                                  }
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  Delete
-                                </button>
-                              </td>
-                            </>
-                          )}
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    return (
+                      <div
+                        key={group.dno}
+                        className="overflow-hidden rounded-[20px] border border-gray-200 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]"
+                      >
+                        {/* Header */}
+                        <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-6">
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() => toggleGroupExpansion(group.dno)}
+                              className="flex h-5 w-5 items-center justify-center text-gray-500 transition-transform hover:text-gray-700"
+                            >
+                              <svg
+                                className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""
+                                  }`}
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M5.23 7.21a1 1 0 011.4.02L10 10.585l3.37-3.355a1 1 0 111.4 1.42l-4.07 4.05a1 1 0 01-1.4 0l-4.05-4.03a1 1 0 01-.02-1.4z" />
+                              </svg>
+                            </button>
+
+                            <div className="flex items-center gap-4 text-md">
+                              <div className="uppercase tracking-[0.2em] text-gray-500">
+                                DNO
+                              </div>
+
+                              <div className="font-black leading-none text-gray-900">
+                                {group.dno}
+                              </div>
+
+                              <div className="font-medium text-gray-500">
+                                {group.colors.length} colors
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="font-mono text-[26px] font-normal tracking-tight text-teal-600">
+                            {totalForGroup}
+                            <span className="text-[18px]"> pcs total</span>
+                          </div>
+                        </div>
+
+                        {isExpanded && (
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead>
+                                <tr className="border-b border-gray-100 bg-[#f7f7f7] text-[11px] uppercase tracking-[0.22em] text-gray-500">
+                                  <th className="px-6 py-4 text-left">Color</th>
+
+                                  {SIZES.map((size) => (
+                                    <th
+                                      key={size}
+                                      className="px-4 py-4 text-center"
+                                    >
+                                      {size}
+                                    </th>
+                                  ))}
+
+                                  <th className="px-6 py-4 text-center">
+                                    Total
+                                  </th>
+                                </tr>
+                              </thead>
+
+                              <tbody>
+                                {group.colors.map((colorGroup) => (
+                                  <tr
+                                    key={`${group.dno}-${colorGroup.color}`}
+                                    className="border-b border-gray-100"
+                                  >
+                                    <td className="px-6 py-6">
+                                      <span className="inline-flex items-center gap-3 text-md font-medium text-gray-900">
+                                        <span
+                                          className={`h-3.5 w-3.5 rounded-full ${getColorDotClass(
+                                            colorGroup.color
+                                          )}`}
+                                        />
+                                        {colorGroup.color}
+                                      </span>
+                                    </td>
+
+                                    {SIZES.map((size) => {
+                                      const quantity =
+                                        colorGroup.sizeTotals[size] || 0;
+
+                                      return (
+                                        <td
+                                          key={size}
+                                          className="px-4 py-6 text-center text-md font-medium text-gray-900"
+                                        >
+                                          {quantity || (
+                                            <span className="text-gray-300">-</span>
+                                          )}
+                                        </td>
+                                      );
+                                    })}
+
+                                    <td className="px-6 py-6 text-center text-lg font-bold text-teal-600">
+                                      {colorGroup.totalQuantity}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+              }
+            </>
           )}
         </div>
       </div>

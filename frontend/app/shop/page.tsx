@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "../../lib/api";
 import * as XLSX from "xlsx";
 import { useJobCardColors } from "../hooks/useJobCardColors";
+import AutocompleteInput from "../components/AutocompleteInput";
 import { ColorInput } from "../components/ColorInput";
 
 type Entry = {
@@ -108,11 +109,11 @@ function ShopDashboard() {
   const importDnoRef = useRef<HTMLInputElement>(null);
   const importTypeRef = useRef<HTMLInputElement>(null);
   const importColorRef = useRef<HTMLInputElement>(null);
-  const importSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const importSizeRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const returnDnoRef = useRef<HTMLInputElement>(null);
   const returnTypeRef = useRef<HTMLInputElement>(null);
   const returnColorRef = useRef<HTMLInputElement>(null);
-  const returnSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const returnSizeRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   // State for import and return forms with horizontal size columns
   const [importRows, setImportRows] = useState<SampleRow[]>([]);
@@ -163,6 +164,7 @@ function ShopDashboard() {
   const importColorHook = useJobCardColors();
   const returnColorHook = useJobCardColors();
   const salesColorHook = useJobCardColors();
+  const [jobCards, setJobCards] = useState<any[]>([]);
 
   useEffect(() => {
     const formType = searchParams.get("formType") as "import" | "sales" | "return" | null;
@@ -171,6 +173,7 @@ function ShopDashboard() {
       setLockedFormType(formType);
     }
     fetchEntries();
+    fetchJobCards();
   }, [searchParams]);
 
   const fetchEntries = async () => {
@@ -187,6 +190,25 @@ function ShopDashboard() {
     }
   };
 
+  const fetchJobCards = async () => {
+    try {
+      const res = await api.get("/jobcard");
+      setJobCards(res.data || []);
+    } catch (err) {
+      console.error("Error fetching Job Cards", err);
+    }
+  };
+
+  const designNumbers = useMemo(() => {
+    return [
+      ...new Set(
+        jobCards
+          .map((card: any) => card.designNumber)
+          .filter(Boolean)
+      ),
+    ];
+  }, [jobCards]);
+
   const groupImportEntries = (allEntries: Entry[]) => {
     const importEntries = allEntries.filter(entry => entry.formType === "import");
     setImportRows(buildGroupedRows(importEntries));
@@ -194,7 +216,7 @@ function ShopDashboard() {
 
   const groupReturnEntries = (allEntries: Entry[]) => {
     // Only show customer returns (retail channel), NOT stock returns (domestic return channel)
-    const returnEntries = allEntries.filter(entry => 
+    const returnEntries = allEntries.filter(entry =>
       entry.formType === "return" && entry.channel !== "domestic return"
     );
     setReturnRows(buildGroupedRows(returnEntries));
@@ -226,7 +248,7 @@ function ShopDashboard() {
 
         // Normalize 2xl to XXL
         const normalizedSize = entry.size.toLowerCase() === '2xl' ? 'XXL' : entry.size;
-  // Sum within the same design+color+date row.
+        // Sum within the same design+color+date row.
         grouped[key].sizes[normalizedSize] = (grouped[key].sizes[normalizedSize] || 0) + (entry.qty || 0);
         grouped[key].latestTimestamp = Math.max(grouped[key].latestTimestamp || 0, getEntryTimestamp(entry));
 
@@ -256,7 +278,7 @@ function ShopDashboard() {
         entry.formType === selectedFormType;
 
       // When viewing returns, exclude stock returns (which have channel: "domestic return")
-      const isNotStockReturn = 
+      const isNotStockReturn =
         selectedFormType === "return" ? entry.channel !== "domestic return" : true;
 
       return matchesSearch && matchesChannel && matchesFormType && isNotStockReturn;
@@ -391,12 +413,12 @@ function ShopDashboard() {
   ) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
-      
+
       // Trigger color lookup when leaving dno field in sales form
       if (fieldName === 'dno') {
         salesColorHook.fetchColorsForDesignNumber(editForm.dno);
       }
-      
+
       nextRef?.current?.focus();
     }
   };
@@ -445,7 +467,7 @@ function ShopDashboard() {
   const handleImportKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
-      
+
       if (currentField === 'dno') {
         // Trigger color lookup when leaving dno field
         importColorHook.fetchColorsForDesignNumber(newImportRow.dno);
@@ -491,7 +513,7 @@ function ShopDashboard() {
       if (entriesToCreate.length > 0) {
         await api.post("/shop/bulk", { entries: entriesToCreate });
       }
-      
+
       setNewImportRow({
         rowKey: "",
         entryIds: [],
@@ -515,21 +537,21 @@ function ShopDashboard() {
     setEditingImportRow(row.rowKey);
     // Format date to YYYY-MM-DD for date input
     const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
-    setEditImportForm({...row, date: formattedDate});
+    setEditImportForm({ ...row, date: formattedDate });
   };
 
   const handleUpdateImportRow = async (row: SampleRow) => {
     try {
       const entryIdsToDelete = row.entryIds;
-      
-      const deletePromises = entryIdsToDelete.map(entryId => 
+
+      const deletePromises = entryIdsToDelete.map(entryId =>
         api.delete(`/shop/${entryId}`)
       );
-      
+
       await Promise.all(deletePromises);
 
       const entryGroupId = createEntryGroupId();
-      
+
       const entriesToCreate = SIZES.map(size => {
         const qty = editImportForm.sizes[size] || 0;
         if (qty > 0) {
@@ -551,7 +573,7 @@ function ShopDashboard() {
       if (entriesToCreate.length > 0) {
         await api.post("/shop/bulk", { entries: entriesToCreate });
       }
-      
+
       setEditingImportRow(null);
       fetchEntries();
     } catch (err: unknown) {
@@ -565,10 +587,10 @@ function ShopDashboard() {
   const handleDeleteImportRow = async (row: SampleRow) => {
     if (window.confirm(`Are you sure you want to delete this import entry for ${row.dno} - ${row.color}?`)) {
       try {
-        const deletePromises = row.entryIds.map(entryId => 
+        const deletePromises = row.entryIds.map(entryId =>
           api.delete(`/shop/${entryId}`)
         );
-        
+
         await Promise.all(deletePromises);
         fetchEntries();
       } catch (err: unknown) {
@@ -595,7 +617,7 @@ function ShopDashboard() {
   const handleReturnKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>, currentField: string) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
-      
+
       if (currentField === 'dno') {
         // Trigger color lookup when leaving dno field
         returnColorHook.fetchColorsForDesignNumber(newReturnRow.dno);
@@ -641,7 +663,7 @@ function ShopDashboard() {
       if (entriesToCreate.length > 0) {
         await api.post("/shop/bulk", { entries: entriesToCreate });
       }
-      
+
       setNewReturnRow({
         rowKey: "",
         entryIds: [],
@@ -665,21 +687,21 @@ function ShopDashboard() {
     setEditingReturnRow(row.rowKey);
     // Format date to YYYY-MM-DD for date input
     const formattedDate = row.date ? row.date.split('T')[0] : new Date().toISOString().split('T')[0];
-    setEditReturnForm({...row, date: formattedDate});
+    setEditReturnForm({ ...row, date: formattedDate });
   };
 
   const handleUpdateReturnRow = async (row: SampleRow) => {
     try {
       const entryIdsToDelete = row.entryIds;
-      
-      const deletePromises = entryIdsToDelete.map(entryId => 
+
+      const deletePromises = entryIdsToDelete.map(entryId =>
         api.delete(`/shop/${entryId}`)
       );
-      
+
       await Promise.all(deletePromises);
 
       const entryGroupId = createEntryGroupId();
-      
+
       const entriesToCreate = SIZES.map(size => {
         const qty = editReturnForm.sizes[size] || 0;
         if (qty > 0) {
@@ -701,7 +723,7 @@ function ShopDashboard() {
       if (entriesToCreate.length > 0) {
         await api.post("/shop/bulk", { entries: entriesToCreate });
       }
-      
+
       setEditingReturnRow(null);
       fetchEntries();
     } catch (err: unknown) {
@@ -715,10 +737,10 @@ function ShopDashboard() {
   const handleDeleteReturnRow = async (row: SampleRow) => {
     if (window.confirm(`Are you sure you want to delete this return entry for ${row.dno} - ${row.color}?`)) {
       try {
-        const deletePromises = row.entryIds.map(entryId => 
+        const deletePromises = row.entryIds.map(entryId =>
           api.delete(`/shop/${entryId}`)
         );
-        
+
         await Promise.all(deletePromises);
         fetchEntries();
       } catch (err: unknown) {
@@ -835,8 +857,8 @@ function ShopDashboard() {
                     key={type}
                     onClick={() => setSelectedFormType(type as "import" | "sales" | "return")}
                     className={`px-6 py-3 rounded-lg font-semibold capitalize transition-all ${selectedFormType === type
-                        ? "bg-blue-600 text-white shadow-lg"
-                        : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                       }`}
                   >
                     {type}
@@ -908,63 +930,69 @@ function ShopDashboard() {
                   {selectedFormType === "import" && isCreatingImport && (
                     <tr className="bg-blue-50">
                       <td className="px-6 py-4">
-                        <input 
+                        <AutocompleteInput
                           ref={importDnoRef}
-                          type="text" 
-                          value={newImportRow.dno} 
-                          onChange={(e) => setNewImportRow({...newImportRow, dno: e.target.value})} 
-                          onKeyDown={(e) => handleImportKeyDown(e, 'dno')}
-                          placeholder="DNO" 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          value={newImportRow.dno}
+                          options={designNumbers}
+                          placeholder="DNO"
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
+                          onChange={(value) => {
+                            setNewImportRow({
+                              ...newImportRow,
+                              dno: value,
+                            });
+                            importColorHook.fetchColorsForDesignNumber(value);
+                          }}
+                          onKeyDown={(e) => handleImportKeyDown(e, "dno")}
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <input 
+                        <input
                           ref={importTypeRef}
-                          type="text" 
-                          value={newImportRow.type} 
-                          onChange={(e) => setNewImportRow({...newImportRow, type: e.target.value})} 
+                          type="text"
+                          value={newImportRow.type}
+                          onChange={(e) => setNewImportRow({ ...newImportRow, type: e.target.value })}
                           onKeyDown={(e) => handleImportKeyDown(e, 'type')}
-                          placeholder="Type" 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          placeholder="Type"
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <ColorInput 
+                        <ColorInput
                           ref={importColorRef}
-                          value={newImportRow.color} 
-                          onChange={(value) => setNewImportRow({...newImportRow, color: value})} 
+                          value={newImportRow.color}
+                          onChange={(value) => setNewImportRow({ ...newImportRow, color: value })}
                           onKeyDown={(e) => handleImportKeyDown(e, 'color')}
                           colorOptions={importColorHook.colorOptions}
                           hasJobCard={importColorHook.hasJobCard}
                           loading={importColorHook.loading}
-                          placeholder="Color" 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          placeholder="Color"
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <input 
-                          type="date" 
-                          value={newImportRow.date} 
-                          onChange={(e) => setNewImportRow({...newImportRow, date: e.target.value})} 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        <input
+                          type="date"
+                          value={newImportRow.date}
+                          onChange={(e) => setNewImportRow({ ...newImportRow, date: e.target.value })}
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
                       </td>
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
-                          <input 
+                          <input
                             ref={(el) => {
                               importSizeRefs.current[size] = el;
                             }}
-                            type="number" 
-                            value={newImportRow.sizes[size] || ""} 
+                            type="number"
+                            value={newImportRow.sizes[size] || ""}
                             onChange={(e) => setNewImportRow({
-                              ...newImportRow, 
-                              sizes: {...newImportRow.sizes, [size]: Number(e.target.value) || 0}
-                            })} 
+                              ...newImportRow,
+                              sizes: { ...newImportRow.sizes, [size]: Number(e.target.value) || 0 }
+                            })}
                             onKeyDown={(e) => handleImportKeyDown(e, `size-${size}`)}
-                            placeholder="Qty" 
-                            className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                            placeholder="Qty"
+                            className="w-20 px-2 py-1 border rounded text-black bg-white"
                           />
                         </td>
                       ))}
@@ -977,63 +1005,69 @@ function ShopDashboard() {
                   {selectedFormType === "return" && isCreatingReturn && (
                     <tr className="bg-blue-50">
                       <td className="px-6 py-4">
-                        <input 
+                        <AutocompleteInput
                           ref={returnDnoRef}
-                          type="text" 
-                          value={newReturnRow.dno} 
-                          onChange={(e) => setNewReturnRow({...newReturnRow, dno: e.target.value})} 
-                          onKeyDown={(e) => handleReturnKeyDown(e, 'dno')}
-                          placeholder="DNO" 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          value={newReturnRow.dno}
+                          options={designNumbers}
+                          placeholder="DNO"
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
+                          onChange={(value) => {
+                            setNewReturnRow({
+                              ...newReturnRow,
+                              dno: value,
+                            });
+                            importColorHook.fetchColorsForDesignNumber(value);
+                          }}
+                          onKeyDown={(e) => handleReturnKeyDown(e, "dno")}
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <input 
+                        <input
                           ref={returnTypeRef}
-                          type="text" 
-                          value={newReturnRow.type} 
-                          onChange={(e) => setNewReturnRow({...newReturnRow, type: e.target.value})} 
+                          type="text"
+                          value={newReturnRow.type}
+                          onChange={(e) => setNewReturnRow({ ...newReturnRow, type: e.target.value })}
                           onKeyDown={(e) => handleReturnKeyDown(e, 'type')}
-                          placeholder="Type" 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          placeholder="Type"
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <ColorInput 
+                        <ColorInput
                           ref={returnColorRef}
-                          value={newReturnRow.color} 
-                          onChange={(value) => setNewReturnRow({...newReturnRow, color: value})} 
+                          value={newReturnRow.color}
+                          onChange={(value) => setNewReturnRow({ ...newReturnRow, color: value })}
                           onKeyDown={(e) => handleReturnKeyDown(e, 'color')}
                           colorOptions={returnColorHook.colorOptions}
                           hasJobCard={returnColorHook.hasJobCard}
                           loading={returnColorHook.loading}
-                          placeholder="Color" 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                          placeholder="Color"
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
                       </td>
                       <td className="px-6 py-4">
-                        <input 
-                          type="date" 
-                          value={newReturnRow.date} 
-                          onChange={(e) => setNewReturnRow({...newReturnRow, date: e.target.value})} 
-                          className="w-full px-2 py-1 border rounded text-black bg-white" 
+                        <input
+                          type="date"
+                          value={newReturnRow.date}
+                          onChange={(e) => setNewReturnRow({ ...newReturnRow, date: e.target.value })}
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
                         />
                       </td>
                       {SIZES.map(size => (
                         <td key={size} className="px-6 py-4">
-                          <input 
+                          <input
                             ref={(el) => {
                               returnSizeRefs.current[size] = el;
                             }}
-                            type="number" 
-                            value={newReturnRow.sizes[size] || ""} 
+                            type="number"
+                            value={newReturnRow.sizes[size] || ""}
                             onChange={(e) => setNewReturnRow({
-                              ...newReturnRow, 
-                              sizes: {...newReturnRow.sizes, [size]: Number(e.target.value) || 0}
-                            })} 
+                              ...newReturnRow,
+                              sizes: { ...newReturnRow.sizes, [size]: Number(e.target.value) || 0 }
+                            })}
                             onKeyDown={(e) => handleReturnKeyDown(e, `size-${size}`)}
-                            placeholder="Qty" 
-                            className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                            placeholder="Qty"
+                            className="w-20 px-2 py-1 border rounded text-black bg-white"
                           />
                         </td>
                       ))}
@@ -1045,56 +1079,56 @@ function ShopDashboard() {
                   )}
                   {selectedFormType === "import" && filteredGroupedRows.map((row, idx) => {
                     const isEditing = editingImportRow === row.rowKey;
-                    
+
                     return (
                       <tr key={row.rowKey || idx} className={isEditing ? "bg-blue-50" : ""}>
                         {isEditing ? (
                           <>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
-                                value={editImportForm.dno} 
-                                onChange={(e) => setEditImportForm({...editImportForm, dno: e.target.value})} 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              <input
+                                type="text"
+                                value={editImportForm.dno}
+                                onChange={(e) => setEditImportForm({ ...editImportForm, dno: e.target.value })}
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
-                                value={editImportForm.type} 
-                                onChange={(e) => setEditImportForm({...editImportForm, type: e.target.value})} 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              <input
+                                type="text"
+                                value={editImportForm.type}
+                                onChange={(e) => setEditImportForm({ ...editImportForm, type: e.target.value })}
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <ColorInput 
-                                value={editImportForm.color} 
-                                onChange={(value) => setEditImportForm({...editImportForm, color: value})} 
+                              <ColorInput
+                                value={editImportForm.color}
+                                onChange={(value) => setEditImportForm({ ...editImportForm, color: value })}
                                 colorOptions={importColorHook.colorOptions}
                                 hasJobCard={importColorHook.hasJobCard}
                                 loading={importColorHook.loading}
-                                placeholder="Color" 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                                placeholder="Color"
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="date" 
-                                value={editImportForm.date || ""} 
-                                onChange={(e) => setEditImportForm({...editImportForm, date: e.target.value})} 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              <input
+                                type="date"
+                                value={editImportForm.date || ""}
+                                onChange={(e) => setEditImportForm({ ...editImportForm, date: e.target.value })}
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4">
-                                <input 
-                                  type="number" 
-                                  value={editImportForm.sizes[size] || ""} 
+                                <input
+                                  type="number"
+                                  value={editImportForm.sizes[size] || ""}
                                   onChange={(e) => setEditImportForm({
-                                    ...editImportForm, 
-                                    sizes: {...editImportForm.sizes, [size]: Number(e.target.value) || 0}
-                                  })} 
-                                  className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                                    ...editImportForm,
+                                    sizes: { ...editImportForm.sizes, [size]: Number(e.target.value) || 0 }
+                                  })}
+                                  className="w-20 px-2 py-1 border rounded text-black bg-white"
                                 />
                               </td>
                             ))}
@@ -1125,56 +1159,56 @@ function ShopDashboard() {
                   })}
                   {selectedFormType === "return" && filteredGroupedRows.map((row, idx) => {
                     const isEditing = editingReturnRow === row.rowKey;
-                    
+
                     return (
                       <tr key={row.rowKey || idx} className={isEditing ? "bg-blue-50" : ""}>
                         {isEditing ? (
                           <>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
-                                value={editReturnForm.dno} 
-                                onChange={(e) => setEditReturnForm({...editReturnForm, dno: e.target.value})} 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              <input
+                                type="text"
+                                value={editReturnForm.dno}
+                                onChange={(e) => setEditReturnForm({ ...editReturnForm, dno: e.target.value })}
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
-                                value={editReturnForm.type} 
-                                onChange={(e) => setEditReturnForm({...editReturnForm, type: e.target.value})} 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              <input
+                                type="text"
+                                value={editReturnForm.type}
+                                onChange={(e) => setEditReturnForm({ ...editReturnForm, type: e.target.value })}
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <ColorInput 
-                                value={editReturnForm.color} 
-                                onChange={(value) => setEditReturnForm({...editReturnForm, color: value})} 
+                              <ColorInput
+                                value={editReturnForm.color}
+                                onChange={(value) => setEditReturnForm({ ...editReturnForm, color: value })}
                                 colorOptions={returnColorHook.colorOptions}
                                 hasJobCard={returnColorHook.hasJobCard}
                                 loading={returnColorHook.loading}
-                                placeholder="Color" 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                                placeholder="Color"
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="date" 
-                                value={editReturnForm.date || ""} 
-                                onChange={(e) => setEditReturnForm({...editReturnForm, date: e.target.value})} 
-                                className="w-full px-2 py-1 border rounded text-black bg-white" 
+                              <input
+                                type="date"
+                                value={editReturnForm.date || ""}
+                                onChange={(e) => setEditReturnForm({ ...editReturnForm, date: e.target.value })}
+                                className="w-full px-2 py-1 border rounded text-black bg-white"
                               />
                             </td>
                             {SIZES.map(size => (
                               <td key={size} className="px-6 py-4">
-                                <input 
-                                  type="number" 
-                                  value={editReturnForm.sizes[size] || ""} 
+                                <input
+                                  type="number"
+                                  value={editReturnForm.sizes[size] || ""}
                                   onChange={(e) => setEditReturnForm({
-                                    ...editReturnForm, 
-                                    sizes: {...editReturnForm.sizes, [size]: Number(e.target.value) || 0}
-                                  })} 
-                                  className="w-20 px-2 py-1 border rounded text-black bg-white" 
+                                    ...editReturnForm,
+                                    sizes: { ...editReturnForm.sizes, [size]: Number(e.target.value) || 0 }
+                                  })}
+                                  className="w-20 px-2 py-1 border rounded text-black bg-white"
                                 />
                               </td>
                             ))}
@@ -1236,7 +1270,25 @@ function ShopDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {isCreating && (
                     <tr className="bg-blue-50">
-                      <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({ ...editForm, dno: e.target.value })} onKeyDown={(e) => handleKeyDown(e, typeRef, 'dno')} placeholder="DNO" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
+                      <td className="px-6 py-4">
+                        <AutocompleteInput
+                          ref={dnoRef}
+                          value={editForm.dno}
+                          options={designNumbers}
+                          placeholder="DNO"
+                          className="w-full px-2 py-1 border rounded text-black bg-white"
+                          onChange={(value) => {
+                            setEditForm((prev) => ({
+                              ...prev,
+                              dno: value,
+                            }));
+
+                            // Load colors immediately
+                            salesColorHook.fetchColorsForDesignNumber(value);
+                          }}
+                          onKeyDown={(e) => handleKeyDown(e, typeRef, "dno")}
+                        />
+                      </td>
                       <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })} onKeyDown={(e) => handleKeyDown(e, colorRef)} placeholder="Type" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><ColorInput ref={colorRef} value={editForm.color} onChange={(value) => setEditForm({ ...editForm, color: value })} onKeyDown={(e) => handleKeyDown(e, sizeRef)} colorOptions={salesColorHook.colorOptions} hasJobCard={salesColorHook.hasJobCard} loading={salesColorHook.loading} placeholder="Color" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>
                       <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({ ...editForm, size: e.target.value })} onKeyDown={(e) => handleKeyDown(e, qtyRef)} placeholder="Size" className="w-full px-2 py-1 border rounded text-black bg-white" /></td>

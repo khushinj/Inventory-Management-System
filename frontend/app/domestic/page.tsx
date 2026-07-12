@@ -181,6 +181,8 @@ function DomesticDashboard() {
   const [editingSampleRow, setEditingSampleRow] = useState<string | null>(null);
   const [editingProductionRow, setEditingProductionRow] = useState<string | null>(null);
   const [editingPurchaseRow, setEditingPurchaseRow] = useState<string | null>(null);
+  const [isSavingProduction, setIsSavingProduction] = useState(false);
+  const productionSaveLockRef = useRef(false);
   const [newSampleRow, setNewSampleRow] = useState<SampleRow>({
     dno: "",
     color: "",
@@ -612,6 +614,13 @@ function DomesticDashboard() {
   };
 
   const handleSaveProductionRow = async () => {
+    if (productionSaveLockRef.current) {
+      return;
+    }
+
+    productionSaveLockRef.current = true;
+    setIsSavingProduction(true);
+
     try {
       // Create individual entries for each size with quantity
       const promises = SAMPLE_SIZES.map(size => {
@@ -645,6 +654,9 @@ function DomesticDashboard() {
       const errorMsg = err instanceof Error ? err.message : "Unknown error";
       const axiosError = err && typeof err === "object" && "response" in err ? (err as any).response?.data?.error : undefined;
       alert("Failed to create production entries: " + (axiosError || errorMsg));
+    } finally {
+      productionSaveLockRef.current = false;
+      setIsSavingProduction(false);
     }
   };
 
@@ -759,6 +771,13 @@ function DomesticDashboard() {
   };
 
   const handleUpdateProductionRow = async (originalRow: SampleRow) => {
+    if (productionSaveLockRef.current) {
+      return;
+    }
+
+    productionSaveLockRef.current = true;
+    setIsSavingProduction(true);
+
     try {
       // Delete old entries for this dno+color combination
       const entriesToDelete = entries.filter(e => 
@@ -790,6 +809,9 @@ function DomesticDashboard() {
     } catch (err: unknown) {
       console.error("Error updating production entries:", err);
       alert("Failed to update production entries");
+    } finally {
+      productionSaveLockRef.current = false;
+      setIsSavingProduction(false);
     }
   };
 
@@ -1783,7 +1805,13 @@ function DomesticDashboard() {
                           </td>
                         ))}
                         <td className="px-6 py-4">
-                          <button onClick={handleSaveProductionRow} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                          <button
+                            onClick={handleSaveProductionRow}
+                            disabled={isSavingProduction}
+                            className="text-green-600 hover:text-green-900 mr-3 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {isSavingProduction ? "Saving..." : "Save"}
+                          </button>
                           <button onClick={handleCancelProduction} className="text-gray-600 hover:text-gray-900">Cancel</button>
                         </td>
                       </tr>
@@ -1825,7 +1853,13 @@ function DomesticDashboard() {
                               </td>
                             ))}
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <button onClick={() => handleUpdateProductionRow(row)} className="text-green-600 hover:text-green-900 mr-3 font-medium">Save</button>
+                              <button
+                                onClick={() => handleUpdateProductionRow(row)}
+                                disabled={isSavingProduction}
+                                className="text-green-600 hover:text-green-900 mr-3 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {isSavingProduction ? "Saving..." : "Save"}
+                              </button>
                               <button onClick={() => setEditingProductionRow(null)} className="text-gray-600 hover:text-gray-900">Cancel</button>
                             </td>
                           </>

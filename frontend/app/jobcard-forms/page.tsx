@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FileSpreadsheet } from "lucide-react";
 
 const jobCardLinks = [
   {
@@ -21,6 +22,15 @@ const jobCardLinks = [
     textColor: "text-indigo-600",
     icon: "📊",
   },
+  {
+    title: "Proforma Invoice",
+    description: "Build PI records and download the Excel sheet",
+    href: "/jobcard/proforma-invoice",
+    color: "bg-amber-500",
+    hoverColor: "group-hover:text-amber-600",
+    textColor: "text-amber-600",
+    icon: FileSpreadsheet,
+  },
 ];
 
 export default function JobCardFormsPage() {
@@ -36,17 +46,19 @@ export default function JobCardFormsPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Job Card</h1>
           <p className="text-xl text-gray-600">
-            Create job cards or view the job card dashboard
+            Create job cards, manage them, or build a PI export
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {jobCardLinks.map((item) => (
             <Link key={item.href} href={item.href} className="block group">
               <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden h-full">
                 <div className={`${item.color} h-2`}></div>
                 <div className="p-8">
-                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <div className="text-4xl mb-4">
+                    {typeof item.icon === "string" ? item.icon : <item.icon className="h-10 w-10 text-gray-900" />}
+                  </div>
                   <h2 className={`text-2xl font-semibold text-gray-900 mb-3 ${item.hoverColor} transition-colors`}>
                     {item.title}
                   </h2>

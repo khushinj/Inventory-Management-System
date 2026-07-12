@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1783347017538",
+    "createdAt": "2026-07-06T14:10:17.538Z",
+    "header": {
+      "piNumber": "h",
+      "piDate": "2026-07-03",
+      "deliveryDate": "2026-07-23",
+      "priceTerm": "",
+      "termsOfPayment": "",
+      "dispatchThrough": "",
+      "portOfLoading": "",
+      "portOfDischarge": "",
+      "preCarriageBy": "",
+      "countryOfOrigin": "",
+      "countryOfFinalDestination": "",
+      "buyerOrderNo": "",
+      "otherReference": ""
+    },
+    "items": [
+      {
+        "id": 1,
+        "designNumber": "TB-001",
+        "picture": "https://res.cloudinary.com/dx9d1xx6a/image/upload/v1775037126/inventory-management/wbcm65dp7btavcptd1vz.jpg",
+        "description": "",
+        "fabricDetails": "30'S YARN CP JERSEY WITH BIO SILICON / 80% COTTON 20% POLYESTER",
+        "color": "MIDNIGHT BLUE",
+        "s": 0,
+        "m": 0,
+        "l": 0,
+        "xl": 0,
+        "xxl": 0,
+        "xxxl": 0,
+        "xxxxl": 0,
+        "xxxxxl": 7,
+        "xxxxxxl": 0,
+        "qty": 7,
+        "cost": 499,
+        "totalAmount": 3493
+      }
+    ],
+    "footer": {
+      "ratio": "",
+      "packingDetails": "",
+      "suitableQtyInCarton": ""
+    },
+    "totalQuantity": 7,
+    "totalAmount": 3493
+  }
+]

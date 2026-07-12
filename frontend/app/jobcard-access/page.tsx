@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ClipboardList, LayoutDashboard } from "lucide-react";
+import { ClipboardList, LayoutDashboard, FileSpreadsheet } from "lucide-react";
 
 const accessTabs = [
   {
@@ -18,6 +18,13 @@ const accessTabs = [
     icon: LayoutDashboard,
     color: "bg-violet-600",
   },
+  {
+    title: "Performa Invoice",
+    description: "Create a PI Excel export linked to job cards",
+    href: "/jobcard/performa-invoice",
+    icon: FileSpreadsheet,
+    color: "bg-amber-600",
+  },
 ];
 
 export default function JobcardAccessPage() {
@@ -29,7 +36,7 @@ export default function JobcardAccessPage() {
           <p className="mt-2 text-slate-600">Create and view job cards from here</p>
         </div>
 
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {accessTabs.map((tab) => {
             const Icon = tab.icon;
             return (

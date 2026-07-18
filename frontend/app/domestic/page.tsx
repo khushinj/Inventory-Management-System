@@ -147,15 +147,19 @@ function DomesticDashboard() {
   const sampleDnoRef = useRef<HTMLInputElement>(null);
   const sampleColorRef = useRef<HTMLInputElement>(null);
   const sampleSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const editSampleColorRef = useRef<HTMLInputElement>(null);
   const productionDnoRef = useRef<HTMLInputElement>(null);
   const productionColorRef = useRef<HTMLInputElement>(null);
   const productionSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const editProductionColorRef = useRef<HTMLInputElement>(null);
   const purchaseDnoRef = useRef<HTMLInputElement>(null);
   const purchaseColorRef = useRef<HTMLInputElement>(null);
   const purchaseSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const editPurchaseColorRef = useRef<HTMLInputElement>(null);
   const dispatchDnoRef = useRef<HTMLInputElement>(null);
   const dispatchColorRef = useRef<HTMLInputElement>(null);
   const dispatchSizeRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const editDispatchColorRef = useRef<HTMLInputElement>(null);
 
   const [channelOptions] = useState<string[]>([
     "online",
@@ -1698,15 +1702,25 @@ function DomesticDashboard() {
                               <input 
                                 type="text" 
                                 value={editSampleForm.dno} 
-                                onChange={(e) => setEditSampleForm({...editSampleForm, dno: e.target.value})} 
+                                onChange={(e) => setEditSampleForm({...editSampleForm, dno: e.target.value})}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    sampleColorHook.fetchColorsForDesignNumber(editSampleForm.dno);
+                                    editSampleColorRef.current?.focus();
+                                  }
+                                }} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
+                              <ColorInput
+                                ref={editSampleColorRef}
                                 value={editSampleForm.color} 
-                                onChange={(e) => setEditSampleForm({...editSampleForm, color: e.target.value})} 
+                                onChange={(value) => setEditSampleForm({...editSampleForm, color: value})} 
+                                colorOptions={sampleColorHook.colorOptions}
+                                hasJobCard={sampleColorHook.hasJobCard}
+                                loading={sampleColorHook.loading}
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
@@ -1827,15 +1841,25 @@ function DomesticDashboard() {
                               <input 
                                 type="text" 
                                 value={editProductionForm.dno} 
-                                onChange={(e) => setEditProductionForm({...editProductionForm, dno: e.target.value})} 
+                                onChange={(e) => setEditProductionForm({...editProductionForm, dno: e.target.value})}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    productionColorHook.fetchColorsForDesignNumber(editProductionForm.dno);
+                                    editProductionColorRef.current?.focus();
+                                  }
+                                }} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
+                              <ColorInput
+                                ref={editProductionColorRef}
                                 value={editProductionForm.color} 
-                                onChange={(e) => setEditProductionForm({...editProductionForm, color: e.target.value})} 
+                                onChange={(value) => setEditProductionForm({...editProductionForm, color: value})} 
+                                colorOptions={productionColorHook.colorOptions}
+                                hasJobCard={productionColorHook.hasJobCard}
+                                loading={productionColorHook.loading}
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
@@ -1956,15 +1980,25 @@ function DomesticDashboard() {
                               <input 
                                 type="text" 
                                 value={editPurchaseForm.dno} 
-                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, dno: e.target.value})} 
+                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, dno: e.target.value})}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    purchaseColorHook.fetchColorsForDesignNumber(editPurchaseForm.dno);
+                                    editPurchaseColorRef.current?.focus();
+                                  }
+                                }} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
+                              <ColorInput
+                                ref={editPurchaseColorRef}
                                 value={editPurchaseForm.color} 
-                                onChange={(e) => setEditPurchaseForm({...editPurchaseForm, color: e.target.value})} 
+                                onChange={(value) => setEditPurchaseForm({...editPurchaseForm, color: value})} 
+                                colorOptions={purchaseColorHook.colorOptions}
+                                hasJobCard={purchaseColorHook.hasJobCard}
+                                loading={purchaseColorHook.loading}
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
@@ -2079,15 +2113,25 @@ function DomesticDashboard() {
                               <input 
                                 type="text" 
                                 value={editDispatchForm.dno} 
-                                onChange={(e) => setEditDispatchForm({...editDispatchForm, dno: e.target.value})} 
+                                onChange={(e) => setEditDispatchForm({...editDispatchForm, dno: e.target.value})}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    dispatchColorHook.fetchColorsForDesignNumber(editDispatchForm.dno);
+                                    editDispatchColorRef.current?.focus();
+                                  }
+                                }} 
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
                             <td className="px-6 py-4">
-                              <input 
-                                type="text" 
+                              <ColorInput
+                                ref={editDispatchColorRef}
                                 value={editDispatchForm.color} 
-                                onChange={(e) => setEditDispatchForm({...editDispatchForm, color: e.target.value})} 
+                                onChange={(value) => setEditDispatchForm({...editDispatchForm, color: value})} 
+                                colorOptions={dispatchColorHook.colorOptions}
+                                hasJobCard={dispatchColorHook.hasJobCard}
+                                loading={dispatchColorHook.loading}
                                 className="w-full px-2 py-1 border rounded text-black bg-white" 
                               />
                             </td>
@@ -2221,9 +2265,9 @@ function DomesticDashboard() {
                     <tr key={entry._id}>
                       {editingEntry === entry._id ? (
                         <>
-                          <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef)} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><input ref={dnoRef} type="text" value={editForm.dno} onChange={(e) => setEditForm({...editForm, dno: e.target.value})} onKeyDown={(e) => handleKeyDown(e, typeRef, false, undefined, 'dno')} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={typeRef} type="text" value={editForm.type} onChange={(e) => setEditForm({...editForm, type: e.target.value})} onKeyDown={(e) => handleKeyDown(e, colorRef)} className="w-full px-2 py-1 border rounded" /></td>
-                          <td className="px-6 py-4"><input ref={colorRef} type="text" value={editForm.color} onChange={(e) => setEditForm({...editForm, color: e.target.value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} className="w-full px-2 py-1 border rounded" /></td>
+                          <td className="px-6 py-4"><ColorInput ref={colorRef} value={editForm.color} onChange={(value) => setEditForm({...editForm, color: value})} onKeyDown={(e) => handleKeyDown(e, sizeRef)} colorOptions={regularFormColorHook.colorOptions} hasJobCard={regularFormColorHook.hasJobCard} loading={regularFormColorHook.loading} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={sizeRef} type="text" value={editForm.size} onChange={(e) => setEditForm({...editForm, size: e.target.value})} onKeyDown={(e) => handleKeyDown(e, qtyRef)} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={qtyRef} type="number" value={editForm.qty} onChange={(e) => setEditForm({...editForm, qty: e.target.value})} onKeyDown={(e) => handleKeyDown(e, dateRef)} className="w-full px-2 py-1 border rounded" /></td>
                           <td className="px-6 py-4"><input ref={dateRef} type="date" value={editForm.date} onChange={(e) => setEditForm({...editForm, date: e.target.value})} onKeyDown={(e) => {

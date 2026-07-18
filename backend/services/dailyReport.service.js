@@ -8,6 +8,34 @@ class DailyReportService {
     return normalized;
   }
 
+  async recalculateReportsFromDate(startDate, initialOpeningBalance = 0) {
+    const reports = await DailyReport.find({ date: { $gte: startDate } }).sort({ date: 1 });
+
+    let previousClosingBalance = initialOpeningBalance;
+
+    for (const report of reports) {
+      report.openingBalance = previousClosingBalance;
+      await report.save();
+      previousClosingBalance = report.closingBalance;
+    }
+
+    return reports;
+  }
+
+  async recalculateReportsAfterDate(startDate, initialOpeningBalance = 0) {
+    const reports = await DailyReport.find({ date: { $gt: startDate } }).sort({ date: 1 });
+
+    let previousClosingBalance = initialOpeningBalance;
+
+    for (const report of reports) {
+      report.openingBalance = previousClosingBalance;
+      await report.save();
+      previousClosingBalance = report.closingBalance;
+    }
+
+    return reports;
+  }
+
   // Calculate total sale
   calculateTotalSale(cashSale, upi, creditCard, creditNote) {
     return (cashSale || 0) + (upi || 0) + (creditCard || 0) + (creditNote || 0);
@@ -55,7 +83,9 @@ class DailyReportService {
       existingReport.closingBalance = closingBalance;
       existingReport.net = net;
 
-      return await existingReport.save();
+      const savedReport = await existingReport.save();
+      await this.recalculateReportsAfterDate(reportDate, savedReport.closingBalance);
+      return savedReport;
     }
 
     // Create new report
@@ -75,7 +105,9 @@ class DailyReportService {
       net,
     });
 
-    return await newReport.save();
+    const savedReport = await newReport.save();
+    await this.recalculateReportsAfterDate(reportDate, savedReport.closingBalance);
+    return savedReport;
   }
 
   // Get all reports sorted by date (newest first)
@@ -120,7 +152,19 @@ class DailyReportService {
   // Delete report by date
   async deleteReport(date) {
     const reportDate = this.normalizeDate(date);
-    return await DailyReport.findOneAndDelete({ date: reportDate });
+    const deletedReport = await DailyReport.findOneAndDelete({ date: reportDate });
+
+    if (!deletedReport) {
+      return null;
+    }
+
+    const previousReport = await DailyReport.findOne({ date: { $lt: reportDate } })
+      .sort({ date: -1 })
+      .select('closingBalance');
+
+    await this.recalculateReportsAfterDate(reportDate, previousReport ? previousReport.closingBalance : 0);
+
+    return deletedReport;
   }
 
   // Get summary statistics for a date range

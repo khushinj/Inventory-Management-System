@@ -37,6 +37,7 @@ export default function DailyReportPage() {
 
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [editingReportDate, setEditingReportDate] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Calculate total sale
@@ -78,6 +79,64 @@ export default function DailyReportPage() {
     }));
   };
 
+  const handleEditReport = (report: DailyReport) => {
+    setEditingReportDate(report.date);
+    setFormData({
+      date: new Date(report.date).toISOString().split("T")[0],
+      openingBalance: report.openingBalance || 0,
+      cashSale: report.cashSale || 0,
+      upi: report.upi || 0,
+      creditCard: report.creditCard || 0,
+      creditNote: report.creditNote || 0,
+      deposited: report.deposited || 0,
+      qty: report.qty || 0,
+      note: report.note || "",
+      expense: report.expense || 0,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReportDate(null);
+    setFormData({
+      date: new Date().toISOString().split("T")[0],
+      openingBalance: 0,
+      cashSale: 0,
+      upi: 0,
+      creditCard: 0,
+      creditNote: 0,
+      deposited: 0,
+      qty: 0,
+      note: "",
+      expense: 0,
+    });
+  };
+
+  const handleDeleteReport = async (report: DailyReport) => {
+    const confirmed = window.confirm(
+      `Delete the daily report for ${new Date(report.date).toLocaleDateString("en-GB")}? This will recalculate later reports.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsLoading(true);
+      await api.delete(`/daily-report/${new Date(report.date).toISOString().split("T")[0]}`);
+
+      if (editingReportDate === report.date) {
+        handleCancelEdit();
+      }
+
+      setMessage({ type: "success", text: "Daily report deleted successfully" });
+      await fetchReports();
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Failed to delete daily report.";
+      setMessage({ type: "error", text: errorMessage });
+      console.error("Error deleting daily report:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -86,10 +145,11 @@ export default function DailyReportPage() {
     try {
       const response = await api.post("/daily-report", {
         ...formData,
-        openingBalance,
+        openingBalance: editingReportDate ? formData.openingBalance : openingBalance,
       });
       
       setMessage({ type: "success", text: response.data.message });
+      setEditingReportDate(null);
       
       // Reset form
       setFormData({
@@ -131,6 +191,13 @@ export default function DailyReportPage() {
     formData.expense !== 0 ||
     formData.note.trim() !== "" ||
     (isFirstEntry && formData.openingBalance !== 0);
+
+  const isEditingReport = editingReportDate !== null;
+  const openingBalanceValue = isEditingReport
+    ? formData.openingBalance
+    : isFirstEntry
+      ? formData.openingBalance
+      : openingBalance;
 
   // Calculate totals for balance sheet (include current form values as a live preview)
   const calculateTotals = () => {
@@ -262,7 +329,20 @@ export default function DailyReportPage() {
 
         {/* Add Daily Report Form */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-800 mb-6">Add Daily Report</h2>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <h2 className="text-2xl font-semibold text-slate-800">
+              {isEditingReport ? "Edit Daily Report" : "Add Daily Report"}
+            </h2>
+            {isEditingReport && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
 
           {message && (
             <div
@@ -289,6 +369,7 @@ export default function DailyReportPage() {
                   name="date"
                   value={formData.date}
                   onChange={handleInputChange}
+                  readOnly={isEditingReport}
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 text-black focus:border-transparent"
                   required
                 />
@@ -297,19 +378,19 @@ export default function DailyReportPage() {
               {/* Opening Balance */}
               <div>
                 <label htmlFor="openingBalance" className="block text-sm font-medium text-slate-700 mb-2">
-                  Opening Balance {isFirstEntry && <span className="text-blue-600">(Editable - First Entry)</span>}
+                  Opening Balance {isFirstEntry && !isEditingReport && <span className="text-blue-600">(Editable - First Entry)</span>}
                 </label>
                 <input
                   type="number"
                   id="openingBalance"
                   name="openingBalance"
-                  value={isFirstEntry ? formData.openingBalance : openingBalance.toFixed(2)}
+                  value={openingBalanceValue}
                   onChange={handleInputChange}
-                  onFocus={(e) => isFirstEntry && e.target.select()}
-                  readOnly={!isFirstEntry}
+                  onFocus={(e) => isFirstEntry && !isEditingReport && e.target.select()}
+                  readOnly={!isFirstEntry || isEditingReport}
                   step="0.01"
                   className={`w-full px-4 py-2.5 text-black border border-slate-200 rounded-lg ${
-                    isFirstEntry 
+                    isFirstEntry && !isEditingReport 
                       ? 'bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent' 
                       : 'bg-slate-100 text-slate-600 cursor-not-allowed'
                   }`}
@@ -499,7 +580,7 @@ export default function DailyReportPage() {
                 disabled={isLoading}
                 className="px-8 py-3 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 focus:ring-4 focus:ring-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? "Saving..." : "Save Report"}
+                {isLoading ? (isEditingReport ? "Updating..." : "Saving...") : (isEditingReport ? "Update Report" : "Save Report")}
               </button>
             </div>
           </form>
@@ -554,6 +635,7 @@ export default function DailyReportPage() {
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Total Sale</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Expense</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Closing Balance</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700">Actions</th>
                   {/* <th className="px-4 py-3 text-right text-sm font-semibold text-slate-700">Net</th> */}
                 </tr>
               </thead>
@@ -596,8 +678,23 @@ export default function DailyReportPage() {
                     <td className="px-4 py-3 text-sm font-semibold text-slate-900 text-right">
                       ₹{(report.closingBalance || 0).toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-green-600 text-right">
-                      {/* ₹{(report.net || 0).toFixed(2)} */}
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleEditReport(report)}
+                          className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteReport(report)}
+                          className="text-red-600 hover:text-red-800 font-medium"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -639,9 +736,7 @@ export default function DailyReportPage() {
                     <td className="px-4 py-3 text-sm text-slate-900 text-right">
                       {/* ₹{totals.closingBalance.toFixed(2)} */}
                     </td>
-                    <td className="px-4 py-3 text-sm text-green-600 text-right">
-                      {/* ₹{totals.net.toFixed(2)} */}
-                    </td>
+                    <td className="px-4 py-3 text-sm text-slate-500">-</td>
                   </tr>
                 )}
               </tbody>

@@ -37,14 +37,22 @@ export default function DailyReportPage() {
 
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [editingReportId, setEditingReportId] = useState<string | null>(null);
   const [editingReportDate, setEditingReportDate] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Calculate total sale
-  const totalSale = formData.cashSale + formData.upi + formData.creditCard + formData.creditNote;
-  // Opening balance is the most recent report's closing balance (reports are sorted newest first)
-  // For the first entry ever, it should be editable
-  const openingBalance = reports.length > 0 ? (reports[0].closingBalance || 0) : formData.openingBalance;
+  const totalSale =
+    formData.cashSale +
+    formData.upi +
+    formData.creditCard +
+    formData.creditNote;
+
+  const openingBalance =
+    editingReportId
+      ? formData.openingBalance
+      : reports.length > 0
+        ? (reports[0].closingBalance || 0)
+        : formData.openingBalance;
   const isFirstEntry = reports.length === 0;
   const closingBalance = openingBalance + formData.cashSale - formData.expense - formData.deposited;
   const net = openingBalance + totalSale - formData.expense - formData.deposited;
@@ -80,6 +88,7 @@ export default function DailyReportPage() {
   };
 
   const handleEditReport = (report: DailyReport) => {
+    setEditingReportId(report._id);
     setEditingReportDate(report.date);
     setFormData({
       date: new Date(report.date).toISOString().split("T")[0],
@@ -143,14 +152,20 @@ export default function DailyReportPage() {
     setMessage(null);
 
     try {
-      const response = await api.post("/daily-report", {
+      const payload = {
         ...formData,
-        openingBalance: editingReportDate ? formData.openingBalance : openingBalance,
-      });
-      
+        openingBalance,
+        reportId: editingReportId,
+      };
+
+      const response = await api.post(
+        "/daily-report",
+        payload
+      );
+
       setMessage({ type: "success", text: response.data.message });
+      setEditingReportId(null);
       setEditingReportDate(null);
-      
       // Reset form
       setFormData({
         date: new Date().toISOString().split("T")[0],
@@ -164,10 +179,10 @@ export default function DailyReportPage() {
         note: "",
         expense: 0,
       });
-      
+
       // Refresh reports to show new data
       await fetchReports();
-      
+
       // Auto-hide success message after 3 seconds
       setTimeout(() => {
         setMessage(null);
@@ -346,11 +361,10 @@ export default function DailyReportPage() {
 
           {message && (
             <div
-              className={`mb-6 p-4 rounded-lg ${
-                message.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
-              }`}
+              className={`mb-6 p-4 rounded-lg ${message.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+                }`}
             >
               {message.text}
             </div>
@@ -389,11 +403,10 @@ export default function DailyReportPage() {
                   onFocus={(e) => isFirstEntry && !isEditingReport && e.target.select()}
                   readOnly={!isFirstEntry || isEditingReport}
                   step="0.01"
-                  className={`w-full px-4 py-2.5 text-black border border-slate-200 rounded-lg ${
-                    isFirstEntry && !isEditingReport 
-                      ? 'bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent' 
-                      : 'bg-slate-100 text-slate-600 cursor-not-allowed'
-                  }`}
+                  className={`w-full px-4 py-2.5 text-black border border-slate-200 rounded-lg ${isFirstEntry && !isEditingReport
+                    ? 'bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    : 'bg-slate-100 text-slate-600 cursor-not-allowed'
+                    }`}
                   placeholder="0.00"
                 />
               </div>
@@ -407,7 +420,7 @@ export default function DailyReportPage() {
                   type="number"
                   id="cashSale"
                   name="cashSale"
-                //   value={formData.cashSale}
+                  value={formData.cashSale}
                   onChange={handleInputChange}
                   step="0.01"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -424,7 +437,7 @@ export default function DailyReportPage() {
                   type="number"
                   id="upi"
                   name="upi"
-                //   value={formData.upi}
+                  value={formData.upi}
                   onChange={handleInputChange}
                   step="0.01"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -441,7 +454,7 @@ export default function DailyReportPage() {
                   type="number"
                   id="creditCard"
                   name="creditCard"
-                //   value={formData.creditCard}
+                  value={formData.creditCard}
                   onChange={handleInputChange}
                   step="0.01"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -458,7 +471,7 @@ export default function DailyReportPage() {
                   type="number"
                   id="creditNote"
                   name="creditNote"
-                //   value={formData.creditNote}
+                  value={formData.creditNote}
                   onChange={handleInputChange}
                   step="0.01"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -475,6 +488,7 @@ export default function DailyReportPage() {
                   type="number"
                   id="deposited"
                   name="deposited"
+                  value={formData.deposited}
                   onChange={handleInputChange}
                   step="0.01"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -491,6 +505,7 @@ export default function DailyReportPage() {
                   type="number"
                   id="qty"
                   name="qty"
+                  value={formData.qty}
                   onChange={handleInputChange}
                   step="1"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -551,7 +566,7 @@ export default function DailyReportPage() {
                   type="number"
                   id="expense"
                   name="expense"
-                //   value={formData.expense}
+                  value={formData.expense}
                   onChange={handleInputChange}
                   step="0.01"
                   className="w-full px-4 py-2.5 bg-slate-50 text-black border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

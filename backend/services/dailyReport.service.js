@@ -55,19 +55,26 @@ class DailyReportService {
 
     // Calculate totals
     const totalSale = this.calculateTotalSale(cashSale, upi, creditCard, creditNote);
-    
+
     const previousReport = await DailyReport.findOne({ date: { $lt: reportDate } })
       .sort({ date: -1 })
       .select('closingBalance');
     // Use custom opening balance only if this is the first report (no previous reports)
     const openingBalance = previousReport ? previousReport.closingBalance : (customOpeningBalance || 0);
-    
+
     const closingBalance = openingBalance + (cashSale || 0) - (expense || 0) - (deposited || 0);
     const net = openingBalance + totalSale - (expense || 0) - (deposited || 0);
 
     // Check if report exists for this date
-    const existingReport = await DailyReport.findOne({ date: reportDate });
+    let existingReport = null;
 
+    if (reportData.reportId) {
+      existingReport = await DailyReport.findById(reportData.reportId);
+    } else {
+      existingReport = await DailyReport.findOne({
+        date: reportDate,
+      });
+    }
     if (existingReport) {
       // Update existing report
       existingReport.openingBalance = openingBalance;
@@ -82,7 +89,7 @@ class DailyReportService {
       existingReport.totalSale = totalSale;
       existingReport.closingBalance = closingBalance;
       existingReport.net = net;
-
+      existingReport.date = reportDate;
       const savedReport = await existingReport.save();
       await this.recalculateReportsAfterDate(reportDate, savedReport.closingBalance);
       return savedReport;

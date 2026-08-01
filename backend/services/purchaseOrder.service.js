@@ -9,32 +9,32 @@ const sizeKeys = ["s", "m", "l", "xl", "xxl", "xxxl", "xxxxl", "xxxxxl", "xxxxxx
 export async function createPurchaseOrder(orderData) {
   try {
     console.log("Creating purchase order with data:", JSON.stringify(orderData, null, 2));
-    
+
     // Extract year from the order date
     const orderDate = new Date(orderData.date);
     const year = orderDate.getFullYear();
-    
+
     // Find the highest sequence number for this year
     const lastOrder = await PurchaseOrder.findOne({ year })
       .sort({ sequenceNumber: -1 })
       .select('sequenceNumber')
       .lean();
-    
+
     // Generate next sequence number
     const sequenceNumber = lastOrder ? lastOrder.sequenceNumber + 1 : 1;
-    
+
     // Format the order number: PO-YYYY-XXX
     const orderNumber = `PO-${year}-${String(sequenceNumber).padStart(3, '0')}`;
-    
+
     // Add generated fields to order data
     orderData.orderNumber = orderNumber;
     orderData.sequenceNumber = sequenceNumber;
     orderData.year = year;
     orderData.deliveredSizes = orderData.items?.map(() => ({})) || [];
-    
+
     const purchaseOrder = new PurchaseOrder(orderData);
     await purchaseOrder.save();
-    
+
     return {
       success: true,
       data: purchaseOrder,
@@ -127,9 +127,8 @@ export async function updatePurchaseOrder(id, updateData) {
       updateData.deliveredSizes = normalizeDeliveredSizes(updateData.deliveredSizes);
     }
 
-    if (shouldSyncDispatch) {
-      await deleteDispatchEntriesForPO(id);
-    }
+    // Inventory will be updated only when the order is shipped.
+    // So do nothing here.
 
     const purchaseOrder = await PurchaseOrder.findByIdAndUpdate(id, updateData, {
       new: true,
@@ -145,9 +144,7 @@ export async function updatePurchaseOrder(id, updateData) {
 
     console.log("Updated PO deliveredSizes:", JSON.stringify(purchaseOrder.deliveredSizes, null, 2));
 
-    if (shouldSyncDispatch) {
-      await createDispatchEntriesFromPO(purchaseOrder, updateData?.deliveredSizes);
-    }
+    // Dispatch entries will be created when the user clicks the Shipped button.
 
     return {
       success: true,
@@ -167,7 +164,7 @@ export async function deletePurchaseOrder(id) {
   try {
     // First delete associated dispatch entries
     await deleteDispatchEntriesForPO(id);
-    
+
     const purchaseOrder = await PurchaseOrder.findByIdAndDelete(id);
 
     if (!purchaseOrder) {
@@ -270,7 +267,7 @@ async function createDispatchEntriesFromPO(purchaseOrder, deliveredOverride = nu
     for (const [index, item] of purchaseOrder.items.entries()) {
       const delivered = deliveredOverride[index] || {};
       console.log(`Item ${index} (${item.designNumber}-${item.color}) delivered:`, JSON.stringify(delivered));
-      
+
       for (const size of sizeKeys) {
         const qty = parseDeliveredQty(delivered[size]);
         if (qty && qty > 0) {
@@ -308,7 +305,7 @@ async function deleteDispatchEntriesForPO(purchaseOrderId) {
   try {
     const DispatchModel = getTransactionModel("warehouse", "domestic", "dispatch");
     const poReference = `PO_${purchaseOrderId}`;
-    
+
     const result = await DispatchModel.deleteMany({ receiver: poReference });
     console.log(`Deleted ${result.deletedCount} dispatch entries for PO ${purchaseOrderId}`);
   } catch (error) {
@@ -316,6 +313,51 @@ async function deleteDispatchEntriesForPO(purchaseOrderId) {
     throw error;
   }
 }
+
+/**
+ * Ship Purchase Order
+ * Creates dispatch entries, deducts inventory and marks order as completed.
+ */
+export async function shipPurchaseOrder(id) {
+  try {
+    const purchaseOrder = await PurchaseOrder.findById(id);
+
+    if (!purchaseOrder) {
+      return {
+        success: false,
+        message: "Purchase order not found",
+      };
+    }
+
+    // Prevent shipping twice
+    if (purchaseOrder.status === "completed") {
+      return {
+        success: false,
+        message: "Purchase order is already shipped",
+      };
+    }
+
+    // Create dispatch entries (this deducts inventory)
+    await createDispatchEntriesFromPO(
+      purchaseOrder,
+      purchaseOrder.deliveredSizes
+    );
+
+    // Update status
+    purchaseOrder.status = "completed";
+    await purchaseOrder.save();
+
+    return {
+      success: true,
+      data: purchaseOrder,
+      message: "Purchase order shipped successfully",
+    };
+  } catch (error) {
+    console.error("Error shipping purchase order:", error);
+    throw error;
+  }
+}
+
 
 function normalizeDeliveredSizes(deliveredSizes) {
   if (!Array.isArray(deliveredSizes)) {

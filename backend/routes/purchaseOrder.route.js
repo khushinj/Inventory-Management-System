@@ -7,6 +7,7 @@ import {
   updatePurchaseOrder,
   deletePurchaseOrder,
   getPurchaseOrderStats,
+  shipPurchaseOrder,
 } from "../controllers/purchaseOrder.controller.js";
 
 const router = express.Router();
@@ -25,6 +26,9 @@ router.get("/:id", getPurchaseOrderById);
 
 // POST /api/purchase-order - Create new purchase order
 router.post("/", createPurchaseOrder);
+
+// POST /api/purchase-order/:id/ship
+router.post("/:id/ship", shipPurchaseOrder);
 
 // PUT /api/purchase-order/:id - Update purchase order by ID
 router.put("/:id", updatePurchaseOrder);

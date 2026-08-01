@@ -138,3 +138,27 @@ export async function getPurchaseOrderStats(req, res) {
     });
   }
 }
+
+
+/**
+ * Ship Purchase Order
+ */
+export async function shipPurchaseOrder(req, res) {
+  try {
+    const result = await purchaseOrderService.shipPurchaseOrder(req.params.id);
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Controller error shipping purchase order:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to ship purchase order",
+      error: error.message,
+    });
+  }
+}

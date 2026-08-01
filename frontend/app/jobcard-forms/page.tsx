@@ -23,9 +23,9 @@ const jobCardLinks = [
     icon: "📊",
   },
   {
-    title: "Proforma Invoice",
+    title: "Performa Invoice",
     description: "Build PI records and download the Excel sheet",
-    href: "/jobcard/proforma-invoice",
+    href: "/jobcard/performa-invoice",
     color: "bg-amber-500",
     hoverColor: "group-hover:text-amber-600",
     textColor: "text-amber-600",

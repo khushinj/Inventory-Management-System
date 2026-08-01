@@ -47,6 +47,7 @@ export type PurchaseOrderPdfSummary = {
 type GeneratePurchaseOrderPdfArgs = {
   headerInfo: PurchaseOrderPdfHeader;
   items: PurchaseOrderPdfItem[];
+  deliveredSizes?: any[];
   summary: PurchaseOrderPdfSummary;
 };
 
@@ -225,41 +226,81 @@ function drawFooter(doc: jsPDF): void {
   doc.text("This is a Computer Generated Document", pageWidth / 2, pageHeight - 6, { align: "center" });
 }
 
-export function generatePurchaseOrderPdf({ headerInfo, items, summary }: GeneratePurchaseOrderPdfArgs): void {
+export function generatePurchaseOrderPdf({ headerInfo, items, deliveredSizes, summary }: GeneratePurchaseOrderPdfArgs): void {
   const doc = new jsPDF({ orientation: "landscape" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const { tableStartY } = getHeaderLayoutMetrics();
 
-  const tableData = items.map((item, index) => {
-    const sizesWithQty = getSizesWithQty(item);
-    const qty = [item.s, item.m, item.l, item.xl, item.xxl, item.xxxl, item.xxxxl, item.xxxxxl]
-      .reduce((total, sizeQty) => total + (Number(sizeQty) || 0), 0);
+  const tableData = items.flatMap((item, index) => {
+    const orderedQty =
+      [item.s, item.m, item.l, item.xl, item.xxl, item.xxxl, item.xxxxl, item.xxxxxl, item.xxxxxxl]
+        .reduce((t, n) => t + (Number(n) || 0), 0);
+
+    const delivered = deliveredSizes?.[index] || {};
+
+    const deliveredQty =
+      [
+        delivered.s,
+        delivered.m,
+        delivered.l,
+        delivered.xl,
+        delivered.xxl,
+        delivered.xxxl,
+        delivered.xxxxl,
+        delivered.xxxxxl,
+        delivered.xxxxxxl,
+      ].reduce((t, n) => t + (Number(n) || 0), 0);
 
     return [
-      String(index + 1),
-      getItemCategory(item),
-      getItemName(item),
-      item.color || "-",
-      item.s > 0 ? String(item.s) : "",
-      item.m > 0 ? String(item.m) : "",
-      item.l > 0 ? String(item.l) : "",
-      item.xl > 0 ? String(item.xl) : "",
-      item.xxl > 0 ? String(item.xxl) : "",
-      item.xxxl > 0 ? String(item.xxxl) : "",
-      item.xxxxl > 0 ? String(item.xxxxl) : "",
-      item.xxxxxl > 0 ? String(item.xxxxxl) : "",
-      String(qty || item.qty || 0),
-      formatRate(item.mrp),
-      formatRate(item.rate),
-      formatAmount(item.amt),
+      // Ordered row
+      [
+        String(index + 1),
+        getItemCategory(item),
+        getItemName(item),
+        item.color || "-",
+        item.s > 0 ? String(item.s) : "",
+        item.m > 0 ? String(item.m) : "",
+        item.l > 0 ? String(item.l) : "",
+        item.xl > 0 ? String(item.xl) : "",
+        item.xxl > 0 ? String(item.xxl) : "",
+        item.xxxl > 0 ? String(item.xxxl) : "",
+        item.xxxxl > 0 ? String(item.xxxxl) : "",
+        item.xxxxxl > 0 ? String(item.xxxxxl) : "",
+        item.xxxxxxl > 0 ? String(item.xxxxxxl) : "",
+        String(orderedQty),
+        formatRate(item.mrp),
+        formatRate(item.rate),
+        formatAmount(item.amt),
+      ],
+
+      // Delivered row
+      [
+        "",
+        "",
+        "Delivered",
+        "",
+        delivered.s ? String(delivered.s) : "",
+        delivered.m ? String(delivered.m) : "",
+        delivered.l ? String(delivered.l) : "",
+        delivered.xl ? String(delivered.xl) : "",
+        delivered.xxl ? String(delivered.xxl) : "",
+        delivered.xxxl ? String(delivered.xxxl) : "",
+        delivered.xxxxl ? String(delivered.xxxxl) : "",
+        delivered.xxxxxl ? String(delivered.xxxxxl) : "",
+        delivered.xxxxxxl ? String(delivered.xxxxxxl) : "",
+        String(deliveredQty),
+        "",
+        "",
+        "",
+      ],
     ];
   });
 
   autoTable(doc, {
     startY: tableStartY,
     margin: { top: tableStartY, left: 10, right: 10, bottom: 18 },
-    head: [["SR", "CATEGORY", "ITEM NAME", "COLOR", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "QTY", "MRP", "RATE", "AMOUNT"]],
+    head: [["SR", "CATEGORY", "ITEM NAME", "COLOR", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL", "QTY", "MRP", "RATE", "AMOUNT"]],
     body: tableData,
     theme: "grid",
     styles: {

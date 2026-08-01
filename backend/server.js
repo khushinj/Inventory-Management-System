@@ -18,7 +18,7 @@ import migrationRoutes from "./routes/migration.route.js";
 import presentStockRoutes from "./routes/presentStock.route.js";
 import productionTrackingRoutes from "./routes/productionTracking.route.js";
 import shippedOrderRoutes from "./routes/shippedOrder.route.js";
-import proformaInvoiceRoutes from "./routes/performaInvoice.route.js";
+import performaInvoiceRoutes from "./routes/performaInvoice.route.js";
 
 
 dotenv.config();
@@ -49,7 +49,7 @@ app.use("/api/admin", migrationRoutes);
 app.use("/api/present-stock", presentStockRoutes);
 app.use("/api/production-tracking", productionTrackingRoutes);
 app.use("/api/shipped-order", shippedOrderRoutes);
-app.use("/api/proforma-invoice", proformaInvoiceRoutes);
+app.use("/api/performa-invoice", performaInvoiceRoutes);
 
 // test route
 app.get("/", (req, res) => {

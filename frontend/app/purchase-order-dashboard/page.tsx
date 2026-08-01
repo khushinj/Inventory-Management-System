@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { api } from "../../lib/api";
 import { FileText, Search, Filter, Eye, X, Trash2, Edit, Truck, Download } from "lucide-react";
 import * as XLSX from "xlsx";
+import { generatePurchaseOrderPdf } from "../../lib/pdf-for-purchase-order";
 
 type PurchaseOrderItem = {
   category: string;
@@ -262,7 +263,7 @@ export default function PurchaseOrdersPage() {
 
     try {
       setEditSaveStatus("saving");
-      
+
       // Prepare the update data with proper date formatting
       const updateData: Partial<PurchaseOrder> = {
         status: (editFormData.status as PurchaseOrder["status"]) || editingOrder.status,
@@ -497,9 +498,9 @@ export default function PurchaseOrdersPage() {
     order: PurchaseOrder,
     orderDelivered: DeliveredSizeMap[string] = {}
   ): PurchaseOrder["status"] => {
-    if (order.status === "completed") {
-      return "completed";
-    }
+    // if (order.status === "completed") {
+    //   return "completed";
+    // }
 
     let anyDelivered = false;
     let allComplete = true;
@@ -523,12 +524,12 @@ export default function PurchaseOrdersPage() {
       });
     });
 
-    if (!anyDelivered) {
-      return "pending";
+    if (order.status === "completed") {
+      return "completed";
     }
 
-    if (allComplete) {
-      return "completed";
+    if (!anyDelivered) {
+      return "pending";
     }
 
     return "partially pending";
@@ -536,18 +537,44 @@ export default function PurchaseOrdersPage() {
 
   const handleMarkAsShipped = async (order: PurchaseOrder) => {
     const confirmed = window.confirm(
-      `Mark ${getOrderNumber(order)} as shipped? Status will be set to completed even if some quantities are still pending.`
+      `Mark ${getOrderNumber(order)} as shipped?`
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
-      await updatePurchaseOrderData(order._id, {
-        status: "completed",
-        deliveredSizes: buildDeliveredSizesArray(order, deliveredSizes[order._id]),
-      });
+      const res = await api.post(`/purchase-order/${order._id}/ship`);
+
+      if (res.data.success) {
+        generatePurchaseOrderPdf({
+          headerInfo: {
+            dealerName: order.dealerName,
+            buyerName: order.buyerName,
+            poc: order.poc || "",
+            date: order.date,
+            deadline: order.deadline || "",
+            city: order.city,
+          },
+          items: order.items,
+          deliveredSizes: res.data.data.deliveredSizes,
+          summary: {
+            totalQuantity: order.totalQuantity,
+            grossTotal: order.grossTotal,
+            purchaseOrderValueWords: "",
+            gstOutput: order.gstOutput,
+            grandTotal: order.grandTotal,
+            termsCondition: order.termsCondition,
+          },
+        });
+
+        await fetchPurchaseOrders();
+
+        if (selectedOrder?._id === order._id) {
+          setSelectedOrder(res.data.data);
+        }
+
+        alert("Purchase order shipped successfully.");
+      }
     } catch (error) {
       console.error("Error marking purchase order as shipped:", error);
       alert("Failed to mark purchase order as shipped");
@@ -611,7 +638,7 @@ export default function PurchaseOrdersPage() {
       console.log("Order ID:", orderId);
       console.log("Update data:", JSON.stringify(updateData, null, 2));
       console.log("====================================");
-      
+
       const res = await api.put(`/purchase-order/${orderId}`, updateData);
       if (res.data && res.data.success) {
         const updatedOrder: PurchaseOrder = res.data.data;
@@ -702,7 +729,7 @@ export default function PurchaseOrdersPage() {
   ) => {
     const parsedValue = Number(value);
     const nextValue = Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : 0;
-      setHasUnsavedChanges(true);
+    setHasUnsavedChanges(true);
 
     const nextDelivered: DeliveredSizeMap = {
       ...deliveredSizes,
@@ -724,7 +751,7 @@ export default function PurchaseOrdersPage() {
     console.log("Item Index:", itemIndex);
     console.log("Size Key:", sizeKey, "Value:", nextValue);
     console.log("Delivered Sizes Array:", JSON.stringify(deliveredSizesArray, null, 2));
-    
+
     // Verify we're sending delivered, not ordered quantities
     order.items.forEach((item, idx) => {
       const deliveredEntry = deliveredSizesArray[idx] || {};
@@ -789,11 +816,10 @@ export default function PurchaseOrdersPage() {
   const getStatCardClassName = (filterValue: StatusFilter) => {
     const isActive = statusFilter === filterValue;
 
-    return `bg-white rounded-lg shadow p-6 text-left transition-all ${
-      isActive
-        ? "ring-2 ring-blue-500 shadow-md"
-        : "hover:shadow-md hover:-translate-y-0.5"
-    }`;
+    return `bg-white rounded-lg shadow p-6 text-left transition-all ${isActive
+      ? "ring-2 ring-blue-500 shadow-md"
+      : "hover:shadow-md hover:-translate-y-0.5"
+      }`;
   };
 
   const stats = getStatusCounts();
@@ -929,119 +955,127 @@ export default function PurchaseOrdersPage() {
             const cardStatus = getDerivedStatus(order, deliveredSizes[order._id]);
 
             return (
-            <div
-              key={order._id}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 p-6 relative"
-            >
-              {/* Status Badge */}
-              <div className="mb-4">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  {getOrderNumber(order)}
-                </h3>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                    cardStatus
-                  )}`}
-                >
-                  {cardStatus.charAt(0).toUpperCase() + cardStatus.slice(1)}
-                </span>
-              </div>
-
-              {/* Client Info */}
-              <div className="mb-4">
-                <p className="text-lg font-semibold text-gray-900">{order.buyerName}</p>
-                <p className="text-sm text-gray-600">{order.dealerName}</p>
-                <p className="text-sm text-gray-500">POC: {order.poc || "-"}</p>
-              </div>
-
-              {/* Dates */}
-              <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-                <div>
-                  <p className="text-gray-500">Order Date</p>
-                  <p className="text-gray-900 font-medium">{formatDate(order.date)}</p>
+              <div
+                key={order._id}
+                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 p-6 relative"
+              >
+                {/* Status Badge */}
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    {getOrderNumber(order)}
+                  </h3>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                      cardStatus
+                    )}`}
+                  >
+                    {cardStatus.charAt(0).toUpperCase() + cardStatus.slice(1)}
+                  </span>
                 </div>
-                {order.deadline && (
+
+                {/* Client Info */}
+                <div className="mb-4">
+                  <p className="text-lg font-semibold text-gray-900">{order.buyerName}</p>
+                  <p className="text-sm text-gray-600">{order.dealerName}</p>
+                  <p className="text-sm text-gray-500">POC: {order.poc || "-"}</p>
+                </div>
+
+                {/* Dates */}
+                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                   <div>
-                    <p className="text-gray-500">Deadline</p>
-                    <p className="text-red-600 font-medium">{formatDate(order.deadline)}</p>
+                    <p className="text-gray-500">Order Date</p>
+                    <p className="text-gray-900 font-medium">{formatDate(order.date)}</p>
                   </div>
-                )}
-                {!order.deadline && (
-                  <div>
+                  {order.deadline && (
+                    <div>
+                      <p className="text-gray-500">Deadline</p>
+                      <p className="text-red-600 font-medium">{formatDate(order.deadline)}</p>
+                    </div>
+                  )}
+                  {!order.deadline && (
+                    <div>
+                      <p className="text-gray-500">City</p>
+                      <p className="text-gray-900 font-medium">{order.city}</p>
+                    </div>
+                  )}
+                </div>
+
+                {order.deadline && (
+                  <div className="mb-4 text-sm">
                     <p className="text-gray-500">City</p>
                     <p className="text-gray-900 font-medium">{order.city}</p>
                   </div>
                 )}
-              </div>
-              
-              {order.deadline && (
-                <div className="mb-4 text-sm">
-                  <p className="text-gray-500">City</p>
-                  <p className="text-gray-900 font-medium">{order.city}</p>
-                </div>
-              )}
 
-              {/* Amount and Items */}
-              <div className="border-t border-gray-200 pt-4 mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-500 text-sm">Total Amount</span>
-                  <span className="text-2xl font-bold text-gray-900">{formatCurrency(order.grandTotal)}</span>
-                </div>
-                <p className="text-sm text-gray-600">{order.items.length} items</p>
-                <div className="mt-4 rounded-lg bg-gray-50 p-3">
-                  <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Completed</span>
-                    <span className="font-semibold text-gray-900">{completion.completionPercentage}%</span>
+                {/* Amount and Items */}
+                <div className="border-t border-gray-200 pt-4 mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-500 text-sm">Total Amount</span>
+                    <span className="text-2xl font-bold text-gray-900">{formatCurrency(order.grandTotal)}</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="h-full rounded-full bg-green-500 transition-all duration-300"
-                      style={{ width: `${completion.completionPercentage}%` }}
-                    />
+                  <p className="text-sm text-gray-600">{order.items.length} items</p>
+                  <div className="mt-4 rounded-lg bg-gray-50 p-3">
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Completed</span>
+                      <span className="font-semibold text-gray-900">{completion.completionPercentage}%</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+                      <div
+                        className="h-full rounded-full bg-green-500 transition-all duration-300"
+                        style={{ width: `${completion.completionPercentage}%` }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs text-gray-600">
+                      {completion.deliveredQuantity} of {completion.orderedQuantity} qty delivered
+                    </p>
                   </div>
-                  <p className="mt-2 text-xs text-gray-600">
-                    {completion.deliveredQuantity} of {completion.orderedQuantity} qty delivered
-                  </p>
                 </div>
-              </div>
 
-              <div className="flex gap-2">
-                {cardStatus === "partially pending" && (
+                <div className="flex gap-2">
+                  {(cardStatus === "partially pending" || cardStatus === "completed") && (
+                    <button
+                      onClick={() => {
+                        if (cardStatus !== "completed") {
+                          handleMarkAsShipped(order);
+                        }
+                      }}
+                      disabled={cardStatus === "completed"}
+                      className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition-colors ${cardStatus === "completed"
+                          ? "bg-green-600 text-white cursor-default"
+                          : "text-green-700 border border-green-300 hover:bg-green-50"
+                        }`}
+                    >
+                      <Truck className="w-4 h-4" />
+                      {cardStatus === "completed" ? "Shipped" : "Ship"}
+                    </button>
+                  )}
                   <button
-                    onClick={() => handleMarkAsShipped(order)}
-                    className="flex items-center justify-center gap-2 px-4 py-2 text-green-700 border border-green-300 rounded-lg hover:bg-green-50 transition-colors"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setSaveStatus("idle");
+                      setHasUnsavedChanges(false);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-2 py-2 text-black border rounded-lg transition-colors text-sm"
                   >
-                    <Truck className="w-4 h-4" />
-                    Shipped
+                    <Eye className="w-4 h-4" />
+                    View Details
                   </button>
-                )}
-                <button
-                  onClick={() => {
-                    setSelectedOrder(order);
-                    setSaveStatus("idle");
-                    setHasUnsavedChanges(false);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-black border rounded-lg transition-colors"
-                >
-                  <Eye className="w-4 h-4" />
-                  View Details
-                </button>
-                <button
-                  onClick={() => openEditModal(order)}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteOrder(order)}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
+                  <button
+                    onClick={() => openEditModal(order)}
+                    className="flex items-center justify-center gap-2 px-3 py-2 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteOrder(order)}
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
             );
           })}
         </div>
@@ -1063,17 +1097,16 @@ export default function PurchaseOrdersPage() {
                 <button
                   onClick={handleManualSave}
                   disabled={!hasUnsavedChanges || saveStatus === "saving"}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                    saveStatus === "saved"
-                      ? "bg-green-100 text-green-800"
-                      : saveStatus === "error"
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${saveStatus === "saved"
+                    ? "bg-green-100 text-green-800"
+                    : saveStatus === "error"
                       ? "bg-red-100 text-red-800"
                       : saveStatus === "saving"
-                      ? "bg-blue-100 text-blue-800"
-                      : hasUnsavedChanges
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  }`}
+                        ? "bg-blue-100 text-blue-800"
+                        : hasUnsavedChanges
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
                 >
                   {saveStatus === "saving" && (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
@@ -1218,7 +1251,7 @@ export default function PurchaseOrdersPage() {
                                           min={0}
                                           inputMode="numeric"
                                           value={deliveredInputValue}
-                                          onChange={(event) => 
+                                          onChange={(event) =>
                                             handleDeliveredChange(
                                               selectedOrder,
                                               index,
@@ -1555,15 +1588,14 @@ export default function PurchaseOrdersPage() {
                 <button
                   type="submit"
                   disabled={editSaveStatus === "saving"}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                    editSaveStatus === "saved"
-                      ? "bg-green-100 text-green-800"
-                      : editSaveStatus === "error"
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${editSaveStatus === "saved"
+                    ? "bg-green-100 text-green-800"
+                    : editSaveStatus === "error"
                       ? "bg-red-100 text-red-800"
                       : editSaveStatus === "saving"
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
                 >
                   {editSaveStatus === "saving" && (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>

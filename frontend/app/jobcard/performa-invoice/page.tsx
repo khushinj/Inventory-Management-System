@@ -121,7 +121,7 @@ const buildFabricDetails = (entry: JobCardEntry) => {
   return parts.join(" / ");
 };
 
-export default function ProformaInvoicePage() {
+export default function PerformaInvoicePage() {
   const [header, setHeader] = useState<HeaderState>({
     piNumber: "",
     piDate: "",
@@ -293,7 +293,7 @@ export default function ProformaInvoicePage() {
     const workbook = XLSX.utils.book_new();
 
     const summaryRows = [
-      ["PROFORMA INVOICE"],
+      ["PERFORMA INVOICE"],
       ["Manufacturer/Exporter", MANUFACTURER_EXPORTER],
       ["PI Number", header.piNumber],
       ["PI Date", formatDisplayDate(header.piDate)],
@@ -397,7 +397,7 @@ export default function ProformaInvoicePage() {
     ];
 
     XLSX.utils.book_append_sheet(workbook, summarySheet, "PI");
-    XLSX.writeFile(workbook, `proforma_invoice_${header.piNumber || header.piDate || "document"}.xlsx`);
+    XLSX.writeFile(workbook, `performa_invoice_${header.piNumber || header.piDate || "document"}.xlsx`);
   };
 
   const handleSave = async () => {
@@ -421,7 +421,7 @@ export default function ProformaInvoicePage() {
         totalAmount,
       };
 
-      await api.post("/proforma-invoice", payload);
+      await api.post("/performa-invoice", payload);
 
       // After successful save, trigger Excel download
       downloadExcel();
@@ -437,7 +437,7 @@ export default function ProformaInvoicePage() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Proforma Invoice</h1>
+              <h1 className="text-3xl font-bold">Performa Invoice</h1>
               <p className="mt-1 text-indigo-100">Create PI entries linked to job cards and download Excel only.</p>
             </div>
             <div className="flex gap-3">

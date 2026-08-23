@@ -114,9 +114,7 @@ Includes:
 
 ## 🔐 Security
 
-- JWT-based authentication  
-- Role-based authorization  
-- Secure API endpoints  
+- Frontend role-based access checks  
 - Environment-based secrets  
 
 ---

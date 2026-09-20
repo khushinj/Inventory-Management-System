@@ -662,7 +662,8 @@ function ShopDashboard() {
       }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
       if (entriesToCreate.length > 0) {
-        await api.post("/shop/bulk", { entries: entriesToCreate });
+        const response = await api.post("/shop/bulk", { entries: entriesToCreate });
+        setEntries((current) => [...(response.data.data || []), ...current]);
       }
 
       setNewReturnRow({
@@ -674,7 +675,6 @@ function ShopDashboard() {
         date: new Date().toISOString().split("T")[0],
         sizes: {}
       });
-      fetchEntries();
       setTimeout(() => returnDnoRef.current?.focus(), 100);
     } catch (err: unknown) {
       console.error("Error creating return entries:", err);

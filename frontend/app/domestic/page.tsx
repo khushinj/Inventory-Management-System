@@ -923,14 +923,14 @@ function DomesticDashboard() {
         return null;
       }).filter(p => p !== null);
       
-      await Promise.all(promises);
+      const responses = await Promise.all(promises);
+      setEntries((current) => [...responses.filter(Boolean).map((response) => response.data), ...current]);
       setIsCreatingDispatch(false);
       setNewDispatchRow({
         dno: "",
         color: "",
         sizes: {}
       });
-      fetchEntries();
     } catch (err: unknown) {
       console.error("Error saving dispatch entries:", err);
       alert("Failed to save dispatch entries");

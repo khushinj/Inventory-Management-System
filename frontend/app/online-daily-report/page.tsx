@@ -137,6 +137,17 @@ export default function OnlineDailyReportPage() {
       const response = await api.post("/online-daily-report", formData);
       
       console.log("✅ Server response:", response.data);
+      const savedReport = response.data.data as OnlineDailyReport;
+      setReports((currentReports) => {
+        const existingIndex = currentReports.findIndex((report) => report._id === savedReport._id);
+        if (existingIndex === -1) {
+          return [savedReport, ...currentReports];
+        }
+
+        return currentReports.map((report, index) =>
+          index === existingIndex ? savedReport : report
+        );
+      });
       setMessage({ type: "success", text: response.data.message });
       
       // Calculate next date (advance by 1 day)

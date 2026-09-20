@@ -103,12 +103,14 @@ export default function DomesticOnlineSalesPage() {
       };
 
       if (editingEntry) {
-        await api.patch(`/warehouse/domestic/${editingEntry}`, dataToSave);
+        const response = await api.patch(`/warehouse/domestic/${editingEntry}`, dataToSave);
+        setEntries((current) => current.map((entry) =>
+          entry._id === editingEntry ? response.data : entry
+        ));
       } else {
-        await api.post("/warehouse/domestic", dataToSave);
+        const response = await api.post("/warehouse/domestic", dataToSave);
+        setEntries((current) => [response.data, ...current]);
       }
-
-      await fetchEntries();
       
       setEditingEntry(null);
       setEditForm({

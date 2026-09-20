@@ -163,6 +163,17 @@ export default function DailyReportPage() {
         payload
       );
 
+      const savedReport = response.data.data as DailyReport;
+      setReports((currentReports) => {
+        const existingIndex = currentReports.findIndex((report) => report._id === savedReport._id);
+        if (existingIndex === -1) {
+          return [savedReport, ...currentReports];
+        }
+
+        return currentReports.map((report, index) =>
+          index === existingIndex ? savedReport : report
+        );
+      });
       setMessage({ type: "success", text: response.data.message });
       setEditingReportId(null);
       setEditingReportDate(null);

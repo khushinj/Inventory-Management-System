@@ -451,9 +451,9 @@ function OnlineDashboard() {
         ...(editForm.supplier && { supplier: editForm.supplier }),
       };
       
-      await api.post("/warehouse/online", payload);
+      const response = await api.post("/warehouse/online", payload);
+      setEntries((current) => [response.data, ...current]);
       setIsCreating(false);
-      fetchEntries();
     } catch (err: unknown) {
       console.error("Error creating entry:", err);
       const errorMsg = err instanceof Error ? err.message : "Unknown error";
@@ -531,7 +531,8 @@ function OnlineDashboard() {
         await api.patch(`/warehouse/online/${entryId}`, payload);
         setEditingEntry(null);
       } else {
-        await api.post("/warehouse/online", payload);
+        const response = await api.post("/warehouse/online", payload);
+        setEntries((current) => [response.data, ...current]);
       }
       
       // Reset form and prepare for next entry
@@ -550,7 +551,6 @@ function OnlineDashboard() {
         supplier: "",
       });
       setIsCreating(true);
-      fetchEntries();
       
       // Focus first field for next entry
       setTimeout(() => dnoRef.current?.focus(), 100);
@@ -606,7 +606,8 @@ function OnlineDashboard() {
         return null;
       }).filter(p => p !== null);
       
-      await Promise.all(promises);
+      const responses = await Promise.all(promises);
+      setEntries((current) => [...responses.filter(Boolean).map((response) => response.data), ...current]);
       
       // Reset form and refocus for next entry
       setNewTransferRow({
@@ -615,7 +616,6 @@ function OnlineDashboard() {
         color: "",
         sizes: {}
       });
-      fetchEntries();
       setTimeout(() => transferDnoRef.current?.focus(), 100);
     } catch (err: unknown) {
       console.error("Error creating transfer entries:", err);
@@ -748,7 +748,8 @@ function OnlineDashboard() {
         return null;
       }).filter(p => p !== null);
       
-      await Promise.all(promises);
+      const responses = await Promise.all(promises);
+      setEntries((current) => [...responses.filter(Boolean).map((response) => response.data), ...current]);
       
       setNewPurchaseRow({
         dno: "",
@@ -756,7 +757,6 @@ function OnlineDashboard() {
         color: "",
         sizes: {}
       });
-      fetchEntries();
       setTimeout(() => purchaseDnoRef.current?.focus(), 100);
     } catch (err: unknown) {
       console.error("Error creating purchase entries:", err);

@@ -194,11 +194,13 @@ export default function JobCardPage() {
         formDataToSend.append('image', formData.imageFile);
       }
 
-      await api.post("/jobcard", formDataToSend, {
+      const response = await api.post("/jobcard", formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+
+      setSavedJobCards((currentJobCards) => [response.data, ...currentJobCards]);
 
       alert("Job card saved successfully!");
 
@@ -214,7 +216,6 @@ export default function JobCardPage() {
         cutting: [],
       });
 
-      fetchJobCards();
     } catch (err: any) {
       console.error("Error saving job card:", err);
       alert(

@@ -19,6 +19,8 @@ import presentStockRoutes from "./routes/presentStock.route.js";
 import productionTrackingRoutes from "./routes/productionTracking.route.js";
 import shippedOrderRoutes from "./routes/shippedOrder.route.js";
 import performaInvoiceRoutes from "./routes/performaInvoice.route.js";
+import authRoutes from "./routes/auth.route.js";
+import { authenticateToken } from "./middleware/authenticateToken.js";
 
 
 dotenv.config();
@@ -31,6 +33,8 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // routes
+app.use("/api/auth", authRoutes);
+app.use("/api", authenticateToken);
 // app.use("/api/transactions", transactionRoutes);
 app.use("/api/shop", shopRoutes);
 app.use("/api/warehouse/domestic", domesticRoutes);

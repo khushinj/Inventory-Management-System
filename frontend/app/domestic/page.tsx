@@ -491,9 +491,9 @@ function DomesticDashboard() {
         ...(editForm.channel && { channel: editForm.channel }),
       };
       
-      await api.patch(`/warehouse/domestic/${id}`, payload);
+      const response = await api.patch(`/warehouse/domestic/${id}`, payload);
       setEditingEntry(null);
-      fetchEntries();
+      setEntries((current) => current.map((entry) => entry._id === id ? response.data : entry));
     } catch (err: unknown) {
       console.error("Error updating entry:", err);
       const errorMsg = err instanceof Error ? err.message : "Unknown error";
@@ -590,7 +590,8 @@ function DomesticDashboard() {
         return null;
       }).filter(p => p !== null);
       
-      await Promise.all(promises);
+      const responses = await Promise.all(promises);
+      setEntries((current) => [...responses.filter(Boolean).map((response) => response.data), ...current]);
       
       // Reset form and refocus for next entry
       setNewSampleRow({
@@ -598,7 +599,6 @@ function DomesticDashboard() {
         color: "",
         sizes: {}
       });
-      fetchEntries();
       setTimeout(() => sampleDnoRef.current?.focus(), 100);
     } catch (err: unknown) {
       console.error("Error creating sample entries:", err);
@@ -643,7 +643,8 @@ function DomesticDashboard() {
         return null;
       }).filter(p => p !== null);
       
-      await Promise.all(promises);
+      const responses = await Promise.all(promises);
+      setEntries((current) => [...responses.filter(Boolean).map((response) => response.data), ...current]);
       
       // Reset form and refocus for next entry
       setNewProductionRow({
@@ -651,7 +652,6 @@ function DomesticDashboard() {
         color: "",
         sizes: {}
       });
-      fetchEntries();
       setTimeout(() => productionDnoRef.current?.focus(), 100);
     } catch (err: unknown) {
       console.error("Error creating production entries:", err);
@@ -692,7 +692,8 @@ function DomesticDashboard() {
         return null;
       }).filter(p => p !== null);
       
-      await Promise.all(promises);
+      const responses = await Promise.all(promises);
+      setEntries((current) => [...responses.filter(Boolean).map((response) => response.data), ...current]);
       
       // Reset form and refocus for next entry
       setNewPurchaseRow({
@@ -700,7 +701,6 @@ function DomesticDashboard() {
         color: "",
         sizes: {}
       });
-      fetchEntries();
       setTimeout(() => purchaseDnoRef.current?.focus(), 100);
     } catch (err: unknown) {
       console.error("Error creating purchase entries:", err);
@@ -1116,9 +1116,9 @@ function DomesticDashboard() {
         ...(editForm.channel && { channel: editForm.channel }),
       };
       
-      await api.post("/warehouse/domestic", payload);
+      const response = await api.post("/warehouse/domestic", payload);
+      setEntries((current) => [response.data, ...current]);
       setIsCreating(false);
-      fetchEntries();
     } catch (err: unknown) {
       console.error("Error creating entry:", err);
       const errorMsg = err instanceof Error ? err.message : "Unknown error";
@@ -1229,10 +1229,12 @@ function DomesticDashboard() {
       };
       
       if (entryId) {
-        await api.patch(`/warehouse/domestic/${entryId}`, payload);
+        const response = await api.patch(`/warehouse/domestic/${entryId}`, payload);
+        setEntries((current) => current.map((entry) => entry._id === entryId ? response.data : entry));
         setEditingEntry(null);
       } else {
-        await api.post("/warehouse/domestic", payload);
+        const response = await api.post("/warehouse/domestic", payload);
+        setEntries((current) => [response.data, ...current]);
       }
       
       // Reset form and prepare for next entry
@@ -1251,7 +1253,6 @@ function DomesticDashboard() {
         channel: "",
       });
       setIsCreating(true);
-      fetchEntries();
       
       // Focus first field for next entry
       setTimeout(() => dnoRef.current?.focus(), 100);

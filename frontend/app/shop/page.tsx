@@ -340,12 +340,12 @@ function ShopDashboard() {
 
   const handleUpdate = async (id: string) => {
     try {
-      await api.patch(`/shop/${id}`, {
+      const response = await api.patch(`/shop/${id}`, {
         ...editForm,
         formType: selectedFormType,
       });
+      setEntries((current) => current.map((entry) => entry._id === id ? response.data : entry));
       setEditingEntry(null);
-      fetchEntries();
     } catch (err: unknown) {
       console.error("Error updating entry:", err);
       alert("Failed to update entry");
@@ -387,12 +387,12 @@ function ShopDashboard() {
 
   const handleSaveNew = async () => {
     try {
-      await api.post("/shop", {
+      const response = await api.post("/shop", {
         ...editForm,
         formType: selectedFormType,
       });
+      setEntries((current) => [response.data, ...current]);
       setIsCreating(false);
-      fetchEntries();
     } catch (err: unknown) {
       console.error("Error creating entry:", err);
       const errorMsg = err instanceof Error ? err.message : "Unknown error";
@@ -427,17 +427,19 @@ function ShopDashboard() {
     try {
       if (entryId) {
         // Update existing entry
-        await api.patch(`/shop/${entryId}`, {
+        const response = await api.patch(`/shop/${entryId}`, {
           ...editForm,
           formType: selectedFormType,
         });
+        setEntries((current) => current.map((entry) => entry._id === entryId ? response.data : entry));
         setEditingEntry(null);
       } else {
         // Create new entry
-        await api.post("/shop", {
+        const response = await api.post("/shop", {
           ...editForm,
           formType: selectedFormType,
         });
+        setEntries((current) => [response.data, ...current]);
       }
 
       // Reset form and prepare for next entry
@@ -451,7 +453,6 @@ function ShopDashboard() {
         channel: "retail",
       });
       setIsCreating(true);
-      fetchEntries();
 
       // Focus first field for next entry
       setTimeout(() => dnoRef.current?.focus(), 100);
@@ -511,7 +512,8 @@ function ShopDashboard() {
       }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
       if (entriesToCreate.length > 0) {
-        await api.post("/shop/bulk", { entries: entriesToCreate });
+        const response = await api.post("/shop/bulk", { entries: entriesToCreate });
+        setEntries((current) => [...(response.data.data || []), ...current]);
       }
 
       setNewImportRow({
@@ -523,7 +525,6 @@ function ShopDashboard() {
         date: new Date().toISOString().split("T")[0],
         sizes: {}
       });
-      fetchEntries();
       setTimeout(() => importDnoRef.current?.focus(), 100);
     } catch (err: unknown) {
       console.error("Error creating import entries:", err);
@@ -571,11 +572,11 @@ function ShopDashboard() {
       }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
       if (entriesToCreate.length > 0) {
-        await api.post("/shop/bulk", { entries: entriesToCreate });
+        const response = await api.post("/shop/bulk", { entries: entriesToCreate });
+        setEntries((current) => [...(response.data.data || []), ...current]);
       }
 
       setEditingImportRow(null);
-      fetchEntries();
     } catch (err: unknown) {
       console.error("Error updating import entries:", err);
       const errorMsg = err instanceof Error ? err.message : "Unknown error";

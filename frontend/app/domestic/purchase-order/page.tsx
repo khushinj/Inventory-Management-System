@@ -475,6 +475,8 @@ export default function PurchaseOrderEntryForm() {
   }, []);
 
   const handleSaveData = async () => {
+    const validItems = items.filter((item) => item.designNumber && item.color && item.qty > 0);
+
     try {
       // Validate required fields
       if (
@@ -499,10 +501,6 @@ export default function PurchaseOrderEntryForm() {
       }
 
       // Filter out empty items (items with no data)
-      const validItems = items.filter(item =>
-        item.designNumber && item.color && item.qty > 0
-      );
-
       if (validItems.length === 0) {
         alert("Please add at least one valid item with all required fields");
         return;
@@ -545,8 +543,8 @@ export default function PurchaseOrderEntryForm() {
       summary,
     });
 
-    // Excel export with item details
-    const excelData = items.map((item, index) => ({
+    // Keep the spreadsheet aligned with the saved order and expose every size quantity.
+    const excelData = validItems.map((item, index) => ({
       SL: index + 1,
       "Design Number": item.designNumber,
       Color: item.color,
@@ -570,8 +568,20 @@ export default function PurchaseOrderEntryForm() {
     }));
 
     const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Items");
+    const summarySheet = XLSX.utils.json_to_sheet([
+      { Field: "Dealer", Value: headerInfo.dealerName },
+      { Field: "Buyer", Value: headerInfo.buyerName },
+      { Field: "POC", Value: headerInfo.poc },
+      { Field: "Date", Value: headerInfo.date },
+      { Field: "Deadline", Value: headerInfo.deadline },
+      { Field: "City", Value: headerInfo.city },
+      { Field: "Total Quantity", Value: summary.totalQuantity },
+      { Field: "Gross Total", Value: summary.grossTotal },
+      { Field: "GST Output", Value: summary.gstOutput },
+      { Field: "Grand Total", Value: summary.grandTotal },
+    ]);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Order Summary");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(excelData), "Item Breakdown");
     XLSX.writeFile(workbook, `purchase_order_${headerInfo.date || "document"}.xlsx`);
   };
 

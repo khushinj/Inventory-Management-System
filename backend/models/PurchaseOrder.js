@@ -172,7 +172,6 @@ const PurchaseOrderSchema = new mongoose.Schema(
 PurchaseOrderSchema.index({ date: -1 });
 PurchaseOrderSchema.index({ dealerName: 1 });
 PurchaseOrderSchema.index({ buyerName: 1 });
-PurchaseOrderSchema.index({ orderNumber: 1 });
 PurchaseOrderSchema.index({ year: -1, sequenceNumber: -1 });
 
 export default mongoose.model("PurchaseOrder", PurchaseOrderSchema);
